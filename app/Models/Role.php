@@ -4,17 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Quiz;
+use App\Models\User;
 
-class Category extends Model
+class Role extends Model
 {
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'name',
     ];
 
-    public function quizzes() {
-        return $this->hasMany(Quiz::class);
-            }
+    public function users() {
+        return $this->belongsToMany(User::class);
+    }
 }

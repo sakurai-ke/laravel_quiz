@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\Quiz;
+use App\Models\Role;
 
 class User extends Authenticatable
 {
@@ -22,6 +23,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'user_id',
     ];
 
     /**
@@ -47,4 +49,8 @@ class User extends Authenticatable
     public function quizzes() {
         return $this->hasMany(Quiz::class);
             }
+
+    // public function roles() {
+    //     return $this->belongsToMany(Role::class);
+    // }
 }

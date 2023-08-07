@@ -13,22 +13,20 @@ class Quiz extends Model
     use HasFactory;
 
     protected $fillable = [
-        'title',
-        'answer_id',
         'category_id',
+        'user_id',
+        'title',
+        'correct_answer',
+        'wrong_answer_1',
+        'wrong_answer_2',
+        'wrong_answer_3',
+        'correct_answer_no',
+        'explain',
+        'hint',
         'image_src',
         'delete_flag',
-        'user_id',
     ];
 
-    public function answer()
-    {
-        return $this->hasOne(Answer::class, 'id', 'correct_answer_no');
-    }
-
-    // public function answer() {
-    //     return $this->belongsTo(Answer::class);
-    // }
         
     public function category() {
         return $this->belongsTo(Category::class);

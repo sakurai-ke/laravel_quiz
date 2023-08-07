@@ -4,7 +4,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\QuizController;
-use App\Http\Controllers\Api\AnswerController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -32,6 +31,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // Answerテーブルから選択肢と正解情報を取得
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/quizzes/{quizId}', [AnswerController::class, 'fetchChoicesAndCorrectAnswer']);
+    Route::get('/quizzes/{quizId}', [QuizController::class, 'fetchChoicesAndCorrectAnswer']);
     // Route::get('/quizzes/{quizId}', [AnswerController::class, 'getQuizById']); // この行を追加
 });

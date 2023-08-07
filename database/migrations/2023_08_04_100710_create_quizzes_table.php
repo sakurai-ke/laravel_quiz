@@ -13,11 +13,16 @@ return new class extends Migration
     {
         Schema::create('quizzes', function (Blueprint $table) {
             $table->id();
-            $table->text('title');
-            $table->string('image_src')->nullable();
             $table->foreignId('user_id');
-            $table->foreignId('answer_id');
             $table->foreignId('category_id');
+            $table->text('title');
+            $table->string('correct_answer');
+            $table->string('wrong_answer_1');
+            $table->string('wrong_answer_2');
+            $table->string('wrong_answer_3');
+            $table->text('hint');
+            $table->text('explain');
+            $table->string('image_src')->nullable();
             $table->boolean('delete_flag');
             $table->timestamps();
         });

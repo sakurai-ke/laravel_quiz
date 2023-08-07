@@ -21,14 +21,17 @@ class QuizFactory extends Factory
     public function definition()
     {
         $userId = User::inRandomOrder()->value('id');
-        $answerId = Answer::inRandomOrder()->value('id');
         $categoryId = Category::inRandomOrder()->value('id');
         return [
             'title' => $this->faker->sentence,
             'user_id' => $userId,
-            'answer_id' => $answerId,
+            'correct_answer' => $this->faker->word,
+            'wrong_answer_1' => $this->faker->word,
+            'wrong_answer_2' => $this->faker->word,
+            'wrong_answer_3' => $this->faker->word,
+            'hint' => $this->faker->sentence,
+            'explain' => $this->faker->sentence,
             'category_id' => $categoryId,
-            'category_id' => $this->faker->randomDigit,
             'image_src' => $this->faker->imageUrl(400, 300),
             'delete_flag' => $this->faker->numberBetween(0, 1),
         ];
