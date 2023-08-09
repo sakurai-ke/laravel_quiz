@@ -9,7 +9,7 @@ import Quiz from './Quiz.vue'; // Quiz.vue のインポート
 
 // カテゴリー名の選択肢
 const selectedCategory = ref(null);
-const selectedNumQuestions = ref(10); // 問題数の選択肢（初期値を10に設定）
+const selectedNumQuestions = ref(5); // 問題数の選択肢（初期値を10に設定）
 const categories = ref([]);
 const isQuizStarted = ref(false); // クイズ開始する際にtrueに切り替える
 const currentQuiz = ref({
