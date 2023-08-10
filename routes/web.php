@@ -5,6 +5,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\QuizController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,6 +17,12 @@ use App\Http\Controllers\Api\CategoryController;
 | contains the "web" middleware group. Now create something great!
 |
 */
+
+
+Route::get('/result', [QuizController::class, 'show'])->name('quiz.result');
+
+
+
 
 Route::get('/top', [CategoryController::class, 'index'])->name('top')
 ->middleware(['auth', 'verified']);

@@ -1,8 +1,10 @@
 <script setup>
 // import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head } from '@inertiajs/vue3';
-import { ref, onMounted, defineProps } from 'vue';
+import { Head, Link } from '@inertiajs/vue3';
+import { ref, onMounted, defineProps, nextTick } from 'vue';
 import axios from 'axios';
+import Result from './Result.vue'; // Result コンポーネントをインポート
+
 // import FlashMessage from '@/Components/FlashMessage.vue';
 
 // 親コンポーネントから渡されるプロパティを定義
@@ -32,6 +34,11 @@ let currentQuizIndex = 0;
 let shuffledQuizList = [];
 
 const quizData = ref(props.quizData); // Create a reactive variable
+
+const quizState = ref(''); // 初期値は空文字列
+
+// 結果画面を表示するためのフラグ
+const showResultComponent = ref(false);
 
 // 初回にクイズデータを取得してシャッフル
 onMounted(() => {
@@ -73,7 +80,7 @@ async function fetchAndShuffleQuizzes() {
     const nextQuizzes = response.data;
     console.log('nextQuizzes', nextQuizzes);
     if (nextQuizzes.length > 0) {
-      // クイズリストをシャッフル
+      // クイズリストをシャッフルしてshuffledQuizListに代入
       shuffledQuizList = shuffleQuizList(nextQuizzes); 
       console.log('shuffledQuizListの値:', shuffledQuizList);
       // 新しいセットのクイズが取得されるたびにクイズのindexをリセット
@@ -111,7 +118,7 @@ function presentRandomQuiz() {
   }
 }
 
-// dgsdっgfdgdfっgfdg
+// gdfhgdfgdsdfdsg
 
 // 「回答」ボタンがクリックされたときの処理
 async function submitAnswer() {
@@ -121,42 +128,48 @@ async function submitAnswer() {
   } else {
     quizEndMessage.value = `不正解！正解は「${newQuizData.correct_answer}」です。\n${newQuizData.explain}`;
   }
-  
-  showQuiz.value = false; // クイズの表示を隠す
-  currentQuizIndex++;
-  selectedChoice.value = '';  //ユーザが回答した選択肢をリセット
 
-  if (currentQuizIndex < shuffledQuizList.length) {
-    // 次のクイズを表示する前に showQuiz を true に戻す
-    showQuiz.value = true;
-    presentRandomQuiz();
-  } else {
-    showResult(); // 最後の問題が終了した場合に結果を表示
-  }
+  quizState.value = 'answer'; // 「回答」後の状態に変更
+
+  // メッセージ更新が完了したら次のクイズに進む
+  await nextTick();
+  presentRandomQuiz();
 }
 
-// 正答率を計算する関数
-function calculateTotalCorrectAnswers() {
-  const correctAnswers = quizList.value.filter(quiz => quiz.user_answer === quiz.correct_answer);
-  return (correctAnswers.length / quizList.value.length) * 100;
-}
+
+// fsdgsdgdsgsdfsdfdsfsdfsdfsdf
 
 // 「結果を見る」ボタンがクリックされた際の処理
-function showResult() {
+async function showResult() {
+  // 結果画面用のメッセージを作成
   const totalQuestions = shuffledQuizList.length;
+  // 　user_answer（ユーザが選択した回答）がcorrect_answer（正解の回答）と一致するクイズだけを抽出する
   const correctAnswers = shuffledQuizList.filter(quiz => quiz.user_answer === quiz.correct_answer);
   const correctPercentage = (correctAnswers.length / totalQuestions) * 100;
-
   const resultMessage = `正答率: ${correctPercentage.toFixed(2)}% (${correctAnswers.length}/${totalQuestions})`;
 
-  quizEndMessage.value = resultMessage;
+  // クイズ結果メッセージを表示
+  quizEndMessage.value = 'お疲れ様です！クイズが終了しました！\n' + resultMessage;
+  
+  // クイズ表示を非表示にする
   showQuiz.value = false;
+
+  // 結果画面を表示するためのフラグをセット
+  showResult.value = true;
+
+  showResultComponent.value = true;
 }
 
 // 「次へ」ボタンがクリックされた際の処理
-function goToNextQuestion() {
+async function goToNextQuestion() {
+  // 前のクイズの情報をリセット
+  quizEndMessage.value = '';
+  selectedChoice.value = '';
+
   currentQuizIndex++;
   if (currentQuizIndex < shuffledQuizList.length) {
+    // 次のクイズを表示する前に showQuiz を true に戻す
+    showQuiz.value = true;
     presentRandomQuiz();
   } else {
     showResult(); // 最後の問題が終了した場合に結果を表示
@@ -167,31 +180,28 @@ function goToNextQuestion() {
 
 <template>
   <div class="w-full max-w-md mx-auto p-6 bg-white rounded-md shadow-md">
-    <div v-if="showQuiz">
-      <h2 class="text-xl font-semibold mb-4">{{ quizData.title }}</h2>
-      <ul class="space-y-2">
-        <li v-for="(choice, index) in shuffledChoices" :key="index">
-          <label class="flex items-center space-x-2 cursor-pointer">
-            <input type="radio" v-model="selectedChoice" :value="choice" class="text-blue-500 focus:ring-2 focus:ring-blue-300" />
-            <span class="text-gray-800">{{ choice }}</span>
-          </label>
-        </li>
-      </ul>
-      <!-- ユーザーが選択した回答が空（何も選んでいない）場合、ボタンを無効化 -->
-      <button @click="submitAnswer" :disabled="selectedChoice === ''" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none">
-        回答
+    <h2 class="text-xl font-semibold mb-4">{{ quizData.title }}</h2>
+    <ul class="space-y-2">
+      <li v-for="(choice, index) in shuffledChoices" :key="index">
+        <label class="flex items-center space-x-2 cursor-pointer">
+          <input type="radio" v-model="selectedChoice" :value="choice" class="text-blue-500 focus:ring-2 focus:ring-blue-300" />
+          <span class="text-gray-800">{{ choice }}</span>
+        </label>
+      </li>
+    </ul>
+    <button @click="submitAnswer" :disabled="selectedChoice === ''" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none">
+      回答
+    </button>
+    <div v-if="quizEndMessage !== ''">
+      <p v-if="quizEndMessage.startsWith('正解')" class="font-semibold">{{ quizEndMessage }}</p>
+      <p v-else>{{ quizEndMessage }}</p>
+      <button v-if="currentQuizIndex < shuffledQuizList.length - 1" @click="goToNextQuestion" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none">
+        次へ
       </button>
+      <Link v-else :href="route('quiz.result')" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none">
+        結果を見る
+      </Link>
     </div>
-        <!-- クイズが終了した後に表示される部分を制御 -->
-        <div v-else>
-        <!-- ...（結果表示部分） -->
-        <button v-if="currentQuizIndex < shuffledQuizList.length - 1" @click="goToNextQuestion" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none">
-          次へ
-        </button>
-        <button v-else class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none">
-          結果を見る
-        </button>
-        <p class="text-gray-600 mt-2">{{ quizEndMessage }}</p>
-    </div>
+    <Result v-if="showResultComponent" :resultMessage="quizEndMessage" />
   </div>
 </template>
