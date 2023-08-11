@@ -40,11 +40,19 @@ const quizState = ref(''); // 初期値は空文字列
 // 結果画面を表示するためのフラグ
 const showResultComponent = ref(false);
 
+// この変数を使用して「回答」ボタンの表示/非表示を制御
+const showAnswerButton = ref(true);
+const correctAnswers = []; // 正解したクイズのデータを格納するための配列
+
 // 初回にクイズデータを取得してシャッフル
 onMounted(() => {
   fetchAndShuffleQuizzes();
 });
 
+  // 各クイズデータの user_answer プロパティを空文字列にリセット
+  shuffledQuizList.forEach(quiz => {
+    quiz.user_answer = ''; // 初期値を空文字列に設定
+  });
 
 // クイズの選択肢をシャッフルする関数
 function shuffleChoices(choices) {
@@ -66,7 +74,7 @@ function shuffleQuizList(quizList) {
   return quizList;
 }
 
-//  クイズデータの取得とシャッフル
+// クイズデータの取得とシャッフル
 async function fetchAndShuffleQuizzes() {
   // 特定のカテゴリーのクイズデータを一括で取得
   try {
@@ -81,7 +89,13 @@ async function fetchAndShuffleQuizzes() {
     console.log('nextQuizzes', nextQuizzes);
     if (nextQuizzes.length > 0) {
       // クイズリストをシャッフルしてshuffledQuizListに代入
-      shuffledQuizList = shuffleQuizList(nextQuizzes); 
+      shuffledQuizList = shuffleQuizList(nextQuizzes);
+
+      // 各クイズデータの user_answer プロパティを空文字列にリセット
+      shuffledQuizList.forEach(quiz => {
+        quiz.user_answer = ''; // 初期値を空文字列に設定
+      });
+
       console.log('shuffledQuizListの値:', shuffledQuizList);
       // 新しいセットのクイズが取得されるたびにクイズのindexをリセット
       currentQuizIndex = 0; 
@@ -94,6 +108,7 @@ async function fetchAndShuffleQuizzes() {
     console.error('クイズの取得に失敗しました', error);
   }
 }
+
 
 
 // ランダムなクイズを出題
@@ -118,30 +133,34 @@ function presentRandomQuiz() {
   }
 }
 
-// gdfhgdfgdsdfdsg
-
 // 「回答」ボタンがクリックされたときの処理
 async function submitAnswer() {
   const newQuizData = shuffledQuizList[currentQuizIndex];
   if (selectedChoice.value === newQuizData.correct_answer) {
     quizEndMessage.value = `正解！\n${newQuizData.explain}`;
+    newQuizData.user_answer = selectedChoice.value; // user_answer を更新
+    correctAnswers.push(newQuizData); // 正解したクイズを correctAnswers 配列に追加
   } else {
     quizEndMessage.value = `不正解！正解は「${newQuizData.correct_answer}」です。\n${newQuizData.explain}`;
+    newQuizData.user_answer = selectedChoice.value; // user_answer を更新
   }
 
   quizState.value = 'answer'; // 「回答」後の状態に変更
 
   // メッセージ更新が完了したら次のクイズに進む
   await nextTick();
-  presentRandomQuiz();
+  
+  // 「回答」ボタンを非表示にする
+  showAnswerButton.value = false;
 }
+
 
 
 // fsdgsdgdsgsdfsdfdsfsdfsdfsdf
 
 // 「結果を見る」ボタンがクリックされた際の処理
 async function showResult() {
-  // 結果画面用のメッセージを作成
+  // シャッフルされたクイズリストの要素数を代入
   const totalQuestions = shuffledQuizList.length;
   // 　user_answer（ユーザが選択した回答）がcorrect_answer（正解の回答）と一致するクイズだけを抽出する
   const correctAnswers = shuffledQuizList.filter(quiz => quiz.user_answer === quiz.correct_answer);
@@ -171,10 +190,21 @@ async function goToNextQuestion() {
     // 次のクイズを表示する前に showQuiz を true に戻す
     showQuiz.value = true;
     presentRandomQuiz();
+    // 「回答」ボタンを再度表示する
+    showAnswerButton.value = true;
   } else {
     showResult(); // 最後の問題が終了した場合に結果を表示
   }
 }
+
+// 選択肢を選択する関数
+function selectChoice(choice) {
+  // 「回答」ボタンが表示されている場合のみ選択を更新
+  if (showAnswerButton.value) {
+    selectedChoice.value = choice;
+  }
+}
+// ふぁlkfごgfdgっhsflgfdgfdhhfghghfgh
 
 </script>
 
@@ -183,25 +213,36 @@ async function goToNextQuestion() {
     <h2 class="text-xl font-semibold mb-4">{{ quizData.title }}</h2>
     <ul class="space-y-2">
       <li v-for="(choice, index) in shuffledChoices" :key="index">
-        <label class="flex items-center space-x-2 cursor-pointer">
-          <input type="radio" v-model="selectedChoice" :value="choice" class="text-blue-500 focus:ring-2 focus:ring-blue-300" />
-          <span class="text-gray-800">{{ choice }}</span>
+        <label class="block cursor-pointer">
+          <input type="radio" v-model="selectedChoice" :value="choice" class="hidden" />
+          <button
+            :class="{
+              'bg-blue-500 hover:bg-blue-600 text-white': selectedChoice === choice,
+              'bg-gray-200 hover:bg-gray-300 text-gray-700': selectedChoice !== choice,
+            }"
+            @click="selectChoice(choice)"
+            class="w-full py-2 px-4 rounded-md transition duration-300"
+          >
+            {{ choice }}
+          </button>
         </label>
       </li>
     </ul>
-    <button @click="submitAnswer" :disabled="selectedChoice === ''" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none">
+    <!-- "回答" ボタンを表示 -->
+    <button v-if="showAnswerButton" @click="submitAnswer" :disabled="selectedChoice === ''" class="mt-4 w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300">
       回答
     </button>
     <div v-if="quizEndMessage !== ''">
       <p v-if="quizEndMessage.startsWith('正解')" class="font-semibold">{{ quizEndMessage }}</p>
       <p v-else>{{ quizEndMessage }}</p>
-      <button v-if="currentQuizIndex < shuffledQuizList.length - 1" @click="goToNextQuestion" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none">
+      <button v-if="currentQuizIndex < shuffledQuizList.length - 1" @click="goToNextQuestion" class="mt-4 w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300">
         次へ
       </button>
-      <Link v-else :href="route('quiz.result')" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none">
+      <Link v-else :href="route('quiz.result', { correctPercentage })" class="mt-4 w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300">
         結果を見る
       </Link>
     </div>
+    <!-- 「結果を見る」をクリックしたタイミングで -->
     <Result v-if="showResultComponent" :resultMessage="quizEndMessage" />
   </div>
 </template>

@@ -110,10 +110,11 @@ class QuizController extends Controller
     
         // 正答率に基づいてメッセージを作成
         $resultMessage = "正答率: " . number_format($correctPercentage, 2) . "%";
-    
+
         // ビューにデータを渡す
         return inertia('Result', [
             'resultMessage' => $resultMessage,
+            'correctPercentage' => $correctPercentage, // 正答率の数値も渡す
         ]);
     }
     
