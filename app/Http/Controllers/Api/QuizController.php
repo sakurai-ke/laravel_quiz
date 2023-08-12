@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use App\Models\Quiz;
 
 class QuizController extends Controller
@@ -81,42 +82,18 @@ class QuizController extends Controller
      * Display the specified resource.
      */
     public function show(Request $request)
-    {
-        // Quiz.vueからのリクエストに含まれるデータを取得
-        $quizList = json_decode($request->getContent(), true);
-    
-        // $quizListがnullの場合や配列でない場合のデフォルト値を設定
-        if (!is_array($quizList)) {
-            $quizList = [];
-        }
-    
-        // ここで必要なデータを計算してビューに渡す
-        $totalQuestions = count($quizList);
-        $correctAnswers = 0;
-    
-        // クイズリストの各クイズごとに正答かどうかを判定
-        foreach ($quizList as $quiz) {
-            if ($quiz['selectedChoice'] === $quiz['correct_answer']) {
-                $correctAnswers++;
-            }
-        }
-    
-        // 正答率を計算
-        if ($totalQuestions > 0) {
-            $correctPercentage = ($correctAnswers / $totalQuestions) * 100;
-        } else {
-            $correctPercentage = 0; // クイズが存在しない場合は正答率をゼロに設定
-        }
-    
-        // 正答率に基づいてメッセージを作成
-        $resultMessage = "正答率: " . number_format($correctPercentage, 2) . "%";
-
-        // ビューにデータを渡す
-        return inertia('Result', [
-            'resultMessage' => $resultMessage,
-            'correctPercentage' => $correctPercentage, // 正答率の数値も渡す
+    { 
+        $correctPercentage = (float)$request->query('correctPercentage'); // URLのクエリパラメータから値を取得
+        return Inertia::render('Result', [
+            'correctPercentage' => $correctPercentage,
         ]);
     }
+    
+    
+    
+
+    
+    
     
     
     

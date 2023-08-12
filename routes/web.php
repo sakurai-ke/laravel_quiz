@@ -18,10 +18,9 @@ use App\Http\Controllers\Api\QuizController;
 |
 */
 
-
-Route::get('/result', [QuizController::class, 'show'])->name('quiz.result');
-
-
+Route::get('/result', [QuizController::class, 'show'])
+    ->name('quiz.result')
+    ->middleware(['auth', 'verified']);
 
 
 Route::get('/top', [CategoryController::class, 'index'])->name('top')
