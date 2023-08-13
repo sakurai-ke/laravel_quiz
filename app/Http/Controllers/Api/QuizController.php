@@ -84,7 +84,7 @@ class QuizController extends Controller
     public function show(Request $request)
     { 
         $correctPercentage = (float)$request->query('correctPercentage'); // URLのクエリパラメータから値を取得
-        return Inertia::render('Result', [
+        return Inertia::render('Top/Result', [
             'correctPercentage' => $correctPercentage,
         ]);
     }

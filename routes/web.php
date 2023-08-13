@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\QuizController;
+use App\Http\Controllers\RecordController;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,6 +18,13 @@ use App\Http\Controllers\Api\QuizController;
 | contains the "web" middleware group. Now create something great!
 |
 */
+
+
+// 以下のルートを追加
+Route::get('/record', [RecordController::class, 'show'])
+    ->name('record')
+    ->middleware(['auth', 'verified']);
+
 
 Route::get('/result', [QuizController::class, 'show'])
     ->name('quiz.result')

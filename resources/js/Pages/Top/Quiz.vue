@@ -19,7 +19,7 @@ console.log('selectedNumQuestionsの値:', props.selectedNumQuestions);
 
 // ユーザが選択した回答を保持するためのリアクティブな変数
 // ラジオボタンなどのフォームコントロールの v-model ディレクティブにバインドされ、ユーザが選択した回答が保持
-const selectedChoice = ref('null');
+const selectedChoice = ref(null);
 // シャッフルされたクイズの選択肢を保持する
 const shuffledChoices = ref([]);
 
@@ -149,6 +149,11 @@ async function submitAnswer() {
     newQuizData.user_answer = selectedChoice.value;
     // ユーザーがクイズに正解した場合に、その正解したクイズのデータを correctAnswers 配列に追加
     correctAnswers.push(newQuizData); 
+    console.log('correctAnswers:', correctAnswers);
+      // 正答率を計算する
+  const totalQuestions = shuffledQuizList.length;
+  correctPercentage.value = (correctAnswers.length / totalQuestions) * 100;
+
   } else {
     quizEndMessage.value = `不正解！正解は「${newQuizData.correct_answer}」です。\n${newQuizData.explain}`;
     newQuizData.user_answer = selectedChoice.value; // user_answer を更新
@@ -164,11 +169,14 @@ async function submitAnswer() {
 }
 
 // 正答率を計算する computed プロパティ
-const computedCorrectPercentage = computed(() => {
-  const totalQuestions = shuffledQuizList.length;
-  const correctAnswersCount = correctAnswers.length; // 正解したクイズの数を取得
-  return (correctAnswersCount / totalQuestions) * 100;
-});
+// const computedCorrectPercentage = computed(() => {
+//   const totalQuestions = shuffledQuizList.length;
+//   const correctAnswersCount = correctAnswers.value.length; // 正解したクイズの数を取得
+//   console.log('correctAnswers.length:', correctAnswers.value.length);
+//   console.log('totalQuestions:', totalQuestions);
+//   console.log('correctAnswersCount:', correctAnswersCount);
+//   return (correctAnswersCount / totalQuestions) * 100;
+// });
 
 // 「結果を見る」ボタンがクリックされた際の処理
 async function showResult() {
@@ -190,8 +198,13 @@ async function goToNextQuestion() {
   // 前のクイズの情報をリセット
   quizEndMessage.value = '';
   selectedChoice.value = '';
-
   currentQuizIndex++;
+
+  const totalQuestions = shuffledQuizList.length;
+  const correctAnswersCount = correctAnswers.length; // 正解したクイズの数を取得
+  console.log('correctAnswers.length:', correctAnswers.length);
+  console.log('totalQuestions:', totalQuestions);
+  console.log('correctAnswersCount:', correctAnswersCount);
 
   if (currentQuizIndex < shuffledQuizList.length) {
     // 次のクイズを表示する前に showQuiz を true に戻す
@@ -200,7 +213,8 @@ async function goToNextQuestion() {
     // 「回答」ボタンを再度表示する
     showAnswerButton.value = true;
   // 正答率を更新せずに computedCorrectPercentage の値にアクセス
-  correctPercentage.value = computedCorrectPercentage;
+
+  correctPercentage.value = (correctAnswersCount / totalQuestions) * 100;
   } else {
     showResult(); // 最後の問題が終了した場合に結果を表示
   }

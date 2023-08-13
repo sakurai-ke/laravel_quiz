@@ -153,9 +153,11 @@ async function startQuiz() {
                 </button>
             </div>
     
-            <!-- クイズが開始された場合、クイズ出題画面を表示 -->
             <div v-else class="w-full max-w-md">
+                <!-- クイズが開始された場合、クイズ出題画面を表示 -->
                 <Quiz :quizData="currentQuiz" :selectedNumQuestions="selectedNumQuestions" />
+                <!-- 記録画面にクイズ情報を渡す。 -->
+                <Record :quizData="currentQuiz" :selectedNumQuestions="selectedNumQuestions" />
             </div>
         </div>
     </AuthenticatedLayout>

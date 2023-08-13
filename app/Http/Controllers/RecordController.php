@@ -1,30 +1,18 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Category;
 use Inertia\Inertia;
 
-class CategoryController extends Controller
+class RecordController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-            $categories = Category::select('id', 'name')->get();
-            // Inertia::share('categories', $categories); // カテゴリーデータを共有
-            // dd($categories);
-            // return Inertia::render('Top'); // Top コンポーネントを表示
-            // return response()->json($categories);
-            return Inertia::render('Top/Top');
-    }
-    public function category()
-    {
-        $categories = Category::select('id', 'name')->get();
-        return response()->json($categories);
+        //
     }
 
     /**
@@ -46,9 +34,12 @@ class CategoryController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
-    {
-        //
+    public function show(Request $request)
+    { 
+        $correctPercentage = (float)$request->query('correctPercentage'); // URLのクエリパラメータから値を取得
+        return Inertia::render('Record/Record', [
+            'correctPercentage' => $correctPercentage,
+        ]);
     }
 
     /**
