@@ -4,6 +4,7 @@ import { Head, Link } from '@inertiajs/vue3';
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import Quiz from './Quiz.vue'; // Quiz.vue のインポート
+import Record from '@/Pages/Record/Record.vue'; // Record.vue のインポート
 
 // import FlashMessage from '@/Components/FlashMessage.vue';
 
@@ -121,6 +122,10 @@ async function startQuiz() {
         console.error('クイズ開始時にエラーが発生しました', error);
     }
 }
+
+
+
+
 </script>
 
 <template>
@@ -155,9 +160,7 @@ async function startQuiz() {
     
             <div v-else class="w-full max-w-md">
                 <!-- クイズが開始された場合、クイズ出題画面を表示 -->
-                <Quiz :quizData="currentQuiz" :selectedNumQuestions="selectedNumQuestions" />
-                <!-- 記録画面にクイズ情報を渡す。 -->
-                <Record :quizData="currentQuiz" :selectedNumQuestions="selectedNumQuestions" />
+                <Quiz :quizData="currentQuiz" :selectedNumQuestions="selectedNumQuestions"/>
             </div>
         </div>
     </AuthenticatedLayout>

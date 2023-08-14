@@ -1,7 +1,7 @@
 <script setup>
 // import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
-import { ref, onMounted, defineProps, nextTick } from 'vue';
+import { ref, onMounted, defineProps, defineEmits, nextTick } from 'vue';
 import axios from 'axios';
 import Result from './Result.vue'; // Result コンポーネントをインポート
 import { computed } from 'vue';
@@ -36,11 +36,6 @@ let currentQuizIndex = 0;
 let shuffledQuizList = [];
 
 const quizData = ref(props.quizData); // Create a reactive variable
-
-// const quizState = ref(''); // 初期値は空文字列
-
-// 結果画面を表示するためのフラグ
-const showResultComponent = ref(false);
 
 // この変数を使用して「回答」ボタンの表示/非表示を制御
 const showAnswerButton = ref(true);
@@ -180,17 +175,26 @@ async function submitAnswer() {
 
 // 「結果を見る」ボタンがクリックされた際の処理
 async function showResult() {
-  // const totalQuestions = shuffledQuizList.length;
-  // const correctAnswersCount = correctAnswers.length; // 正解したクイズの数を取得
-
-  // // 正答率を計算
-  // correctPercentage.value = (correctAnswersCount / totalQuestions) * 100;
-  // console.log('correctPercentage.value', correctPercentage.value);
-  // 結果画面を表示するためのフラグをセット
-  showQuiz.value = false;
-  showResultComponent.value = true;
+    const result = {
+        // categoryInfo: quizData.category_info,
+        numQuestions: props.selectedNumQuestions,
+        correctCount: correctAnswers.length,
+        correctPercentage: correctPercentage.value,
+        quizzes: shuffledQuizList,
+        selectedChoice: selectedChoice.value,
+        quizDate: new Date().toLocaleDateString(),
+    };
+    quizCompleted(result);
 }
 
+// emitオプションを宣言
+const emit = defineEmits(['quizCompleted']);
+
+// showResult関数が実行されるとquizCompleted関数が実行（クイズが完了した際に呼ばれる）
+const quizCompleted = (result) => {
+    // resultにクイズの結果データを渡す
+    emit('quizCompleted', result);
+}
 
 // 「次へ」ボタンがクリックされた際の処理
 async function goToNextQuestion() {
@@ -230,6 +234,7 @@ function selectChoice(choice) {
 }
 // ふぁlkfごgfdgっhsffjhfkjshfksdhfkjhdsgdfgfgdfg
 
+
 </script>
 
 <template>
@@ -260,10 +265,10 @@ function selectChoice(choice) {
     <div v-if="quizEndMessage !== ''">
       <p v-if="quizEndMessage.startsWith('正解')" class="font-semibold">{{ quizEndMessage }}</p>
       <p v-else>{{ quizEndMessage }}</p>
-      <button v-if="currentQuizIndex < shuffledQuizList.length - 1" @click="goToNextQuestion" class="mt-4 w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300">
+      <button v-if="currentQuizIndex < shuffledQuizList.length - 1" @click="goToNextQuestion" @quizCompleted="quizCompleted" class="mt-4 w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300">
         次へ
       </button>
-      <Link v-else :href="route('quiz.result', { correctPercentage: correctPercentage })" class="mt-4 w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300">
+      <Link v-else :href="route('quiz.result', { correctPercentage: correctPercentage })" @click="showResult" class="mt-4 w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300">
         結果を見る
       </Link>
 
