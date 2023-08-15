@@ -1,9 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Models\Record;
 
 class RecordController extends Controller
 {
@@ -28,7 +30,16 @@ class RecordController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // $requestから必要な情報を取得
+        $data = $request->all();
+    
+        // Recordモデルを使用してクイズ結果を保存
+        $quizResult = Record::create([
+            'user_id' => auth()->user()->id, // ユーザーID
+            // 必要な情報を他にも追加
+        ]);
+    
+        return response()->json(['message' => 'Result saved successfully']);
     }
 
     /**

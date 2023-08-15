@@ -1,10 +1,12 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted  } from 'vue';
 import axios from 'axios';
 import Quiz from './Quiz.vue'; // Quiz.vue のインポート
-import Record from '@/Pages/Record/Record.vue'; // Record.vue のインポート
+import mitt from 'mitt';
+
+
 
 // import FlashMessage from '@/Components/FlashMessage.vue';
 
@@ -123,8 +125,40 @@ async function startQuiz() {
     }
 }
 
+// イベントバスオブジェクトを作成
+const eventBus = mitt();
+const quizResults = ref([]);
+
+// クイズ終了時の処理
+const handleQuizCompleted = (result) => {
+    // 受け取った結果データをリストに追加
+    quizResults.value.push(result);
+    console.log('quizCompleted event emitted with result:', result);
+    // quizCompletedイベント（クイズが終了したことを通知するイベント）を送信し、その関連データとしてresultを渡す
+    // eventBus.emit('quizCompleted', { result, category: selectedCategory.value, numQuestions: selectedNumQuestions.value });
+}
 
 
+
+// マウント時にイベントリスナーを追加
+onMounted(() => {
+    // イベントリスナーが未登録の場合のみ登録する
+        // eventBusというイベントバスを介して「quizCompleted」というイベントをリッスンする
+        // quizCompletedイベント（クイズが終了したことを通知するイベント）を受け取るたびにhandleQuizCompleted関数を実行する 
+    eventBus.on('quizCompleted', handleQuizCompleted);
+    console.log('Top.vue - quizCompleted event listener added');
+
+});
+
+
+// もし eventBus.off を使用せずにリスナーを削除しない場合、コンポーネントがアンマウントされてもリスナーが残り、
+// 不要なイベント処理が続行される可能性があるため
+// アンマウント時にイベントリスナーを削除
+onUnmounted(() => {
+    // eventBusというイベントバスから「quizCompleted」というイベントのリスナーを削除する
+    eventBus.off('quizCompleted', handleQuizCompleted);
+    console.log('Top.vue - quizCompleted event listener removed');
+});
 
 </script>
 
@@ -160,7 +194,7 @@ async function startQuiz() {
     
             <div v-else class="w-full max-w-md">
                 <!-- クイズが開始された場合、クイズ出題画面を表示 -->
-                <Quiz :quizData="currentQuiz" :selectedNumQuestions="selectedNumQuestions"/>
+                <Quiz :quizData="currentQuiz" :selectedNumQuestions="selectedNumQuestions" @quizCompleted="handleQuizCompleted" />
             </div>
         </div>
     </AuthenticatedLayout>
