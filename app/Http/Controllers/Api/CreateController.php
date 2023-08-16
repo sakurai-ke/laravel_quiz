@@ -95,10 +95,21 @@ public function getUserQuizzes()
     /**
      * Show the form for editing the specified resource.
      */
+    public function editUserQuizzes(string $id)
+    {
+        try {
+            $quiz = Quiz::findOrFail($id);
+            return response()->json(['quiz' => $quiz]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'クイズの詳細情報の取得に失敗しました'], 500);
+        }
+    }
+    
+
     public function edit(string $id)
     {
         // Edit.vueコンポーネントを表示
-        return Inertia::render('Create/Edit', ['quizId' => $id]);
+        return Inertia::render('Create/Edit');
     }
 
     /**

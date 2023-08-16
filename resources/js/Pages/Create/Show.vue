@@ -15,7 +15,7 @@ onMounted(() => {
 
 async function getQuizDetails(quizId) {
     try {
-        const response = await axios.get(`/api/getQuizzes/${quizId}`);
+        const response = await axios.get(`/api/showQuizzes/${quizId}`);
         quiz.value = response.data.quiz;
     } catch (error) {
         console.error('クイズの詳細情報の取得に失敗しました', error);
@@ -26,10 +26,9 @@ async function getQuizDetails(quizId) {
 <template>
     <div class="bg-gray-100 py-8">
         <div class="max-w-3xl mx-auto px-4">
-        <h2 class="text-2xl font-semibold mb-4">{{ quiz.title }}</h2>
             <div class="bg-white rounded shadow-md p-4">
                 <!-- クイズの詳細情報を表示 -->
-                <p><strong>問題文:</strong> {{ quiz.question }}</p>
+                <p><strong>問題文:</strong> {{ quiz.title }}</p>
                 <p><strong>正解:</strong> {{ quiz.correct_answer }}</p>
                 <p><strong>選択肢1:</strong> {{ quiz.wrong_answer_1 }}</p>
                 <p><strong>選択肢2:</strong> {{ quiz.wrong_answer_2 }}</p>

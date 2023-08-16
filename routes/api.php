@@ -29,8 +29,8 @@ use App\Http\Controllers\Api\CreateController;
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/getQuizzes', [CreateController::class, 'getUserQuizzes']); // クイズ一覧の取得
-    Route::get('/getQuizzes/{id}', [CreateController::class, 'showUserQuizzes']); // クイズ詳細の取得
-    Route::get('/getQuizzes/{id}/edit', [CreateController::class, 'edit']); // 編集画面表示
+    Route::get('/showQuizzes/{id}', [CreateController::class, 'showUserQuizzes']); // クイズ詳細の取得
+    Route::get('/editQuizzes/{id}', [CreateController::class, 'editUserQuizzes']); // 編集画面表示
     Route::put('/updateQuizzes/{id}', [CreateController::class, 'update']); // クイズ更新処理
 });
 
