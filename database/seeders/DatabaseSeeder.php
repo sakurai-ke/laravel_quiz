@@ -18,7 +18,7 @@ class DatabaseSeeder extends Seeder
             // CategorySeeder::class,
             ]);
 
-        \App\Models\Quiz::factory(1000)->create();
+        // \App\Models\Quiz::factory(1000)->create();
         // \App\Models\User::factory(10)->create();
 
         // \App\Models\User::factory()->create([

@@ -7,6 +7,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\QuizController;
 use App\Http\Controllers\Api\RecordController;
+use App\Http\Controllers\Api\CreateController; 
 
 /*
 |--------------------------------------------------------------------------
@@ -20,12 +21,24 @@ use App\Http\Controllers\Api\RecordController;
 */
 
 
+Route::middleware(['auth'])->group(function () {
+    Route::get('/list', [CreateController::class, 'index'])->name('list');
+    Route::get('/list/{id}', [CreateController::class, 'show'])->name('show');
+    Route::get('/list/{id}/edit', [CreateController::class, 'edit'])->name('edit');
+});
+
+// クイズ作成ページの表示
+Route::get('/create', [CreateController::class, 'create'])->name('create');
+
+// クイズ作成フォームの送信処理
+Route::post('/create', [CreateController::class, 'createQuiz']);
+
 // 以下のルートを追加
 Route::get('/record', [RecordController::class, 'show'])
     ->name('record')
     ->middleware(['auth', 'verified']);
 
-
+// クイズの結果表示用ページ
 Route::get('/result', [QuizController::class, 'show'])
     ->name('quiz.result')
     ->middleware(['auth', 'verified']);

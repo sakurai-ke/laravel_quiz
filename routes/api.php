@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\QuizController;
 use App\Http\Controllers\Api\RecordController;
+use App\Http\Controllers\Api\CreateController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -16,6 +17,26 @@ use App\Http\Controllers\Api\RecordController;
 |
 */
 
+// クイズ一覧の取得
+// Route::middleware('auth:sanctum')->group(function () {
+//     Route::get('/getQuizzes', [CreateController::class, 'getUserQuizzes']);
+// });
+
+// // クイズ詳細の取得
+// Route::middleware('auth:sanctum')->group(function () {
+//     Route::get('/getQuizzes/{id}', [CreateController::class, 'showUserQuizzes']);
+// });
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/getQuizzes', [CreateController::class, 'getUserQuizzes']); // クイズ一覧の取得
+    Route::get('/getQuizzes/{id}', [CreateController::class, 'showUserQuizzes']); // クイズ詳細の取得
+    Route::get('/getQuizzes/{id}/edit', [CreateController::class, 'edit']); // 編集画面表示
+    Route::put('/updateQuizzes/{id}', [CreateController::class, 'update']); // クイズ更新処理
+});
+
+
+// クイズ作成APIエンドポイント
+Route::post('/makeQuizzes', [CreateController::class, 'createQuiz']);
 
 Route::post('/save-quiz-result', [RecordController::class, 'store']);
 

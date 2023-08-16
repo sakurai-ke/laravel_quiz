@@ -5,9 +5,6 @@ import { ref, onMounted, onUnmounted  } from 'vue';
 import axios from 'axios';
 import Quiz from './Quiz.vue'; // Quiz.vue のインポート
 import mitt from 'mitt';
-
-
-
 // import FlashMessage from '@/Components/FlashMessage.vue';
 
 // カテゴリー名の選択肢
@@ -130,13 +127,15 @@ const eventBus = mitt();
 const quizResults = ref([]);
 
 // クイズ終了時の処理
-const handleQuizCompleted = (result) => {
-    // 受け取った結果データをリストに追加
-    quizResults.value.push(result);
-    console.log('quizCompleted event emitted with result:', result);
-    // quizCompletedイベント（クイズが終了したことを通知するイベント）を送信し、その関連データとしてresultを渡す
-    // eventBus.emit('quizCompleted', { result, category: selectedCategory.value, numQuestions: selectedNumQuestions.value });
-}
+const handleQuizCompleted = ({ result, category, numQuestions }) => {
+  // quizResultsに追加する部分は変更なし
+  // ...
+  eventBus.emit('quizCompleted', {
+    result,
+    category,
+    numQuestions,
+  });
+};
 
 
 

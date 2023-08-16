@@ -20,10 +20,10 @@ return new class extends Migration
             $table->string('wrong_answer_1');
             $table->string('wrong_answer_2');
             $table->string('wrong_answer_3');
-            $table->text('hint');
+            $table->text('hint')->nullable();
             $table->text('explain');
             $table->string('image_src')->nullable();
-            $table->boolean('delete_flag');
+            $table->boolean('delete_flag')->nullable();
             $table->timestamps();
         });
     }
