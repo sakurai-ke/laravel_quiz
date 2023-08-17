@@ -6,8 +6,8 @@ const selectedCategory = ref('');
 const categories = ref([]);
 
 const quizData = ref({
-    title: '',
     category_id: null,
+    title: '',
     correct_answer: '',
     wrong_answer_1: '',
     wrong_answer_2: '',
@@ -15,6 +15,7 @@ const quizData = ref({
     explain: '',
     // 他のプロパティも同様に追加
 });
+
 
 // コンポーネントがマウントされた際にカテゴリーデータを取得
 onMounted(() => {
@@ -38,6 +39,12 @@ async function fetchCategories() {
     }
 }
 
+// フラッシュメッセージを表示する関数
+function flashMessage(message, type) {
+    const alert = { message, type };
+    // グローバルなフラッシュメッセージを設定
+    window.flashMessage = alert;
+}
 
 // クイズ作成フォームを送信する関数
 async function submitForm() {
@@ -48,6 +55,21 @@ async function submitForm() {
         const response = await axios.post('/api/makeQuizzes', quizData.value);
         console.log('クイズ作成成功:', response.data);
         // データ送信成功したらフォームをリセット
+        
+        // リダイレクト先のURLを取得
+        // const redirectUrl = response.data.redirect_url;
+
+        // クイズ作成成功メッセージがフラッシュされている場合、トップページへリダイレクト
+        if (response.data.message) {
+            // フラッシュメッセージを表示
+            const message = 'クイズが作成されました';
+            const type = 'success';
+            flashMessage(message, type);
+
+            // トップページへリダイレクト
+            window.location.href = '/top';
+        }
+
         quizData.value = {
             title: '',
             category_id: null,
@@ -57,6 +79,7 @@ async function submitForm() {
             wrong_answer_3: '',
             explain: '',
         };
+        
 } catch (error) {
         console.error('クイズ作成エラー:', error);
 

@@ -32,6 +32,9 @@ class CreateController extends Controller
                 'explain' => $quizData['explain'],
             ]);
 
+            // 保存が成功したことをセッションに格納
+            session()->flash('quiz_created', true);
+
             // 保存が成功したことを返すJSONレスポンスを返す
             return response()->json(['message' => 'クイズが作成されました'], 201);
         }
@@ -65,13 +68,6 @@ public function getUserQuizzes()
         return Inertia::render('Create/Create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
 
     /**
      * Display the specified resource.
@@ -115,10 +111,39 @@ public function getUserQuizzes()
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function updateUserQuizzes(Request $request, string $id)
     {
-        //
+        try {
+            $quiz = Quiz::findOrFail($id);
+    
+            // リクエストからクイズデータを取得
+            $quizData = $request->all();
+    
+            // クイズ情報を更新
+            $quiz->update([
+                'category_id' => $quizData['category_id'],
+                'title' => $quizData['title'],
+                'correct_answer' => $quizData['correct_answer'],
+                'wrong_answer_1' => $quizData['wrong_answer_1'],
+                'wrong_answer_2' => $quizData['wrong_answer_2'],
+                'wrong_answer_3' => $quizData['wrong_answer_3'],
+                'explain' => $quizData['explain'],
+            ]);
+    
+            // 更新が成功したことを返すJSONレスポンスを返す
+            return response()->json(['message' => 'クイズが更新されました'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'クイズの更新に失敗しました'], 500);
+        }
     }
+    
+    public function flashMessage(Request $request)
+{
+    $flashMessage = $request->session()->get('flashMessage');
+    return response()->json(['flashMessage' => $flashMessage]);
+}
+
+
 
     /**
      * Remove the specified resource from storage.

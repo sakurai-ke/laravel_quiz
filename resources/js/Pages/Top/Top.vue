@@ -32,7 +32,7 @@ const currentQuiz = ref({
 async function fetchCategories() {
     try {
     const response = await axios.get('/api/categories');
-    console.log('Response:', response.data); // 追加
+    console.log('Response:', response.data);
     categories.value = response.data;
     } catch (error) {
         console.error('カテゴリーの取得に失敗しました', error);
@@ -42,6 +42,35 @@ async function fetchCategories() {
 // コンポーネントがマウントされたときにカテゴリーデータを取得
 onMounted(() => {
     fetchCategories();
+
+    fetchFlashMessage();
+
+        // イベントリスナーが未登録の場合のみ登録する
+        // eventBusというイベントバスを介して「quizCompleted」というイベントをリッスンする
+        // quizCompletedイベント（クイズが終了したことを通知するイベント）を受け取るたびにhandleQuizCompleted関数を実行する 
+    eventBus.on('quizCompleted', handleQuizCompleted);
+    console.log('Top.vue - quizCompleted event listener added');
+});
+
+// サーバーからフラッシュメッセージを取得
+async function fetchFlashMessage() {
+    try {
+        console.log('Fetching flash message...');
+        const response = await axios.get('/api/flash-message'); // フラッシュメッセージを取得するエンドポイントに合わせて変更
+        console.log('FlashResponse:', response);
+        flashMessage.value = response.data.flashMessage;
+    } catch (error) {
+        console.error('フラッシュメッセージの取得に失敗しました', error);
+    }
+}
+
+// もし eventBus.off を使用せずにリスナーを削除しない場合、コンポーネントがアンマウントされてもリスナーが残り、
+// 不要なイベント処理が続行される可能性があるため
+// アンマウント時にイベントリスナーを削除
+onUnmounted(() => {
+    // eventBusというイベントバスから「quizCompleted」というイベントのリスナーを削除する
+    eventBus.off('quizCompleted', handleQuizCompleted);
+    console.log('Top.vue - quizCompleted event listener removed');
 });
 
 // 選択したカテゴリーと出題数をもとにクイズデータを一括で取得する関数
@@ -130,45 +159,32 @@ const quizResults = ref([]);
 const handleQuizCompleted = ({ result, category, numQuestions }) => {
   // quizResultsに追加する部分は変更なし
   // ...
-  eventBus.emit('quizCompleted', {
-    result,
-    category,
-    numQuestions,
-  });
+    eventBus.emit('quizCompleted', {
+        result,
+        category,
+        numQuestions,
+    });
 };
 
 
+const flashMessage = ref(''); // フラッシュメッセージを格納する変数
 
-// マウント時にイベントリスナーを追加
-onMounted(() => {
-    // イベントリスナーが未登録の場合のみ登録する
-        // eventBusというイベントバスを介して「quizCompleted」というイベントをリッスンする
-        // quizCompletedイベント（クイズが終了したことを通知するイベント）を受け取るたびにhandleQuizCompleted関数を実行する 
-    eventBus.on('quizCompleted', handleQuizCompleted);
-    console.log('Top.vue - quizCompleted event listener added');
-
-});
-
-
-// もし eventBus.off を使用せずにリスナーを削除しない場合、コンポーネントがアンマウントされてもリスナーが残り、
-// 不要なイベント処理が続行される可能性があるため
-// アンマウント時にイベントリスナーを削除
-onUnmounted(() => {
-    // eventBusというイベントバスから「quizCompleted」というイベントのリスナーを削除する
-    eventBus.off('quizCompleted', handleQuizCompleted);
-    console.log('Top.vue - quizCompleted event listener removed');
-});
 
 </script>
 
 <template>
-    <Head title="トップ" />
+    <Head title="クイズ画面" />
 
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="font-semibold text-2xl text-gray-800 leading-tight">トップ</h2>
+            <h2 class="font-semibold text-2xl text-gray-800 leading-tight">クイズ画面</h2>
         </template>
     
+    <!-- フラッシュメッセージを表示する領域 -->
+    <div v-if="flashMessage" class="bg-green-100 p-4 mb-4 rounded">
+        {{ flashMessage }}
+    </div>
+
         <div class="flex flex-col items-center justify-start h-screen p-16">
             <div v-if="!isQuizStarted" class="max-w-md mb-6 text-center">
                 <h2 class="text-xl font-semibold mb-2 mx-auto">クイズカテゴリーを選択してください</h2>

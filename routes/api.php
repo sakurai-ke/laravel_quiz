@@ -27,16 +27,17 @@ use App\Http\Controllers\Api\CreateController;
 //     Route::get('/getQuizzes/{id}', [CreateController::class, 'showUserQuizzes']);
 // });
 
+Route::get('/flash-message', [CreateController::class, 'flashMessage']);
+
+
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/makeQuizzes', [CreateController::class, 'createQuiz']); // クイズ作成APIエンドポイント
     Route::get('/getQuizzes', [CreateController::class, 'getUserQuizzes']); // クイズ一覧の取得
     Route::get('/showQuizzes/{id}', [CreateController::class, 'showUserQuizzes']); // クイズ詳細の取得
     Route::get('/editQuizzes/{id}', [CreateController::class, 'editUserQuizzes']); // 編集画面表示
-    Route::put('/updateQuizzes/{id}', [CreateController::class, 'update']); // クイズ更新処理
+    Route::put('/updateQuizzes/{id}', [CreateController::class, 'updateUserQuizzes']); // クイズ更新処理
 });
 
-
-// クイズ作成APIエンドポイント
-Route::post('/makeQuizzes', [CreateController::class, 'createQuiz']);
 
 Route::post('/save-quiz-result', [RecordController::class, 'store']);
 

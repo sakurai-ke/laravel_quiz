@@ -1,5 +1,6 @@
 <script setup>
-import { Link } from '@inertiajs/vue3';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { Head, Link } from '@inertiajs/vue3';
 import { defineProps } from 'vue';
 
 const props = defineProps({
@@ -9,6 +10,12 @@ const props = defineProps({
 </script>
 
 <template>
+    <Head title="クイズ結果" />
+
+    <AuthenticatedLayout>
+        <template #header>
+            <h2 class="font-semibold text-2xl text-gray-800 leading-tight">クイズ結果</h2>
+        </template>
     <div class="mt-8">
         <div class="w-full max-w-md mx-auto p-6 bg-white rounded-md shadow-md">
         <h2 class="text-xl font-semibold mb-4">クイズ結果</h2>
@@ -25,4 +32,5 @@ const props = defineProps({
         </div>
         </div>
     </div>
+</AuthenticatedLayout>
 </template>
