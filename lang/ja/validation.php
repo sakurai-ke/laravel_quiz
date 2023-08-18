@@ -154,18 +154,12 @@ return [
     */
 
     'attributes' => [
-        'title' => '件名',
-        'content' => '本文',
-        'name' => '名',
-        'memo' => 'メモ',
-        'price' => '価格',
-        'kana' => 'カナ',
-        'tel' => '電話番号',
-        'email' => 'メールアドレス',
-        'postcode' => '郵便番号',
-        'address' => '住所',
-        'birthday' => '誕生日',
-        'gender' => '性別'
+        'title' => '問題文',
+        'correct_answer' => '正解の選択肢',
+        'wrong_answer1' => '不正解の選択肢1',
+        'wrong_answer2' => '不正解の選択肢2',
+        'wrong_answer3' => '不正解の選択肢3',
+        'explain' => '解説',       
     ],
 
 ];

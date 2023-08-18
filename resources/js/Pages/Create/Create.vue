@@ -1,9 +1,14 @@
 <script setup>
 import axios from 'axios';
 import { ref, onMounted } from 'vue';
+import BreezeValidationErrors from '@/Components/ValidationErrors.vue'
 
 const selectedCategory = ref('');
 const categories = ref([]);
+
+defineProps({
+errors: Object
+})
 
 const quizData = ref({
     category_id: null,
@@ -13,13 +18,18 @@ const quizData = ref({
     wrong_answer_2: '',
     wrong_answer_3: '',
     explain: '',
-    // 他のプロパティも同様に追加
+    image_src: null, 
 });
 
 
 // コンポーネントがマウントされた際にカテゴリーデータを取得
 onMounted(() => {
 fetchCategories();
+
+    // フラッシュメッセージをセットアップ
+    flashMessage.value = localStorage.getItem('flashMessage');
+    // フラッシュメッセージをlocalStorageから削除
+    localStorage.removeItem('flashMessage');
 });
 
   // カテゴリーデータを取得
@@ -39,37 +49,31 @@ async function fetchCategories() {
     }
 }
 
-// フラッシュメッセージを表示する関数
-function flashMessage(message, type) {
-    const alert = { message, type };
-    // グローバルなフラッシュメッセージを設定
-    window.flashMessage = alert;
-}
+// dataとしてフラッシュメッセージを管理
+const flashMessage = ref(null);
+
+const errorMessage = ref(null);
+
 
 // クイズ作成フォームを送信する関数
 async function submitForm() {
     try {
         // 選択したカテゴリーのIDをquizData.value.category_id に代入
         quizData.value.category_id = selectedCategory.value;
+        
         ///api/quizzesにクイズデータを送信する
         const response = await axios.post('/api/makeQuizzes', quizData.value);
         console.log('クイズ作成成功:', response.data);
+
+// submitForm内でのリダイレクトとフラッシュメッセージの表示
+if (response.data.message === 'クイズが作成されました') {
+    // フラッシュメッセージをlocalStorageに保存
+    localStorage.setItem('flashMessage', 'クイズが作成されました');
+    // リダイレクト
+    window.location.href = '/top'; // トップページへリダイレクト
+}
+
         // データ送信成功したらフォームをリセット
-        
-        // リダイレクト先のURLを取得
-        // const redirectUrl = response.data.redirect_url;
-
-        // クイズ作成成功メッセージがフラッシュされている場合、トップページへリダイレクト
-        if (response.data.message) {
-            // フラッシュメッセージを表示
-            const message = 'クイズが作成されました';
-            const type = 'success';
-            flashMessage(message, type);
-
-            // トップページへリダイレクト
-            window.location.href = '/top';
-        }
-
         quizData.value = {
             title: '',
             category_id: null,
@@ -78,25 +82,47 @@ async function submitForm() {
             wrong_answer_2: '',
             wrong_answer_3: '',
             explain: '',
+            image_src: null, 
         };
-        
+
 } catch (error) {
         console.error('クイズ作成エラー:', error);
 
         // エラーをコンソールに出力し、詳細なエラーメッセージを表示
         if (error.response) {
             console.error('エラーレスポンス:', error.response.data);
+            // バリデーションエラーがある場合、エラーメッセージを表示
+            if (error.response.data.errors) {
+            errorMessage.value = Object.values(error.response.data.errors).join('<br>');
+            }
         }
     }
 }
+
+    // 画像アップロードの処理
+    function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (file) {
+        quizData.value.image_src = file.name;
+    }
+}
+
+// 画像を削除する処理
+function removeImage() {
+    quizData.value.image_src = null;
+}
+
 </script>
 
 
 <template>
     <div class="w-full max-w-md mx-auto p-6 bg-white rounded-md shadow-md">
         <h2 class="text-xl font-semibold mb-4">クイズ作成</h2>
+        <BreezeValidationErrors :errors="errors" />
+        <div v-if="errorMessage" class="mb-4 text-red-600" v-html="errorMessage"></div>
+
         <!-- preventはリロードされないように -->
-        <form @submit.prevent="submitForm">
+        <form @submit.prevent="submitForm" enctype="multipart/form-data">
         <div class="mb-4">
             <label class="block font-semibold">クイズのジャンル</label>
             <select v-model="selectedCategory">
@@ -132,10 +158,18 @@ async function submitForm() {
             <label class="block font-semibold">解説</label>
             <textarea v-model="quizData.explain" class="w-full p-2 border rounded-md"></textarea>
         </div>
+
         <div class="mb-4">
-            <button type="submit" class="py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300">
-                送信
-            </button>
+            <label class="block font-semibold">画像ファイル</label>
+            <input type="file" @change="handleFileUpload" accept="image/*">
+        </div>
+        <div class="mb-4" v-if="quizData.image_src">
+            <button type="button" @click="removeImage" class="mt-2 text-sm text-red-500 hover:text-red-700">画像を削除</button>
+        </div>
+        <div class="mb-4">
+        <button type="submit" class="py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300">
+            送信
+        </button>
         </div>
         </form>
     </div>

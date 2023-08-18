@@ -54,5 +54,13 @@ class QuizController extends Controller
                 return response()->json(['error' => '選択肢と正解情報の取得に失敗しました'], 500);
             }
         }
+
+    public function show(Request $request)
+    { 
+        $correctPercentage = (float)$request->query('correctPercentage'); // URLのクエリパラメータから値を取得
+        return Inertia::render('Top/Result', [
+            'correctPercentage' => $correctPercentage,
+        ]);
+    }
     
 }

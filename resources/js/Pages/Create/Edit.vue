@@ -1,6 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
+import BreezeValidationErrors from '@/Components/ValidationErrors.vue'
+
+defineProps({
+errors: Object
+})
 
 const quiz = ref({
   id: null, // クイズの ID を保持するためのプロパティ
@@ -45,14 +50,30 @@ async function editQuizDetails(quizId) {
   }
 }
 
+const errorMessage = ref(null);
+
+
 async function updateQuiz() {
   try {
     // 選択したカテゴリーのIDをquiz.value.category_id に代入
     const response = await axios.put(`/api/updateQuizzes/${quiz.value.id}`, quiz.value);
     // 更新が成功したら成功メッセージを表示したり、リダイレクトしたり
     console.log('クイズ送信成功:', response);
+
+    // submitForm内でのリダイレクトとフラッシュメッセージの表示
+if (response.data.message === 'クイズが更新されました') {
+    // フラッシュメッセージをlocalStorageに保存
+    localStorage.setItem('flashMessage', 'クイズが更新されました');
+    // リダイレクト
+    window.location.href = '/top'; // トップページへリダイレクト
+}
+
   } catch (error) {
     console.error('クイズの更新に失敗しました', error);
+          // バリデーションエラーがある場合、エラーメッセージを表示
+      if (error.response.data.errors) {
+      errorMessage.value = Object.values(error.response.data.errors).join('<br>');
+      }
   }
 }
 </script>
@@ -61,6 +82,9 @@ async function updateQuiz() {
   <div class="bg-gray-100 py-8">
     <div class="max-w-3xl mx-auto px-4">
       <h2 class="text-2xl font-semibold mb-4">クイズ編集</h2>
+      <BreezeValidationErrors :errors="errors" />
+        <div v-if="errorMessage" class="mb-4 text-red-600" v-html="errorMessage"></div>
+
       <form @submit.prevent="updateQuiz">
         <div class="bg-white rounded shadow-md p-4">
 

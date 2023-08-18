@@ -43,7 +43,6 @@ async function fetchCategories() {
 onMounted(() => {
     fetchCategories();
 
-    fetchFlashMessage();
 
         // イベントリスナーが未登録の場合のみ登録する
         // eventBusというイベントバスを介して「quizCompleted」というイベントをリッスンする
@@ -52,17 +51,6 @@ onMounted(() => {
     console.log('Top.vue - quizCompleted event listener added');
 });
 
-// サーバーからフラッシュメッセージを取得
-async function fetchFlashMessage() {
-    try {
-        console.log('Fetching flash message...');
-        const response = await axios.get('/api/flash-message'); // フラッシュメッセージを取得するエンドポイントに合わせて変更
-        console.log('FlashResponse:', response);
-        flashMessage.value = response.data.flashMessage;
-    } catch (error) {
-        console.error('フラッシュメッセージの取得に失敗しました', error);
-    }
-}
 
 // もし eventBus.off を使用せずにリスナーを削除しない場合、コンポーネントがアンマウントされてもリスナーが残り、
 // 不要なイベント処理が続行される可能性があるため
@@ -166,9 +154,16 @@ const handleQuizCompleted = ({ result, category, numQuestions }) => {
     });
 };
 
+// フラッシュメッセージを管理
+const flashMessage = ref(null);
 
-const flashMessage = ref(''); // フラッシュメッセージを格納する変数
-
+// コンポーネントがマウントされた際にフラッシュメッセージを取得
+onMounted(() => {
+    // フラッシュメッセージをLocalStorageから取得
+    flashMessage.value = localStorage.getItem('flashMessage');
+    // フラッシュメッセージをLocalStorageから削除
+    localStorage.removeItem('flashMessage');
+});
 
 </script>
 
@@ -180,8 +175,8 @@ const flashMessage = ref(''); // フラッシュメッセージを格納する�
             <h2 class="font-semibold text-2xl text-gray-800 leading-tight">クイズ画面</h2>
         </template>
     
-    <!-- フラッシュメッセージを表示する領域 -->
-    <div v-if="flashMessage" class="bg-green-100 p-4 mb-4 rounded">
+    <!-- フラッシュメッセージを表示 -->
+    <div v-if="flashMessage" class="bg-green-200 p-2 mb-4 rounded-md">
         {{ flashMessage }}
     </div>
 

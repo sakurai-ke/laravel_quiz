@@ -27,7 +27,7 @@ use App\Http\Controllers\Api\CreateController;
 //     Route::get('/getQuizzes/{id}', [CreateController::class, 'showUserQuizzes']);
 // });
 
-Route::get('/flash-message', [CreateController::class, 'flashMessage']);
+// Route::get('/flash-message', [CreateController::class, 'flashMessage']);
 
 
 Route::middleware('auth:sanctum')->group(function () {

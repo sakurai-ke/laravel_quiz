@@ -4,16 +4,32 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Http\Requests\CreateQuizRequest;
+use App\Http\Requests\UpdateQuizRequest;
 use Inertia\Inertia;
 use App\Models\Create;
 use App\Models\Quiz;
 
 class CreateController extends Controller
 {
-    public function createQuiz(Request $request)
+    public function createQuiz(CreateQuizRequest $request)
     {
         // リクエストからクイズデータを取得
         $quizData = $request->all();
+
+    // もし画像データがアップロードされている場合
+    if ($request->hasFile('image_src')) {
+        // アップロード画像ファイルを取得して、$imageFile 変数に格納することによりアップロード画像にアクセスできるように
+        $imageFile = $request->file('image_src');
+        // アップロードされた画像の元々のファイル名を取得
+        $original = $imageFile->getClientOriginalName();
+        // 現在の日付と時刻を基にして一意のファイル名を生成（同じファイル名が重複を防ぐため）
+        $name = date('Ymd_His') . '_' . $original;
+        // 生成した新しいファイル名でstorage/imagesディレクトリにファイルを保存
+        $imageFile->move(public_path('storage/images'), $name);
+        // 画像のファイル名をクイズデータに追加
+        $quizData['image_src'] = $name;
+    }
 
         // ログインしていることを確認
         if (auth()->check()) {
@@ -23,21 +39,23 @@ class CreateController extends Controller
             // クイズモデルを使ってデータベースにクイズ情報を保存
             Quiz::create([
                 'user_id' => $userId,
-                'category_id' => $quizData['category_id'], // カテゴリーIDを含める
+                'category_id' => $quizData['category_id'],
                 'title' => $quizData['title'],
                 'correct_answer' => $quizData['correct_answer'],
                 'wrong_answer_1' => $quizData['wrong_answer_1'],
                 'wrong_answer_2' => $quizData['wrong_answer_2'],
                 'wrong_answer_3' => $quizData['wrong_answer_3'],
                 'explain' => $quizData['explain'],
+                'image_src' => $quizData['image_src'],
             ]);
 
-            // 保存が成功したことをセッションに格納
-            session()->flash('quiz_created', true);
+// クイズ作成が成功したことをセッションに保存
+// session()->flash('quiz_created', true);
 
-            // 保存が成功したことを返すJSONレスポンスを返す
-            return response()->json(['message' => 'クイズが作成されました'], 201);
-        }
+// 保存が成功したことを返すJSONレスポンスを返す
+return response()->json(['message' => 'クイズが作成されました'], 201);
+
+    }
 
         // ログインしていない場合はエラーレスポンスを返す
         return response()->json(['message' => 'ログインしていません'], 401);
@@ -111,7 +129,7 @@ public function getUserQuizzes()
     /**
      * Update the specified resource in storage.
      */
-    public function updateUserQuizzes(Request $request, string $id)
+    public function updateUserQuizzes(UpdateQuizRequest $request, string $id)
     {
         try {
             $quiz = Quiz::findOrFail($id);
@@ -150,6 +168,22 @@ public function getUserQuizzes()
      */
     public function destroy(string $id)
     {
-        //
+        $quiz = Quiz::find($id);
+    
+        if ($quiz) {
+            if ($quiz->image_src) {
+                // 画像が存在する場合は削除
+                $imagePath = public_path('storage/images/') . $quiz->image_src;
+                if (file_exists($imagePath)) {
+                    unlink($imagePath);
+                }
+            }
+    
+            $quiz->delete();
+            return response()->json(['message' => 'クイズが削除されました']);
+        }
+    
+        return response()->json(['message' => 'クイズが見つかりませんでした'], 404);
     }
+    
 }

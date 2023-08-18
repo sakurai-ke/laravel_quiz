@@ -21,10 +21,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        
-        // トップページにもフラッシュメッセージを共有
-        View::composer('Top', function ($view) {
-            $view->with('flashMessage', Session::get('flashMessage'));
-        });
+        // 
     }
 }

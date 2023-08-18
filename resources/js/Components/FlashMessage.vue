@@ -1,19 +1,15 @@
-<template>
-    <div v-if="message" class="fixed top-0 left-0 w-full p-4 bg-green-500 text-white text-center z-50">
-        {{ message }}
-    </div>
-</template>
-
 <script setup>
-const { ref, watch } = Vue;
-
-const message = ref('');
-
-watch(message, () => {
-    if (message.value) {
-        setTimeout(() => {
-        message.value = '';
-      }, 3000); // メッセージを3秒後に非表示にする
-    }
-});
 </script>
+
+<!-- 、$page.props.flash.message は、サーバーからクライアントに渡されたデータの中の flash.message プロパティを参照しているという意味
+    （$page は Inertia.js のコンポーネント内で使用される特殊な変数） -->
+<template>
+<div v-if="$page.props.flash.status === 'success'" 
+class="bg-blue-300 text-white p-4">
+{{ $page.props.flash.message }}
+</div>
+<div v-if="$page.props.flash.status === 'danger'" 
+class="bg-red-300 text-white p-4">
+{{ $page.props.flash.message }}
+</div>
+</template>
