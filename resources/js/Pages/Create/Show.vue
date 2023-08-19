@@ -21,24 +21,61 @@ async function getQuizDetails(quizId) {
         console.error('クイズの詳細情報の取得に失敗しました', error);
     }
 }
+
+function getImageUrl(imageSrc) {
+    if (imageSrc) {
+        return "/storage/images/" + imageSrc; // 画像ファイルのパスを生成
+    }
+    return null;
+}
+
 </script>
 
 <template>
     <div class="bg-gray-100 py-8">
         <div class="max-w-3xl mx-auto px-4">
-            <div class="bg-white rounded shadow-md p-4">
+            <div class="bg-white rounded shadow-md p-4 space-y-4">
                 <!-- クイズの詳細情報を表示 -->
-                <p><strong>問題文:</strong> {{ quiz.title }}</p>
-                <p><strong>正解:</strong> {{ quiz.correct_answer }}</p>
-                <p><strong>選択肢1:</strong> {{ quiz.wrong_answer_1 }}</p>
-                <p><strong>選択肢2:</strong> {{ quiz.wrong_answer_2 }}</p>
-                <p><strong>選択肢3:</strong> {{ quiz.wrong_answer_3 }}</p>
-                <p><strong>ヒント:</strong> {{ quiz.hint }}</p>
-                <p><strong>解説:</strong> {{ quiz.explain }}</p>
+                <div class="border-b pb-2">
+                    <p class="text-lg font-semibold">問題文</p>
+                    <p class="text-gray-700">{{ quiz.title }}</p>
+                </div>
+                <div class="border-b pb-2">
+                    <p class="text-lg font-semibold">正解</p>
+                    <p class="text-gray-700">{{ quiz.correct_answer }}</p>
+                </div>
+                <div class="border-b pb-2">
+                    <p class="text-lg font-semibold">選択肢1</p>
+                    <p class="text-gray-670">{{ quiz.wrong_answer_1 }}</p>
+                </div>
+                <div class="border-b pb-2">
+                    <p class="text-lg font-semibold">選択肢2</p>
+                    <p class="text-gray-700">{{ quiz.wrong_answer_2 }}</p>
+                </div>
+                <div class="border-b pb-2">
+                    <p class="text-lg font-semibold">選択肢3</p>
+                    <p class="text-gray-700">{{ quiz.wrong_answer_3 }}</p>
+                </div>
+                <div class="border-b pb-2">
+                    <p class="text-lg font-semibold">ヒント</p>
+                    <p class="text-gray-700">{{ quiz.hint }}</p>
+                </div>
+                <div class="border-b pb-2">
+                    <p class="text-lg font-semibold">解説</p>
+                    <p class="text-gray-700">{{ quiz.explain }}</p>
+                </div>
+
+                <div class="border-b pb-2">
+                    <p class="text-lg font-semibold">画像</p>
+                    <img :src="getImageUrl(quiz.image_src)" alt="クイズの画像" class="max-h-40">
+                </div>
+
             </div>
             <div class="mt-4">
-                <Link :href="'/list/' + quiz.id + '/edit'" class="text-blue-500">編集</Link>
+                <Link :href="'/list/' + quiz.id + '/edit'" class="text-blue-500 hover:underline">編集</Link>
             </div>
         </div>
     </div>
 </template>
+
+

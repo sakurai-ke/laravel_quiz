@@ -17,6 +17,7 @@ const quiz = ref({
   wrong_answer_3: '',
   // hint: '',
   explain: '',
+  image_src: '',
 });
 
 const categories = ref([]);
@@ -76,6 +77,7 @@ if (response.data.message === 'クイズが更新されました') {
       }
   }
 }
+
 </script>
 
 <template>
@@ -85,7 +87,7 @@ if (response.data.message === 'クイズが更新されました') {
       <BreezeValidationErrors :errors="errors" />
         <div v-if="errorMessage" class="mb-4 text-red-600" v-html="errorMessage"></div>
 
-      <form @submit.prevent="updateQuiz">
+      <form @submit.prevent="updateQuiz" enctype="multipart/form-data">
         <div class="bg-white rounded shadow-md p-4">
 
           <div class="mb-4">
@@ -125,6 +127,8 @@ if (response.data.message === 'クイズが更新されました') {
             <label for="explain" class="block font-semibold mb-1">解説:</label>
             <textarea v-model="quiz.explain" id="explain" type="text" class="w-full rounded-md p-2 border"></textarea>
           </div>
+
+          
         </div>
         <div class="mt-4">
           <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">更新</button>

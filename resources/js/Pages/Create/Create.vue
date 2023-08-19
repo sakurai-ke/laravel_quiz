@@ -18,7 +18,7 @@ const quizData = ref({
     wrong_answer_2: '',
     wrong_answer_3: '',
     explain: '',
-    image_src: null, 
+    image_src: '', 
 });
 
 
@@ -57,12 +57,26 @@ const errorMessage = ref(null);
 
 // クイズ作成フォームを送信する関数
 async function submitForm() {
+    const formData = new FormData(); // フォームデータを作成
+    // 他のクイズデータをフォームデータに追加
+    formData.append('category_id', selectedCategory.value);
+    formData.append('title', quizData.value.title);
+    formData.append('correct_answer', quizData.value.correct_answer);
+    formData.append('wrong_answer_1', quizData.value.wrong_answer_1);
+    formData.append('wrong_answer_2', quizData.value.wrong_answer_2);
+    formData.append('wrong_answer_3', quizData.value.wrong_answer_3);
+    formData.append('explain', quizData.value.explain);
+
+    // 画像ファイルが選択されていればフォームデータに追加
+    if (selectedImage.value) {
+        formData.append('image_src', selectedImage.value);
+    }
     try {
         // 選択したカテゴリーのIDをquizData.value.category_id に代入
-        quizData.value.category_id = selectedCategory.value;
+        // quizData.value.category_id = selectedCategory.value;
         
         ///api/quizzesにクイズデータを送信する
-        const response = await axios.post('/api/makeQuizzes', quizData.value);
+        const response = await axios.post('/api/makeQuizzes', formData);
         console.log('クイズ作成成功:', response.data);
 
 // submitForm内でのリダイレクトとフラッシュメッセージの表示
@@ -82,7 +96,7 @@ if (response.data.message === 'クイズが作成されました') {
             wrong_answer_2: '',
             wrong_answer_3: '',
             explain: '',
-            image_src: null, 
+            image_src: '', 
         };
 
 } catch (error) {
@@ -99,18 +113,28 @@ if (response.data.message === 'クイズが作成されました') {
     }
 }
 
-    // 画像アップロードの処理
-    function handleFileUpload(event) {
+// selectedImage の初期値と、画像プレビューの URL を管理するリアクティブな変数
+const selectedImage = ref(null);
+const selectedImagePreview = ref(null);
+
+// 画像アップロードの処理
+function handleImageUpload(event) {
     const file = event.target.files[0];
-    if (file) {
-        quizData.value.image_src = file.name;
+    selectedImage.value = file;
+
+    // 画像プレビューのための URL を生成
+    if (selectedImage.value) {
+        selectedImagePreview.value = URL.createObjectURL(selectedImage.value);
+    } else {
+        selectedImagePreview.value = null;
     }
 }
 
-// 画像を削除する処理
-function removeImage() {
-    quizData.value.image_src = null;
-}
+    // 画像を削除する処理
+    function removeImage() {
+        selectedImage.value = null;
+        selectedImagePreview.value = null;
+    }
 
 </script>
 
@@ -160,12 +184,24 @@ function removeImage() {
         </div>
 
         <div class="mb-4">
+        <label class="block font-semibold">画像ファイル</label>
+        <input type="file" @change="handleImageUpload" accept="image/*">
+        <div v-if="selectedImage" class="mt-2">
+            <img :src="selectedImagePreview" alt="選択した画像" class="max-h-40">
+            <button type="button" @click="removeImage" class="mt-2 text-sm text-red-500 hover:text-red-700">
+                画像を削除
+            </button>
+        </div>
+    </div>
+
+        
+        <!-- <div class="mb-4">
             <label class="block font-semibold">画像ファイル</label>
-            <input type="file" @change="handleFileUpload" accept="image/*">
-        </div>
-        <div class="mb-4" v-if="quizData.image_src">
+            <input type="file" @change="handleImageUpload" accept="image/*">
+        </div> -->
+        <!-- <div class="mb-4" v-if="quizData.image_src">
             <button type="button" @click="removeImage" class="mt-2 text-sm text-red-500 hover:text-red-700">画像を削除</button>
-        </div>
+        </div> -->
         <div class="mb-4">
         <button type="submit" class="py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300">
             送信

@@ -33,7 +33,7 @@ class CreateQuizRequest extends FormRequest
                 'wrong_answer_2' => ['required', 'max:50'],
                 'wrong_answer_3' => ['required', 'max:50'],
                 'explain' => ['required', 'max:1000'],
-                'image_src' => ['max:2048']
+                'image_src' => ['nullable', 'image', 'max:2048'], 
                 ];
     }
 }

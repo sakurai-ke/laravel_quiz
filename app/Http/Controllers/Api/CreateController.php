@@ -9,6 +9,7 @@ use App\Http\Requests\UpdateQuizRequest;
 use Inertia\Inertia;
 use App\Models\Create;
 use App\Models\Quiz;
+use Illuminate\Support\Facades\Storage;
 
 class CreateController extends Controller
 {
@@ -17,19 +18,21 @@ class CreateController extends Controller
         // リクエストからクイズデータを取得
         $quizData = $request->all();
 
+
     // もし画像データがアップロードされている場合
     if ($request->hasFile('image_src')) {
-        // アップロード画像ファイルを取得して、$imageFile 変数に格納することによりアップロード画像にアクセスできるように
-        $imageFile = $request->file('image_src');
         // アップロードされた画像の元々のファイル名を取得
-        $original = $imageFile->getClientOriginalName();
-        // 現在の日付と時刻を基にして一意のファイル名を生成（同じファイル名が重複を防ぐため）
+        $original = $request->file('image_src')->getClientOriginalName();
+        // 現在の日付と時刻を基にして一意のファイル名を生成
         $name = date('Ymd_His') . '_' . $original;
-        // 生成した新しいファイル名でstorage/imagesディレクトリにファイルを保存
-        $imageFile->move(public_path('storage/images'), $name);
+        // 生成した新しいファイル名でpublicディレクトリのimagesサブディレクトリにファイルを保存
+        $request->file('image_src')->storeAs('public/images', $name);
         // 画像のファイル名をクイズデータに追加
         $quizData['image_src'] = $name;
     }
+
+
+
 
         // ログインしていることを確認
         if (auth()->check()) {
@@ -115,8 +118,9 @@ public function getUserQuizzes()
             $quiz = Quiz::findOrFail($id);
             return response()->json(['quiz' => $quiz]);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'クイズの詳細情報の取得に失敗しました'], 500);
+            return response()->json(['error' => 'クイズの更新に失敗しました', 'validation_errors' => $e->getMessage()], 500);
         }
+        
     }
     
 
@@ -133,20 +137,22 @@ public function getUserQuizzes()
     {
         try {
             $quiz = Quiz::findOrFail($id);
-    
-            // リクエストからクイズデータを取得
             $quizData = $request->all();
     
-            // クイズ情報を更新
-            $quiz->update([
-                'category_id' => $quizData['category_id'],
-                'title' => $quizData['title'],
-                'correct_answer' => $quizData['correct_answer'],
-                'wrong_answer_1' => $quizData['wrong_answer_1'],
-                'wrong_answer_2' => $quizData['wrong_answer_2'],
-                'wrong_answer_3' => $quizData['wrong_answer_3'],
-                'explain' => $quizData['explain'],
-            ]);
+            if ($request->hasFile('image_src')) {
+                $original = $request->file('image_src')->getClientOriginalName();
+                $name = date('Ymd_His') . '_' . $original;
+                $request->file('image_src')->storeAs('public/images', $name);
+    
+                // 古い画像が存在する場合に削除
+                if ($quiz->image_src) {
+                    Storage::delete('public/images/' . $quiz->image_src);
+                }
+    
+                $quizData['image_src'] = $name;
+            }
+    
+            $quiz->update($quizData);
     
             // 更新が成功したことを返すJSONレスポンスを返す
             return response()->json(['message' => 'クイズが更新されました'], 200);
