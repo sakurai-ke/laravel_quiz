@@ -21,6 +21,8 @@ const quiz = ref({
 });
 
 const categories = ref([]);
+const selectedImage = ref(null);
+const selectedImagePreview = ref(null);
 
 onMounted(() => {
   const quizId = window.location.pathname.split('/').slice(-2)[0];
@@ -46,6 +48,12 @@ async function editQuizDetails(quizId) {
     const response = await axios.get(`/api/editQuizzes/${quizId}`);
     console.log('API Response:', response.data); // デバッグログを追加
     quiz.value = response.data.quiz;
+
+        // 画像ファイル名が存在する場合、画像プレビューの URL を生成
+        if (quiz.value.image_src) {
+      selectedImagePreview.value = "/storage/images/" + quiz.value.image_src;
+    }
+
   } catch (error) {
     console.error('クイズの詳細情報の取得に失敗しました', error);
   }
@@ -56,7 +64,19 @@ const errorMessage = ref(null);
 
 async function updateQuiz() {
   try {
-    // 選択したカテゴリーのIDをquiz.value.category_id に代入
+    
+    if (selectedImage.value) {
+            const formData = new FormData();
+            formData.append('image_src', selectedImage.value);
+
+            const responseImage = await axios.post('/api/uploadImage', formData); // 画像アップロード
+            const newImageSrc = responseImage.data.image_src;
+
+            // クイズデータの画像ファイル名を更新
+            quiz.value.image_src = newImageSrc;
+        }
+
+
     const response = await axios.put(`/api/updateQuizzes/${quiz.value.id}`, quiz.value);
     // 更新が成功したら成功メッセージを表示したり、リダイレクトしたり
     console.log('クイズ送信成功:', response);
@@ -76,6 +96,23 @@ if (response.data.message === 'クイズが更新されました') {
       errorMessage.value = Object.values(error.response.data.errors).join('<br>');
       }
   }
+}
+
+// 画像アップロードの処理
+function handleImageUpload(event) {
+  const file = event.target.files[0];
+  selectedImage.value = file;
+  selectedImagePreview.value = URL.createObjectURL(file);
+
+  // 画像がアップロードされた場合、quiz.value.image_src を更新
+  // quiz.value.image_src = file.name; // 画像のファイル名を設定
+}
+
+// 画像を削除する処理
+function removeImage() {
+    selectedImage.value = null;
+    selectedImagePreview.value = null;
+    quiz.image_src = ''; // 画像ファイル名をクリア
 }
 
 </script>
@@ -128,7 +165,17 @@ if (response.data.message === 'クイズが更新されました') {
             <textarea v-model="quiz.explain" id="explain" type="text" class="w-full rounded-md p-2 border"></textarea>
           </div>
 
-          
+          <div class="mb-4">
+    <label for="image" class="block font-semibold mb-1">画像ファイル:</label>
+    <input type="file" id="image" @change="handleImageUpload" accept="image/*">
+    <div v-if="selectedImagePreview" class="mt-2">
+      <img :src="selectedImagePreview" alt="選択した画像" class="max-h-40">
+      <button type="button" @click="removeImage" class="mt-2 text-sm text-red-500 hover:text-red-700">
+        画像を削除
+      </button>
+    </div>
+  </div>
+
         </div>
         <div class="mt-4">
           <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">更新</button>

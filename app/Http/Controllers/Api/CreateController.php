@@ -137,23 +137,42 @@ public function getUserQuizzes()
     {
         try {
             $quiz = Quiz::findOrFail($id);
+    
+            // リクエストからクイズデータを取得
             $quizData = $request->all();
     
+            // もし画像データがアップロードされている場合
             if ($request->hasFile('image_src')) {
                 $original = $request->file('image_src')->getClientOriginalName();
                 $name = date('Ymd_His') . '_' . $original;
-                $request->file('image_src')->storeAs('public/images', $name);
     
-                // 古い画像が存在する場合に削除
+                // 旧画像が存在する場合は削除
                 if ($quiz->image_src) {
-                    Storage::delete('public/images/' . $quiz->image_src);
+                    $imagePath = storage_path('app/public/images/') . $quiz->image_src;
+                    if (file_exists($imagePath)) {
+                        Storage::delete('public/images/' . $quiz->image_src);
+                    }
                 }
     
+                // 新しいファイル名で画像を保存
+                $request->file('image_src')->storeAs('public/images', $name);
                 $quizData['image_src'] = $name;
             }
     
+            // クイズ情報を更新
             $quiz->update($quizData);
-    
+
+        // クイズ情報を更新
+        // $quiz->update([
+        //     'category_id' => $quizData['category_id'],
+        //     'title' => $quizData['title'],
+        //     'correct_answer' => $quizData['correct_answer'],
+        //     'wrong_answer_1' => $quizData['wrong_answer_1'],
+        //     'wrong_answer_2' => $quizData['wrong_answer_2'],
+        //     'wrong_answer_3' => $quizData['wrong_answer_3'],
+        //     'explain' => $quizData['explain'],
+        //     'image_src' => $quizData['image_src'],
+        // ]);
             // 更新が成功したことを返すJSONレスポンスを返す
             return response()->json(['message' => 'クイズが更新されました'], 200);
         } catch (\Exception $e) {
@@ -167,7 +186,25 @@ public function getUserQuizzes()
     return response()->json(['flashMessage' => $flashMessage]);
 }
 
-
+public function uploadImage(Request $request)
+{
+    try {
+        if ($request->hasFile('image_src')) {
+            $file = $request->file('image_src');
+            $originalName = $file->getClientOriginalName();
+            $newFileName = date('Ymd_His') . '_' . $originalName;
+            
+            // ファイルをpublicディスクのimagesディレクトリに保存
+            $file->storeAs('public/images', $newFileName);
+            
+            return response()->json(['image_src' => $newFileName]);
+        } else {
+            return response()->json(['error' => '画像ファイルがアップロードされていません'], 400);
+        }
+    } catch (\Exception $e) {
+        return response()->json(['error' => '画像のアップロードに失敗しました'], 500);
+    }
+}
 
     /**
      * Remove the specified resource from storage.

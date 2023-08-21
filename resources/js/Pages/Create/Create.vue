@@ -5,6 +5,9 @@ import BreezeValidationErrors from '@/Components/ValidationErrors.vue'
 
 const selectedCategory = ref('');
 const categories = ref([]);
+// selectedImage の初期値と、画像プレビューの URL を管理するリアクティブな変数
+const selectedImage = ref(null);
+const selectedImagePreview = ref(null);
 
 defineProps({
 errors: Object
@@ -56,9 +59,10 @@ const errorMessage = ref(null);
 
 
 // クイズ作成フォームを送信する関数
+// フォームをサーバーに送信する際に使用できる形式に変換する
 async function submitForm() {
-    const formData = new FormData(); // フォームデータを作成
-    // 他のクイズデータをフォームデータに追加
+    const formData = new FormData(); 
+    // サーバーに送信するために形式を変換
     formData.append('category_id', selectedCategory.value);
     formData.append('title', quizData.value.title);
     formData.append('correct_answer', quizData.value.correct_answer);
@@ -72,9 +76,6 @@ async function submitForm() {
         formData.append('image_src', selectedImage.value);
     }
     try {
-        // 選択したカテゴリーのIDをquizData.value.category_id に代入
-        // quizData.value.category_id = selectedCategory.value;
-        
         ///api/quizzesにクイズデータを送信する
         const response = await axios.post('/api/makeQuizzes', formData);
         console.log('クイズ作成成功:', response.data);
@@ -113,10 +114,6 @@ if (response.data.message === 'クイズが作成されました') {
     }
 }
 
-// selectedImage の初期値と、画像プレビューの URL を管理するリアクティブな変数
-const selectedImage = ref(null);
-const selectedImagePreview = ref(null);
-
 // 画像アップロードの処理
 function handleImageUpload(event) {
     const file = event.target.files[0];
@@ -124,6 +121,7 @@ function handleImageUpload(event) {
 
     // 画像プレビューのための URL を生成
     if (selectedImage.value) {
+        // 選択された画像ファイルを表示するための一時的なURLが格納され、それを元にプレビュー画像が表示される
         selectedImagePreview.value = URL.createObjectURL(selectedImage.value);
     } else {
         selectedImagePreview.value = null;

@@ -9,71 +9,34 @@ use App\Models\Record;
 
 class RecordController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function storeRecord(Request $request)
     {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        // $requestから必要な情報を取得
-        $data = $request->all();
-    
-        // Recordモデルを使用してクイズ結果を保存
-        $quizResult = Record::create([
-            'user_id' => auth()->user()->id, // ユーザーID
-            // 必要な情報を他にも追加
+        // リクエストから受け取ったデータを元に新しいRecordモデルを作成し保存
+        $record = Record::create([
+            'category_id' => $request->category_id,
+            'user_id' => $request->user_id,
+            'total_questions' => $request->total_questions,
+            'correct_answers' => $request->correct_answers,
+            'accuracy' => $request->accuracy,
+            'created_at' => $request->created_at,
+            'updated_at' => $request->updated_at,
         ]);
-    
-        return response()->json(['message' => 'Result saved successfully']);
+
+        return response()->json(['message' => 'Record created successfully', 'data' => $record]);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Request $request)
-    { 
-        $correctPercentage = (float)$request->query('correctPercentage'); // URLのクエリパラメータから値を取得
-        return Inertia::render('Record/Record', [
-            'correctPercentage' => $correctPercentage,
+    public function storeResult(Request $request)
+    {
+        // リクエストから受け取ったデータを元に新しいResultモデルを作成し保存
+        $result = Result::create([
+            'result_id' => $request->result_id,
+            'quiz_id' => $request->quiz_id,
+            'selected_choice' => $request->selected_choice,
+            'correct' => $request->correct,
+            'created_at' => $request->created_at,
+            'updated_at' => $request->updated_at,
         ]);
-    }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return response()->json(['message' => 'Result created successfully', 'data' => $result]);
     }
 }

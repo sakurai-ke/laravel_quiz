@@ -33,6 +33,7 @@ class UpdateQuizRequest extends FormRequest
                 'wrong_answer_2' => ['required', 'max:50'],
                 'wrong_answer_3' => ['required', 'max:50'],
                 'explain' => ['required', 'max:1000'],
+                'image_src' => ['nullable', 'max:2048'], 
                 ];
     }
 }

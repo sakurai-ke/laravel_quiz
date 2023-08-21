@@ -17,17 +17,12 @@ use App\Http\Controllers\Api\CreateController;
 |
 */
 
-// クイズ一覧の取得
-// Route::middleware('auth:sanctum')->group(function () {
-//     Route::get('/getQuizzes', [CreateController::class, 'getUserQuizzes']);
-// });
 
-// // クイズ詳細の取得
-// Route::middleware('auth:sanctum')->group(function () {
-//     Route::get('/getQuizzes/{id}', [CreateController::class, 'showUserQuizzes']);
-// });
+// RecordのAPIルート
+Route::post('/record', [RecordController::class, 'storeRecord']); // POSTリクエストを受けてデータを保存
 
-// Route::get('/flash-message', [CreateController::class, 'flashMessage']);
+// ResultのAPIルート
+Route::post('/result', [RecordController::class, 'storeResult']); // POSTリクエストを受けてデータを保存
 
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -36,6 +31,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/showQuizzes/{id}', [CreateController::class, 'showUserQuizzes']); // クイズ詳細の取得
     Route::get('/editQuizzes/{id}', [CreateController::class, 'editUserQuizzes']); // 編集画面表示
     Route::put('/updateQuizzes/{id}', [CreateController::class, 'updateUserQuizzes']); // クイズ更新処理
+    Route::post('/uploadImage', [CreateController::class, 'uploadImage']); // クイズ更新処理
 });
 
 

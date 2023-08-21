@@ -98,22 +98,36 @@ function presentRandomQuiz() {
 }
 
 
-// fetchAndShuffleQuizzes 関数内でクイズデータをシャッフルし取得
+// クイズデータの取得とシャッフル
 async function fetchAndShuffleQuizzes() {
+  // 特定のカテゴリーのクイズデータを一括で取得
   try {
-    // クイズデータを取得
     const response = await axios.get('/api/quizzes', {
       params: {
         category_id: quizData.value.category_id,
         num_questions: props.selectedNumQuestions,
       },
     });
+    // クイズデータの問題部分をnextQuizzesに格納
     const nextQuizzes = response.data;
+    console.log('nextQuizzes', nextQuizzes);
+    if (nextQuizzes.length > 0) {
+      // クイズリストをシャッフルしてshuffledQuizListに代入
+      shuffledQuizList = shuffleQuizList(nextQuizzes);
 
-    // クイズデータをシャッフル
-    shuffledQuizList = shuffleQuizList(nextQuizzes);
-    currentQuizIndex = 0;
-    presentRandomQuiz();
+      // 各クイズデータの user_answer プロパティを空文字列にリセット
+      shuffledQuizList.forEach(quiz => {
+        quiz.user_answer = ''; // 初期値を空文字列に設定
+      });
+
+      console.log('shuffledQuizListの値:', shuffledQuizList);
+      // 新しいセットのクイズが取得されるたびにクイズのindexをリセット
+      currentQuizIndex = 0; 
+      // presentRandomQuiz関数でランダムなクイズを出題
+      presentRandomQuiz();
+    } else {
+      console.error('次のクイズデータがありません');
+    }
   } catch (error) {
     console.error('クイズの取得に失敗しました', error);
   }
@@ -135,12 +149,43 @@ async function submitAnswer() {
   const totalQuestions = shuffledQuizList.length;
   correctPercentage.value = (correctAnswers.length / totalQuestions) * 100;
 
+        // 正答数を1増やす
+        correctAnswers.value++;
+
+        // 正答率を計算して更新
+        accuracy.value = (correctAnswers.value / answeredQuestions.value) * 100;
+
+        const result = {
+            result_id: recordId,
+            quiz_id: newQuizData.id,
+            selected_choice: selectedChoice.value,
+            correct: true,
+            created_at: new Date(),
+            updated_at: new Date(),
+        };
+        await axios.post('/api/result', result);
+
+        await nextTick();
+        showAnswerButton.value = false;
+
   } else {
     quizEndMessage.value = `不正解！正解は「${newQuizData.correct_answer}」です。\n${newQuizData.explain}`;
     newQuizData.user_answer = selectedChoice.value; // user_answer を更新
   }
 
-  // quizState.value = 'answer'; // 「回答」後の状態に変更
+      // 正答数を1増やさない（不正解のため）
+
+    // 正答率を計算して更新（正答数は増えないため、変更不要）
+
+    const result = {
+        result_id: recordId,
+        quiz_id: newQuizData.id,
+        selected_choice: selectedChoice.value,
+        correct: false,
+        created_at: new Date(),
+        updated_at: new Date(),
+    };
+    await axios.post('/api/result', result);
 
   // メッセージ更新が完了したら次のクイズに進む
   await nextTick();
@@ -149,86 +194,66 @@ async function submitAnswer() {
   showAnswerButton.value = false;
 }
 
+// 正答率を計算する computed プロパティ
+// const computedCorrectPercentage = computed(() => {
+//   const totalQuestions = shuffledQuizList.length;
+//   const correctAnswersCount = correctAnswers.value.length; // 正解したクイズの数を取得
+//   console.log('correctAnswers.length:', correctAnswers.value.length);
+//   console.log('totalQuestions:', totalQuestions);
+//   console.log('correctAnswersCount:', correctAnswersCount);
+//   return (correctAnswersCount / totalQuestions) * 100;
+// });
 
+// 「結果を見る」ボタンがクリックされた際の処理
 async function showResult() {
-  if (currentQuizIndex === shuffledQuizList.length - 1) {
-    // すでに結果が表示されている場合は何もしない
-    if (quizEndMessage.value === '') {
-      const quizResults = shuffledQuizList.map(quiz => ({
-        ...quiz,
-        user_answer: quiz.user_answer,
-        isCorrect: quiz.user_answer === quiz.correct_answer,
-      }));
-
-      const totalQuestions = quizResults.length;
-      const correctAnswersCount = quizResults.filter(quiz => quiz.isCorrect).length;
-      const correctPercentage = (correctAnswersCount / totalQuestions) * 100;
-
-      const result = {
-        quizResults: quizResults,
-        correctPercentage: correctPercentage,
-      };
-
-      emitQuizCompleted(result);
-    }
-  } else {
-    console.log('全てのクイズが完了していないため、結果を表示できません。');
-  }
+    const result = {
+        // categoryInfo: quizData.category_info,
+        numQuestions: props.selectedNumQuestions,
+        correctCount: correctAnswers.length,
+        correctPercentage: correctPercentage.value,
+        quizzes: shuffledQuizList,
+        selectedChoice: selectedChoice.value,
+        quizDate: new Date().toLocaleDateString(),
+    };
+    quizCompleted(result);
 }
-
-
-
 
 // emitオプションを宣言
 const emit = defineEmits(['quizCompleted']);
 
 // showResult関数が実行されるとquizCompleted関数が実行（クイズが完了した際に呼ばれる）
-// 親コンポーネントにクイズが完了したことを通知するメソッド
-const emitQuizCompleted = (result) => {
-  // 親コンポーネントに対して `quizCompleted` イベントを発火し、結果データを送信する
-  emit('quizCompleted', result);
+const quizCompleted = (result) => {
+    // resultにクイズの結果データを渡す
+    emit('quizCompleted', result);
 }
 
 // 「次へ」ボタンがクリックされた際の処理
-// Quiz.vue
 async function goToNextQuestion() {
-  // 現在のクイズの情報を取得
-  const newQuizData = shuffledQuizList[currentQuizIndex];
+  
+  // 前のクイズの情報をリセット
+  quizEndMessage.value = '';
+  selectedChoice.value = '';
+  currentQuizIndex++;
 
-  // 選択した回答が正しいかどうかを判定
-  const isCorrect = selectedChoice.value === newQuizData.correct_answer;
+  const totalQuestions = shuffledQuizList.length;
+  const correctAnswersCount = correctAnswers.length; // 正解したクイズの数を取得
+  console.log('correctAnswers.length:', correctAnswers.length);
+  console.log('totalQuestions:', totalQuestions);
+  console.log('correctAnswersCount:', correctAnswersCount);
 
-  // 現在のクイズの情報を保存
-  const quizResult = {
-    ...newQuizData, // クイズ情報を展開して保存
-    user_answer: selectedChoice.value, // ユーザーの回答を保存
-    isCorrect: isCorrect, // 正解かどうかを保存
-  };
-
-  // 選択した回答が正解だった場合、正解したクイズの情報を保存
-  if (isCorrect) {
-    correctAnswers.push(quizResult);
-  }
-
-  // クイズの終了判定
-  if (currentQuizIndex < shuffledQuizList.length - 1) {
-    // 次のクイズがある場合、次のクイズを表示
-    currentQuizIndex++;
+  if (currentQuizIndex < shuffledQuizList.length) {
+    // 次のクイズを表示する前に showQuiz を true に戻す
+    showQuiz.value = true;
     presentRandomQuiz();
-    selectedChoice.value = ''; // 選択肢をリセット
-    showAnswerButton.value = true; // 「回答」ボタンを表示
-    quizEndMessage.value = ''; // クイズ終了メッセージをリセット
+    // 「回答」ボタンを再度表示する
+    showAnswerButton.value = true;
+  // 正答率を更新せずに computedCorrectPercentage の値にアクセス
+
+  correctPercentage.value = (correctAnswersCount / totalQuestions) * 100;
   } else {
-    // クイズが全て終了した場合、クイズの結果を集計して quizCompleted イベントを発火
-    const result = {
-      correctAnswers: correctAnswers, // 正解したクイズの情報を含む配列
-      selectedChoice: selectedChoice.value, // 最後に選択した選択肢
-    };
-    eventBus.emit('quizCompleted', result); // quizCompleted イベントを発火
+    showResult(); // 最後の問題が終了した場合に結果を表示
   }
 }
-
-
 
 // 選択肢を選択する関数
 function selectChoice(choice) {
@@ -238,7 +263,7 @@ function selectChoice(choice) {
     selectedChoice.value = choice;
   }
 }
-// ふぁlkfごgfdgっhsffjhf
+// ふぁlkfごgfdgっhsffjhfkjshfksdhfkjhdsgdfgfgdfg
 
 
 </script>
@@ -271,18 +296,13 @@ function selectChoice(choice) {
     <div v-if="quizEndMessage !== ''">
       <p v-if="quizEndMessage.startsWith('正解')" class="font-semibold">{{ quizEndMessage }}</p>
       <p v-else>{{ quizEndMessage }}</p>
-      
-      <!-- クイズが終了している場合 -->
-      <template v-if="currentQuizIndex === shuffledQuizList.length - 1">
-        <Link :href="route('quiz.result', { correctPercentage: correctPercentage })" @click="showResult" class="mt-4 w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300">
-          結果を見る
-        </Link>
-      </template>
-
-      <!-- クイズが終了していない場合 -->
-      <button v-else @click="goToNextQuestion" class="mt-4 w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300">
+      <button v-if="currentQuizIndex < shuffledQuizList.length - 1" @click="goToNextQuestion" @quizCompleted="quizCompleted" class="mt-4 w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300">
         次へ
       </button>
+      <Link v-else :href="route('quiz.result', { correctPercentage: correctPercentage })" @click="showResult" class="mt-4 w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300">
+        結果を見る
+      </Link>
+
     </div>
   </div>
 </template>
