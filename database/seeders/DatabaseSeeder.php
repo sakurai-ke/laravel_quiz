@@ -16,6 +16,8 @@ class DatabaseSeeder extends Seeder
             // RoleSeeder::class,
             // UserSeeder::class,
             // CategorySeeder::class,
+            RecordSeeder::class,
+            ResultSeeder::class,
             ]);
 
         \App\Models\Quiz::factory(1000)->create();

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('records', function (Blueprint $table) {
             $table->id();
             $table->foreignId('category_id');
-            $table->foreignId('user_id');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->integer('total_questions');
             $table->integer('correct_answers');
             $table->float('accuracy');

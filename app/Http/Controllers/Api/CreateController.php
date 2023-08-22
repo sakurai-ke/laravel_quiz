@@ -206,6 +206,31 @@ public function uploadImage(Request $request)
     }
 }
 
+public function deleteImage(string $id)
+{
+    try {
+        $quiz = Quiz::findOrFail($id);
+
+        if ($quiz->image_src) {
+            // 画像が存在する場合は削除
+            $imagePath = storage_path('app/public/images/') . $quiz->image_src;
+            if (file_exists($imagePath)) {
+                Storage::delete('public/images/' . $quiz->image_src);
+            }
+
+            // クイズ情報の画像ファイル名を削除
+            $quiz->update(['image_src' => null]);
+
+            return response()->json(['message' => '画像ファイルを削除しました']);
+        }
+
+        return response()->json(['message' => '画像ファイルが見つかりませんでした'], 404);
+    } catch (\Exception $e) {
+        return response()->json(['error' => '画像ファイルの削除に失敗しました'], 500);
+    }
+}
+
+
     /**
      * Remove the specified resource from storage.
      */

@@ -74,7 +74,10 @@ async function submitForm() {
     // 画像ファイルが選択されていればフォームデータに追加
     if (selectedImage.value) {
         formData.append('image_src', selectedImage.value);
+    } else {
+        formData.append('image_src', ''); // 画像ファイルが選択されていない場合は空の値を設定
     }
+    
     try {
         ///api/quizzesにクイズデータを送信する
         const response = await axios.post('/api/makeQuizzes', formData);
@@ -193,13 +196,6 @@ function handleImageUpload(event) {
     </div>
 
         
-        <!-- <div class="mb-4">
-            <label class="block font-semibold">画像ファイル</label>
-            <input type="file" @change="handleImageUpload" accept="image/*">
-        </div> -->
-        <!-- <div class="mb-4" v-if="quizData.image_src">
-            <button type="button" @click="removeImage" class="mt-2 text-sm text-red-500 hover:text-red-700">画像を削除</button>
-        </div> -->
         <div class="mb-4">
         <button type="submit" class="py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300">
             送信

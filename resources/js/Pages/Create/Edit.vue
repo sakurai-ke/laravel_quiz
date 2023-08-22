@@ -109,10 +109,18 @@ function handleImageUpload(event) {
 }
 
 // 画像を削除する処理
-function removeImage() {
-    selectedImage.value = null;
-    selectedImagePreview.value = null;
-    quiz.image_src = ''; // 画像ファイル名をクリア
+async function removeImage() {
+  selectedImage.value = null;
+  selectedImagePreview.value = null;
+  quiz.value.image_src = ''; // 画像ファイル名をクリア
+
+  // 画像ファイルを削除するためのAPIリクエストを送信
+  try {
+    await axios.delete(`/api/deleteImage/${quiz.value.id}`);
+    console.log('画像ファイルを削除しました');
+  } catch (error) {
+    console.error('画像ファイルの削除に失敗しました', error);
+  }
 }
 
 </script>

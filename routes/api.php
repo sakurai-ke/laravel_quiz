@@ -17,6 +17,9 @@ use App\Http\Controllers\Api\CreateController;
 |
 */
 
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/quiz-results', [RecordController::class, 'showRecord']); // クイズ結果情報を取得するエンドポイント
+});
 
 // RecordのAPIルート
 Route::post('/record', [RecordController::class, 'storeRecord']); // POSTリクエストを受けてデータを保存
@@ -32,6 +35,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/editQuizzes/{id}', [CreateController::class, 'editUserQuizzes']); // 編集画面表示
     Route::put('/updateQuizzes/{id}', [CreateController::class, 'updateUserQuizzes']); // クイズ更新処理
     Route::post('/uploadImage', [CreateController::class, 'uploadImage']); // クイズ更新処理
+    Route::delete('/deleteImage/{id}', [CreateController::class, 'deleteImage']); // 画像ファイル削除用のルート
+
 });
 
 

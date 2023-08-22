@@ -34,8 +34,8 @@ Route::get('/create', [CreateController::class, 'create'])->name('create');
 Route::post('/create', [CreateController::class, 'createQuiz']);
 
 // 以下のルートを追加
-Route::get('/record', [RecordController::class, 'show'])
-    ->name('record')
+Route::get('/records', [RecordController::class, 'index'])
+    ->name('records')
     ->middleware(['auth', 'verified']);
 
 // クイズの結果表示用ページ

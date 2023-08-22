@@ -67,7 +67,13 @@ function getImageUrl(imageSrc) {
 
                 <div class="border-b pb-2">
                     <p class="text-lg font-semibold">画像</p>
-                    <img :src="getImageUrl(quiz.image_src)" alt="クイズの画像" class="max-h-40">
+                    <!-- データベースに画像ファイルの情報があるかどうかをチェック -->
+                    <template v-if="quiz.image_src">
+                        <img :src="getImageUrl(quiz.image_src)" alt="クイズの画像" class="max-h-40">
+                    </template>
+                    <template v-else>
+                        <p class="text-gray-700">画像なし</p>
+                    </template>
                 </div>
 
             </div>

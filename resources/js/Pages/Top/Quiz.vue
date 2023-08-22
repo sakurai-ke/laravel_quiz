@@ -26,7 +26,7 @@ const shuffledChoices = ref([]);
 
 // クイズが終了した際のメッセージ
 const quizEndMessage = ref('');
-const showQuiz = ref(true); // 新しい変数を追加
+// const showQuiz = ref(true); // 新しい変数を追加
 
 // const quizList = ref([]);
 // この変数の初期値を -1 に設定しているのは、クイズが開始された直後に最初のクイズが表示されるようにするため。インデックスは通常 0 
@@ -144,50 +144,29 @@ async function fetchAndShuffleQuizzes() {
 // 「回答」ボタンがクリックされたときの処理
 async function submitAnswer() {
   const newQuizData = shuffledQuizList[currentQuizIndex];
-  // 選択した回答が正しい回答と一致した場合
-  if (selectedChoice.value === newQuizData.correct_answer) {
-    quizEndMessage.value = `正解！\n${newQuizData.explain}`;
-    // ユーザーがクイズに対して選択した回答を newQuizData オブジェクト内の user_answer プロパティに保存
-    newQuizData.user_answer = selectedChoice.value;
-    // ユーザーがクイズに正解した場合に、その正解したクイズのデータを correctAnswers 配列に追加
-    correctAnswers.push(newQuizData); 
-    console.log('correctAnswers:', correctAnswers);
-      // 正答率を計算する
-  const totalQuestions = shuffledQuizList.length;
-  correctPercentage.value = (correctAnswers.length / totalQuestions) * 100;
 
+  // 選択した回答が正解かどうかの判定処理を行う
+  const isCorrect = selectedChoice.value === newQuizData.correct_answer;
+
+  // 回答結果に基づいてメッセージを更新
+  if (isCorrect) {
+    quizEndMessage.value = `正解！\n${newQuizData.explain}`;
+    newQuizData.user_answer = selectedChoice.value;
+    correctAnswers.push(newQuizData);
+    correctPercentage.value = (correctAnswers.length / shuffledQuizList.length) * 100;
   } else {
     quizEndMessage.value = `不正解！正解は「${newQuizData.correct_answer}」です。\n${newQuizData.explain}`;
-    newQuizData.user_answer = selectedChoice.value; // user_answer を更新
+    newQuizData.user_answer = selectedChoice.value;
   }
-
-  // quizState.value = 'answer'; // 「回答」後の状態に変更
 
   // メッセージ更新が完了したら次のクイズに進む
   await nextTick();
   
   // 「回答」ボタンを非表示にする
   showAnswerButton.value = false;
-}
 
-// 「次へ」ボタンがクリックされた際の処理
-async function goToNextQuestion() {
-  // 前のクイズの情報をリセット
-  quizEndMessage.value = '';
-  selectedChoice.value = '';
-  currentQuizIndex++;
-
-  if (currentQuizIndex < shuffledQuizList.length-1) {
-    // 次のクイズを表示する前に showQuiz を true に戻す
-    showQuiz.value = true;
-    presentRandomQuiz();
-    // 「回答」ボタンを再度表示する
-    showAnswerButton.value = true;
-  } else {
-    showQuiz.value = true;
-    presentRandomQuiz();
-    // 「回答」ボタンを再度表示する
-    showAnswerButton.value = true;
+  // もし最後のクイズであれば、結果を保存
+  if (currentQuizIndex === shuffledQuizList.length - 1) {
     try {
       // すべてのクイズが終了した場合に結果を保存
       const record = {
@@ -227,6 +206,27 @@ async function goToNextQuestion() {
 }
 
 
+// 「次へ」ボタンがクリックされた際の処理
+async function goToNextQuestion() {
+  // 前のクイズの情報をリセット
+  quizEndMessage.value = ''; // クイズ終了メッセージをリセット
+  selectedChoice.value = ''; // 選択した回答をリセット
+
+  if (currentQuizIndex < shuffledQuizList.length-1) {
+
+    currentQuizIndex++; // インデックスを次のクイズに更新
+    
+    presentRandomQuiz(); //次のクイズを出題する
+    // 「回答」ボタンを再度表示する
+    showAnswerButton.value = true;
+  } else {
+
+    // 「回答」ボタンを再度表示する
+    showAnswerButton.value = true;
+  }
+}
+
+
 // 選択肢を選択する関数
 function selectChoice(choice) {
   // 「回答」ボタンが表示されている場合
@@ -235,14 +235,17 @@ function selectChoice(choice) {
     selectedChoice.value = choice;
   }
 }
-// ふぁlkfごgfdgっhsffjhfkjshfksdhfkjhdsgdfgfgdfg
-
 
 </script>
 
 <template>
 <p>{{ correctPercentage }}</p>
   <div class="w-full max-w-md mx-auto p-6 bg-white rounded-md shadow-md">
+    
+    <p class="mb-2 text-gray-600">
+      {{ currentQuizIndex + 1 }}問目 / {{ shuffledQuizList.length }}問中
+    </p>
+
     <h2 class="text-xl font-semibold mb-4">{{ quizData.title }}</h2>
     <ul class="space-y-2">
       <li v-for="(choice, index) in shuffledChoices" :key="index">

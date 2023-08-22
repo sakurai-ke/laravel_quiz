@@ -27,7 +27,7 @@ class Record extends Model
     }
     
     public function results() {
-        return $this->hasMany(Quiz::class);
-            }            
+        return $this->hasMany(Result::class); // オプションでデフォルト値を指定
+    }
 
 }

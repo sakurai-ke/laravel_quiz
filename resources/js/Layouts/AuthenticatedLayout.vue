@@ -35,7 +35,7 @@ const showingNavigationDropdown = ref(false);
                                 <NavLink :href="route('top')" :active="route().current('top')">
                                     クイズを解く
                                 </NavLink>
-                                <NavLink :href="route('record')" :active="route().current('record')">
+                                <NavLink :href="route('records')" :active="route().current('records')">
                                     記録
                                 </NavLink>
                                 <NavLink :href="route('create')" :active="route().current('create')">
@@ -130,7 +130,7 @@ const showingNavigationDropdown = ref(false);
                         <ResponsiveNavLink :href="route('top')" :active="route().current('top')">
                             クイズを解く
                         </ResponsiveNavLink>
-                        <ResponsiveNavLink :href="route('record')" :active="route().current('record')">
+                        <ResponsiveNavLink :href="route('records')" :active="route().current('records')">
                             記録
                         </ResponsiveNavLink>
                         <ResponsiveNavLink :href="route('create')" :active="route().current('create')">

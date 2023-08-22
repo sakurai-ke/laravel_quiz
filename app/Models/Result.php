@@ -16,11 +16,11 @@ class Result extends Model
         'correct',
     ];
 
-    public function result() {
-        return $this->belongsTo(User::class);
+    public function record() {
+        return $this->belongsTo(Record::class);
     }
 
     public function quiz() {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Quiz::class);
     }
 }

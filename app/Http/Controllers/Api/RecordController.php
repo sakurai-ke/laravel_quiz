@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Record;
 use App\Models\Result;
+use Illuminate\Support\Facades\Auth;
 
 class RecordController extends Controller
 {
@@ -54,4 +55,34 @@ class RecordController extends Controller
 
         return response()->json(['message' => 'Result created successfully', 'data' => $result]);
     }
+
+public function index()
+{
+    // ログインユーザーのIDを取得
+    $userId = Auth::id();
+
+    // ログインユーザーが実施したクイズの結果情報を取得
+    $records = Record::with(['results', 'user'])
+        ->where('user_id', $userId)
+        ->get();
+
+    // Inertiaを使用してデータをVueコンポーネントに渡す
+    return Inertia::render('Record/Record', [
+        'records' => $records,
+    ]);
+}
+
+public function showRecord()
+{
+    // ログインユーザーのIDを取得
+    $userId = Auth::id();
+
+    $quizResults = Record::with(['category', 'results', 'results.quiz'])
+        ->where('user_id', $userId) // ログインユーザーのクイズ結果のみ取得
+        ->select('id', 'category_id', 'correct_answers', 'total_questions', 'accuracy', 'created_at')
+        ->get();
+
+    return response()->json($quizResults);
+}
+
 }

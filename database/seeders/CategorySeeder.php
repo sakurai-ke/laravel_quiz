@@ -19,6 +19,7 @@ class CategorySeeder extends Seeder
                 ['name' => '雑学'],
                 ['name' => '自然'],
                 ['name' => 'IT'],
+                ['name' => 'アニメ'],
             ]);
         }
     

@@ -37,6 +37,6 @@ class Quiz extends Model
     }
 
     public function result() {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Result::class);
     }
 }
