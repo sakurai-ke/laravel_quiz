@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('results', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id');
-            $table->foreignId('category_id');
+            $table->foreignId('record_id');
+            $table->foreignId('quiz_id');
             $table->string('selected_choice');
             $table->boolean('correct');
             $table->timestamps();

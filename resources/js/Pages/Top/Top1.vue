@@ -1,4 +1,4 @@
-<script setup>
+<!-- <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { ref, onMounted } from 'vue';
@@ -13,6 +13,7 @@ const selectedCategory = ref(null);
 const selectedNumQuestions = ref(5); // 問題数の選択肢（初期値を10に設定）
 const categories = ref([]);
 const isQuizStarted = ref(false); // クイズ開始する際にtrueに切り替える
+const record_id = ref(null); // record_idのリアクティブ変数を宣言
 
 const currentQuiz = ref({
     // クイズ情報のプロパティ
@@ -114,6 +115,23 @@ async function startQuiz() {
             console.log('result.choices:', result.choices); 
             console.log('currentQuiz.value.choices:', currentQuiz.value.choices);
 
+            // クイズ開始した情報をRecordテーブルに保存する
+            const record = {
+                category_id: selectedCategory.value,
+                // user_id: currentUser.id, // ユーザーIDの取得方法に合わせて変更
+                total_questions: selectedNumQuestions.value,
+                correct_answers: 0, // 初期値を0に設定
+                accuracy: 0, // 初期値を0に設定
+                created_at: new Date(),
+                updated_at: new Date(),
+            };
+
+            // Recordテーブルに保存
+            const response = await axios.post('/api/record', record);
+            record_id.value = response.data.data.id; // 生成されたrecordのidを取得
+            
+            console.log('response.data.data.id:', record_id);
+
             isQuizStarted.value = true; // クイズが開始されたことをフラグで示す
 
         } else {
@@ -161,9 +179,8 @@ async function startQuiz() {
     
             <div v-else class="w-full max-w-md">
                 <!-- クイズが開始された場合、クイズ出題画面を表示 -->
-                <Quiz :quizData="currentQuiz" :selectedNumQuestions="Number(selectedNumQuestions)" 
-                :selectedCategory="selectedCategory" />
+                <Quiz :quizData="currentQuiz" :selectedNumQuestions="Number(selectedNumQuestions)" :record_id="record_id"/>
             </div>
         </div>
     </AuthenticatedLayout>
-</template>
+</template> -->

@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('records', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('quiz_id');
-            $table->foreignId('result_id');
+            $table->foreignId('category_id');
+            $table->foreignId('user_id');
             $table->integer('total_questions');
             $table->integer('correct_answers');
             $table->float('accuracy');

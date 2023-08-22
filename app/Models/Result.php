@@ -10,8 +10,8 @@ class Result extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
-        'category_id',
+        'record_id',
+        'quiz_id',
         'selected_choice',
         'correct',
     ];

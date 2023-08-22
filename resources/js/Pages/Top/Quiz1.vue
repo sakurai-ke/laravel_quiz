@@ -1,4 +1,4 @@
-<script setup>
+<!-- <script setup>
 // import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { ref, onMounted, defineProps, defineEmits, nextTick } from 'vue';
@@ -11,12 +11,10 @@ import { computed } from 'vue';
 const props = defineProps({
     quizData: Object, // 親コンポーネントから渡されるクイズデータ
     selectedNumQuestions: Number, // 親コンポーネントから渡される問題数データ
-    // record_id: Number, // Top.vueから受け取るrecord_id
-    selectedCategory: Number, 
+    record_id: Number, // Top.vueから受け取るrecord_id
 });
 console.log('selectedNumQuestionsの値:', props.selectedNumQuestions);
 console.log('record_idの値:', props.record_id);
-console.log('selectedCategoryの値:', props.selectedCategory);
 
 // ユーザが選択した回答を保持するためのリアクティブな変数
 // ラジオボタンなどのフォームコントロールの v-model ディレクティブにバインドされ、ユーザが選択した回答が保持
@@ -38,16 +36,14 @@ let shuffledQuizList = [];
 
 const quizData = ref(props.quizData); // Create a reactive variable
     // レコードIDのプロパティ
-// const record_id = ref(props.record_id);
-const selectedCategory = ref(props.selectedCategory);
-const selectedNumQuestions = ref(props.selectedNumQuestions);
+const record_id = ref(props.record_id);
 // この変数を使用して「回答」ボタンの表示/非表示を制御
 const showAnswerButton = ref(true);
 const correctAnswers = []; // 正解したクイズのデータを格納するための配列
 
 const correctPercentage = ref(0); // 仮に初期値として 0 を設定
 // const accuracy = ref(0); // 初期値として 0 を設定
-const record_id = ref(null); // もしくは、適切な値を代入
+// const record_id = ref(null); // もしくは、適切な値を代入
 const answeredQuestions = ref(0);
 
 // 初回にクイズデータを取得してシャッフル
@@ -156,12 +152,49 @@ async function submitAnswer() {
   const totalQuestions = shuffledQuizList.length;
   correctPercentage.value = (correctAnswers.length / totalQuestions) * 100;
 
+        // 正答数を1増やす
+        // correctAnswers.value++;
+
+        // 正答率を計算して更新
+        // accuracy.value = (correctAnswers.value / answeredQuestions.value) * 100;
+
+        console.log('correctAnswers', correctAnswers.length );
+        // console.log('accuracy.value', accuracy);
+
+        const result = {
+            record_id: record_id.value,
+            quiz_id: newQuizData.id,
+            selected_choice: selectedChoice.value,
+            correct: true,
+            created_at: new Date(),
+            updated_at: new Date(),
+        };
+        console.log('result', result);
+        await axios.post('/api/result', result);
+
+        await nextTick();
+        showAnswerButton.value = false;
+
   } else {
     quizEndMessage.value = `不正解！正解は「${newQuizData.correct_answer}」です。\n${newQuizData.explain}`;
     newQuizData.user_answer = selectedChoice.value; // user_answer を更新
-  }
 
-  // quizState.value = 'answer'; // 「回答」後の状態に変更
+      // 正答数を1増やさない（不正解のため）
+    // 正答率を計算して更新（正答数は増えないため、変更不要）
+
+    console.log('correctAnswers', correctAnswers.length );
+        // console.log('accuracy.value', accuracy);
+
+    const result = {
+      record_id: record_id.value, // Recordテーブルへの参照IDを指定
+        quiz_id: newQuizData.id,
+        selected_choice: selectedChoice.value,
+        correct: false,
+        created_at: new Date(),
+        updated_at: new Date(),
+    };
+    console.log('result', result);
+    await axios.post('/api/result', result);
 
   // メッセージ更新が完了したら次のクイズに進む
   await nextTick();
@@ -169,63 +202,40 @@ async function submitAnswer() {
   // 「回答」ボタンを非表示にする
   showAnswerButton.value = false;
 }
+}
 
 // 「次へ」ボタンがクリックされた際の処理
 async function goToNextQuestion() {
+  
   // 前のクイズの情報をリセット
   quizEndMessage.value = '';
   selectedChoice.value = '';
   currentQuizIndex++;
 
-  if (currentQuizIndex < shuffledQuizList.length-1) {
+  const totalQuestions = shuffledQuizList.length;
+  const correctAnswersCount = correctAnswers.length; // 正解したクイズの数を取得
+  console.log('correctAnswers.length:', correctAnswers.length);
+  console.log('totalQuestions:', totalQuestions);
+  console.log('correctAnswersCount:', correctAnswersCount);
+
+  if (currentQuizIndex < shuffledQuizList.length) {
     // 次のクイズを表示する前に showQuiz を true に戻す
     showQuiz.value = true;
     presentRandomQuiz();
     // 「回答」ボタンを再度表示する
     showAnswerButton.value = true;
+  // 正答率を更新せずに computedCorrectPercentage の値にアクセス
   } else {
-    showQuiz.value = true;
-    presentRandomQuiz();
-    // 「回答」ボタンを再度表示する
-    showAnswerButton.value = true;
-    try {
-      // すべてのクイズが終了した場合に結果を保存
-      const record = {
-        category_id: selectedCategory.value,
-        total_questions: shuffledQuizList.length,
-        correct_answers: correctAnswers.length,
-        accuracy: correctPercentage.value,
-        created_at: new Date(),
-        updated_at: new Date(),
-      };
-
-      // レコードを保存
-      const response = await axios.post('/api/record', record);
-      const recordId = response.data.data.id;
-
-      // クイズ結果を保存
-      for (const quizResult of shuffledQuizList) {
+        // クイズが最後まで終了した場合に結果を保存
         const result = {
-          record_id: recordId,
-          quiz_id: quizResult.id,
-          selected_choice: quizResult.user_answer,
-          correct: quizResult.user_answer === quizResult.correct_answer,
-          created_at: new Date(),
-          updated_at: new Date(),
+            record_id: record_id.value,
+            correct_answers: correctAnswersCount,
+            accuracy: correctPercentage.value,
         };
-        await axios.post('/api/result', result);
-      }
-
-      // 結果を保存したら適切な処理を行う（例: 結果ページへの遷移）
-      // ここに遷移処理やメッセージ表示などを追加
-
-    } catch (error) {
-      console.error('結果の保存に失敗しました', error);
-      // エラー処理を追加
-    }
+        console.log('result:', result);
+        await axios.post('/api/record', result); // このAPIエンドポイントが必要です
   }
 }
-
 
 // 選択肢を選択する関数
 function selectChoice(choice) {
@@ -277,4 +287,4 @@ function selectChoice(choice) {
 
     </div>
   </div>
-</template>
+</template> -->

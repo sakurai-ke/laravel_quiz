@@ -11,8 +11,8 @@ class Record extends Model
     use HasFactory;
 
     protected $fillable = [
-        'quiz_id',
-        'result_id',
+        'category_id',
+        'user_id',
         'total_questions',
         'correct_answers',
         'accuracy',
