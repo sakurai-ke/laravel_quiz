@@ -17,4 +17,27 @@ export default defineConfig({
             },
         }),
     ],
+    resolve: {
+        alias: {
+            // 'vue3-chart-v2' のパッケージ名をここに追加
+            'vue3-chart-v2': 'vue3-chart-v2',
+        },
+    },
 });
+
+// export default defineConfig({
+//     plugins: [
+//         laravel({
+//             input: 'resources/js/app.js',
+//             refresh: true,
+//         }),
+//         vue({
+//             template: {
+//                 transformAssetUrls: {
+//                     base: null,
+//                     includeAbsolute: false,
+//                 },
+//             },
+//         }),
+//     ],
+// });

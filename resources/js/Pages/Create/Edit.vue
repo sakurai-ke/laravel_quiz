@@ -1,5 +1,7 @@
 <script setup>
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { ref, onMounted } from 'vue';
+import { Head } from '@inertiajs/vue3';
 import axios from 'axios';
 import BreezeValidationErrors from '@/Components/ValidationErrors.vue'
 
@@ -126,69 +128,76 @@ async function removeImage() {
 </script>
 
 <template>
-  <div class="bg-gray-100 py-8">
-    <div class="max-w-3xl mx-auto px-4">
-      <h2 class="text-2xl font-semibold mb-4">クイズ編集</h2>
-      <BreezeValidationErrors :errors="errors" />
-        <div v-if="errorMessage" class="mb-4 text-red-600" v-html="errorMessage"></div>
+  <Head title="クイズ編集" />
 
-      <form @submit.prevent="updateQuiz" enctype="multipart/form-data">
-        <div class="bg-white rounded shadow-md p-4">
+  <AuthenticatedLayout>
+    <template #header>
+        <h2 class="font-semibold text-2xl text-gray-800 leading-tight">クイズ編集</h2>
+    </template>
+    <div class="bg-gray-100 py-8">
+      <div class="max-w-3xl mx-auto px-4">
+        <h2 class="text-2xl font-semibold mb-4">クイズ編集</h2>
+        <BreezeValidationErrors :errors="errors" />
+          <div v-if="errorMessage" class="mb-4 text-red-600" v-html="errorMessage"></div>
 
-          <div class="mb-4">
-            <label for="category" class="block font-semibold mb-1">カテゴリー:</label>
-            <select v-model="quiz.category_id"  id="category" class="w-full rounded-md p-2 border">
-              <option v-for="category in categories" :key="category.id" :value="category.id">
-                {{ category.name }}
-              </option>
-            </select>
-          </div>
+        <form @submit.prevent="updateQuiz" enctype="multipart/form-data">
+          <div class="bg-white rounded shadow-md p-4">
 
-          <div class="mb-4">
-            <label for="title" class="block font-semibold mb-1">問題文:</label>
-            <input v-model="quiz.title" id="title" type="text" class="w-full rounded-md p-2 border" />
-          </div>
-          <div class="mb-4">
-            <label for="correctAnswer" class="block font-semibold mb-1">正解:</label>
-            <input v-model="quiz.correct_answer" id="correctAnswer" type="text" class="w-full rounded-md p-2 border" />
-          </div>
-          <div class="mb-4">
-            <label for="wrongAnswer1" class="block font-semibold mb-1">選択肢1:</label>
-            <input v-model="quiz.wrong_answer_1" id="wrongAnswer1" type="text" class="w-full rounded-md p-2 border" />
-          </div>
-          <div class="mb-4">
-            <label for="wrongAnswer2" class="block font-semibold mb-1">選択肢2:</label>
-            <input v-model="quiz.wrong_answer_2" id="wrongAnswer2" type="text" class="w-full rounded-md p-2 border" />
-          </div>
-          <div class="mb-4">
-            <label for="wrongAnswer3" class="block font-semibold mb-1">選択肢3:</label>
-            <input v-model="quiz.wrong_answer_3" id="wrongAnswer3" type="text" class="w-full rounded-md p-2 border" />
-          </div>
-          <!-- <div class="mb-4">
-            <label for="hint" class="block font-semibold mb-1">ヒント:</label>
-            <textarea v-model="quiz.hint" id="hint" type="text" class="w-full rounded-md p-2 border"></textarea>
-          </div> -->
-          <div class="mb-4">
-            <label for="explain" class="block font-semibold mb-1">解説:</label>
-            <textarea v-model="quiz.explain" id="explain" type="text" class="w-full rounded-md p-2 border"></textarea>
-          </div>
+            <div class="mb-4">
+              <label for="category" class="block font-semibold mb-1">カテゴリー:</label>
+              <select v-model="quiz.category_id"  id="category" class="w-full rounded-md p-2 border">
+                <option v-for="category in categories" :key="category.id" :value="category.id">
+                  {{ category.name }}
+                </option>
+              </select>
+            </div>
 
-          <div class="mb-4">
-    <label for="image" class="block font-semibold mb-1">画像ファイル:</label>
-    <input type="file" id="image" @change="handleImageUpload" accept="image/*">
-    <div v-if="selectedImagePreview" class="mt-2">
-      <img :src="selectedImagePreview" alt="選択した画像" class="max-h-40">
-      <button type="button" @click="removeImage" class="mt-2 text-sm text-red-500 hover:text-red-700">
-        画像を削除
-      </button>
+            <div class="mb-4">
+              <label for="title" class="block font-semibold mb-1">問題文:</label>
+              <input v-model="quiz.title" id="title" type="text" class="w-full rounded-md p-2 border" />
+            </div>
+            <div class="mb-4">
+              <label for="correctAnswer" class="block font-semibold mb-1">正解:</label>
+              <input v-model="quiz.correct_answer" id="correctAnswer" type="text" class="w-full rounded-md p-2 border" />
+            </div>
+            <div class="mb-4">
+              <label for="wrongAnswer1" class="block font-semibold mb-1">選択肢1:</label>
+              <input v-model="quiz.wrong_answer_1" id="wrongAnswer1" type="text" class="w-full rounded-md p-2 border" />
+            </div>
+            <div class="mb-4">
+              <label for="wrongAnswer2" class="block font-semibold mb-1">選択肢2:</label>
+              <input v-model="quiz.wrong_answer_2" id="wrongAnswer2" type="text" class="w-full rounded-md p-2 border" />
+            </div>
+            <div class="mb-4">
+              <label for="wrongAnswer3" class="block font-semibold mb-1">選択肢3:</label>
+              <input v-model="quiz.wrong_answer_3" id="wrongAnswer3" type="text" class="w-full rounded-md p-2 border" />
+            </div>
+            <!-- <div class="mb-4">
+              <label for="hint" class="block font-semibold mb-1">ヒント:</label>
+              <textarea v-model="quiz.hint" id="hint" type="text" class="w-full rounded-md p-2 border"></textarea>
+            </div> -->
+            <div class="mb-4">
+              <label for="explain" class="block font-semibold mb-1">解説:</label>
+              <textarea v-model="quiz.explain" id="explain" type="text" class="w-full rounded-md p-2 border"></textarea>
+            </div>
+
+            <div class="mb-4">
+      <label for="image" class="block font-semibold mb-1">画像ファイル:</label>
+      <input type="file" id="image" @change="handleImageUpload" accept="image/*">
+      <div v-if="selectedImagePreview" class="mt-2">
+        <img :src="selectedImagePreview" alt="選択した画像" class="max-h-40">
+        <button type="button" @click="removeImage" class="mt-2 text-sm text-red-500 hover:text-red-700">
+          画像を削除
+        </button>
+      </div>
     </div>
-  </div>
 
-        </div>
-        <div class="mt-4">
-          <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">更新</button>
-        </div>
-      </form>
+          </div>
+          <div class="mt-4">
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">更新</button>
+          </div>
+        </form>
+      </div>
     </div>
-  </div>
+  </AuthenticatedLayout>
 </template>

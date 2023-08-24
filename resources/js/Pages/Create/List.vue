@@ -1,5 +1,6 @@
 <script setup>
-import { Link } from '@inertiajs/vue3';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { Link, Head } from '@inertiajs/vue3';
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
@@ -22,15 +23,21 @@ async function getquizzes() {
 </script>
 
 <template>
-  <div class="bg-gray-100 py-8">
-    <div class="max-w-3xl mx-auto px-4">
-      <h2 class="text-2xl font-semibold mb-4">クイズ一覧</h2>
-      <ul class="space-y-4">
-        <li v-for="quiz in quizzes" :key="quiz.id" class="bg-white rounded shadow-md p-4">
-          <Link :href="'/list/' + quiz.id" class="block hover:underline">{{ quiz.title}}</Link>
-        </li>
-      </ul>
-    </div>  
-  </div>
+  <Head title="クイズ一覧" />
+
+  <AuthenticatedLayout>
+    <template #header>
+        <h2 class="font-semibold text-2xl text-gray-800 leading-tight">クイズ一覧</h2>
+    </template>
+    <div class="bg-gray-100 py-8">
+      <div class="max-w-3xl mx-auto px-4">
+        <ul class="space-y-4">
+          <li v-for="quiz in quizzes" :key="quiz.id" class="bg-white rounded shadow-md p-4">
+            <Link :href="'/list/' + quiz.id" class="block hover:underline">{{ quiz.title}}</Link>
+          </li>
+        </ul>
+      </div>  
+    </div>
+  </AuthenticatedLayout>
 </template>
 
