@@ -14,6 +14,8 @@ const expandedRecordId = ref(null); // アコーディオンの展開状態を�
 const fromDate = ref(null); // Fromの日付
 const toDate = ref(null); // Toの日付
 
+const categoryAccuracyData = ref([]); // カテゴリー別の正答率データを保持する変数
+
 // データを取得する関数
 async function fetchQuizRecords() {
     try {
@@ -48,12 +50,14 @@ let lastFilteredResults = []; // 前回の検索結果を保存する変数
 async function searchQuizResults() {
   try {
     const response = await axios.get('/api/quiz-results');
+    // sort関数で新しい順に並べる
     const newQuizRecords = response.data.sort((a, b) => {
       return new Date(b.created_at) - new Date(a.created_at);
     });
 
     let filteredResults = newQuizRecords;
 
+    // From日付とTo日付が選択され、From日付がTo日付よりも未来の日付である場合、以下の処理
     if (fromDate.value && toDate.value && new Date(fromDate.value) > new Date(toDate.value)) {
       // バリデーションエラーがある場合、エラーメッセージを表示して処理を中断
       validationError.value = errorMessages.dateValidation;
@@ -81,46 +85,123 @@ async function searchQuizResults() {
     }
 
     quizRecords.value = filteredResults;
-    lastFilteredResults = filteredResults; // 新しい検索結果を保存
+    // フィルタリング条件を変更して新しい検索を行った場合、もしバリデーションエラーが発生して新しい検索結果が得られなかった場合でも、
+    // 前回のフィルタリング結果を保持して表示が可能
+    lastFilteredResults = filteredResults;
+
+        // カテゴリー別の正答率データを取得
+        await fetchCategoryAccuracyData();
+
+        console.log('categoryAccuracyData.valueの値:', categoryAccuracyData.value);
   } catch (error) {
     console.error('クイズの結果情報の取得に失敗しました', error);
   }
 }
 
+const categoryMapping = ref({});
 
-// レーダーチャートのデータを作成する関数
-function generateCategoryChartData(records) {
-  const categoryData = {};
+// カテゴリー情報を取得する関数
+async function fetchCategories() {
+  try {
+    const response = await axios.get('/api/categories'); // カテゴリー情報を取得するエンドポイント
+    const categories = response.data;
 
-  // カテゴリーごとに正答率を集計
-  records.value.forEach(record => { // recordsの値には.valueを使用
-    if (!categoryData[record.category.name]) {
-      categoryData[record.category.name] = {
-        category: record.category.name,
-        accuracy: 0,
-        count: 0,
-      };
-    }
-    categoryData[record.category.name].accuracy += record.accuracy;
-    categoryData[record.category.name].count++;
-  });
-
-  // 正答率を平均に変換
-  Object.keys(categoryData).forEach(categoryName => {
-    const category = categoryData[categoryName];
-    category.accuracy = category.accuracy / category.count;
-  });
-
-  return Object.values(categoryData);
+    // カテゴリー情報をマッピングにセット
+    categories.forEach(category => {
+      categoryMapping.value[category.id] = category.name;
+    });
+  } catch (error) {
+    console.error('カテゴリー情報の取得に失敗しました', error);
+  }
 }
 
-// カテゴリーごとのデータを計算
-const categoryData = computed(() => generateCategoryChartData(quizRecords));
+// カテゴリー別の正答率データを取得する関数
+async function fetchCategoryAccuracyData() {
+  try {
+    // クイズ結果を取得（期間指定に基づいて）
+    const response = await axios.get('/api/quiz-results');
+
+    // 期間指定のフィルタリングを行う
+    let filteredResults = response.data;
+    
+    if (fromDate.value) {
+      const fromDateTime = utcToZonedTime(parseISO(fromDate.value), 'UTC');
+      filteredResults = filteredResults.filter(record => new Date(record.created_at) >= fromDateTime);
+    }
+
+    if (toDate.value) {
+      const nextDay = new Date(toDate.value);
+      nextDay.setDate(nextDay.getDate() + 1);
+      filteredResults = filteredResults.filter(record => new Date(record.created_at) < nextDay);
+    }
+
+    // カテゴリー別の正答数を計算
+    const categoryCorrectAnswers = {};
+    const categoryTotalQuestions = {};
+
+    filteredResults.forEach(record => {
+      const categoryId = record.category_id;
+
+      if (!categoryCorrectAnswers[categoryId]) {
+        categoryCorrectAnswers[categoryId] = 0;
+      }
+      if (!categoryTotalQuestions[categoryId]) {
+        categoryTotalQuestions[categoryId] = 0;
+      }
+
+      categoryCorrectAnswers[categoryId] += record.correct_answers;
+      categoryTotalQuestions[categoryId] += record.total_questions;
+    });
+
+    // カテゴリー別の正答率を計算して配列に格納
+    categoryAccuracyData.value = Object.keys(categoryCorrectAnswers).map(categoryId => ({
+      name: getCategoryName(categoryId),
+      accuracy: calculateAccuracy(categoryCorrectAnswers[categoryId], categoryTotalQuestions[categoryId]),
+    }));
+
+        // 未回答のカテゴリーを追加
+        const unansweredCategories = fetchUnansweredCategories(filteredResults.map(record => record.category_id));
+    unansweredCategories.forEach(categoryId => {
+      categoryAccuracyData.value.push({
+        name: getCategoryName(categoryId),
+        accuracy: 0,
+      });
+    });
+
+  } catch (error) {
+    console.error('カテゴリー別の正答率データの取得に失敗しました', error);
+  }
+}
+
+// 未回答のカテゴリーを特定する関数
+function fetchUnansweredCategories(answeredCategories) {
+  const allCategories = Object.keys(categoryMapping.value).map(Number);
+  return allCategories.filter(categoryId => !answeredCategories.includes(categoryId));
+}
+
+// カテゴリー名を取得するヘルパー関数
+function getCategoryName(categoryId) {
+  return categoryMapping.value[categoryId] || 'Unknown Category';
+}
+
+
+// 正答率を計算する関数
+function calculateAccuracy(correctAnswers, totalQuestions) {
+  if (totalQuestions === 0) {
+    return 0;
+  }
+  return ((correctAnswers / totalQuestions) * 100).toFixed(2);
+}
+
 
 // コンポーネントがマウントされたときにデータを取得
 onMounted(() => {
     fetchQuizRecords();
+    fetchCategories(); // カテゴリー情報を取得
+    fetchCategoryAccuracyData(); // レーダーチャートのデータを取得
+
 });
+
 </script>
 
 <template>
@@ -130,7 +211,6 @@ onMounted(() => {
     <template #header>
         <h2 class="font-semibold text-2xl text-gray-800 leading-tight">クイズの結果情報</h2>
     </template>
-
     <div class="bg-gray-100 py-8 px-4">
       <div class="max-w-3xl mx-auto">
 
@@ -151,9 +231,10 @@ onMounted(() => {
 
               <!-- バリデーションエラーメッセージを表示 -->
               <p v-if="validationError" class="text-red-500">{{ validationError }}</p>
+                  
+              <Chart :categoryData="categoryAccuracyData" v-if="categoryAccuracyData.length > 0" />
 
-              <Chart :categoryData="categoryData"></Chart>
-                          
+
         <ul>
           <li v-for="record in quizRecords" :key="record.id" class="bg-white shadow-md p-4 mb-4 rounded-md">
             <div class="flex justify-between items-center">

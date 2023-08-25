@@ -240,6 +240,7 @@ function selectChoice(choice) {
 
 <template>
 <p>{{ correctPercentage }}</p>
+{{ currentQuizIndex }}
   <div class="w-full max-w-md mx-auto p-6 bg-white rounded-md shadow-md">
     
     <p class="mb-2 text-gray-600">
