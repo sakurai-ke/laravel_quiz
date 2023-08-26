@@ -66,12 +66,16 @@ return response()->json(['message' => 'クイズが作成されました'], 201)
     /**
      * Display a listing of the resource.
      */
-public function getUserQuizzes()
-{
-    $userId = auth()->id();
-    $quizzes = Quiz::where('user_id', $userId)->orderBy('created_at', 'desc')->get();
-    return response()->json(['quizzes' => $quizzes]);
-}
+    public function getUserQuizzes()
+    {
+        $userId = auth()->id();
+        $quizzes = Quiz::with('category') // カテゴリー情報を取得
+                    ->where('user_id', $userId)
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+        return response()->json(['quizzes' => $quizzes]);
+    }
+    
 
     public function index()
     {

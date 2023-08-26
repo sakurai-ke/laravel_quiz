@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\QuizController;
 use App\Http\Controllers\Api\RecordController;
 use App\Http\Controllers\Api\CreateController;
+use App\Http\Controllers\Api\RankController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -16,6 +17,11 @@ use App\Http\Controllers\Api\CreateController;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
+
+
+
+// ランキング表示用
+Route::middleware('auth:api')->get('/ranking', [RankController::class, 'getUserRanking']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/quiz-results', [RecordController::class, 'showRecord']); // クイズ結果情報を取得するエンドポイント

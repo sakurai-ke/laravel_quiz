@@ -37,7 +37,6 @@ let currentQuizIndex = 0;
 let shuffledQuizList = [];
 
 const quizData = ref(props.quizData); // Create a reactive variable
-
     // レコードIDのプロパティ
 // const record_id = ref(props.record_id);
 const selectedCategory = ref(props.selectedCategory);
@@ -51,10 +50,8 @@ const correctPercentage = ref(0); // 仮に初期値として 0 を設定
 const record_id = ref(null); // もしくは、適切な値を代入
 const answeredQuestions = ref(0);
 
-// ボタンの表示制御に使用する変数
-const showNextButton = ref(true);
-const showPrevButton = ref(false);
-const showResultButton = ref(false);
+// 最初のクイズでは「前のクイズへ」ボタンを非表示にするためのフラグ
+const isFirstQuiz = ref(true);
 
 // 初回にクイズデータを取得してシャッフル
 onMounted(() => {
@@ -65,9 +62,7 @@ onMounted(() => {
   // 各クイズデータの user_answer プロパティを空文字列にリセット
   shuffledQuizList.forEach(quiz => {
     quiz.user_answer = ''; // 初期値を空文字列に設定
-    quiz.answered = false; // 回答済みの状態を示すプロパティを追加
   });
-
 
 // クイズの選択肢をシャッフルする関数
 function shuffleChoices(choices) {
@@ -91,27 +86,14 @@ function shuffleQuizList(quizList) {
 
 // ランダムなクイズを出題
 function presentRandomQuiz() {
-  // 現在のクイズのインデックスがシャッフルされたクイズリストの要素数未満であるかどうかをチェック
+    // 現在のクイズのインデックスがシャッフルされたクイズリストの要素数未満であるかどうかをチェック
   if (currentQuizIndex < shuffledQuizList.length) {
-    // shuffledQuizList 配列の currentQuizIndex 番目の要素を newQuizData 変数に格納
+    // shuffledQuizList 配列の currentQuizIndex 番目の要素をnewQuizData変数に格納
     const newQuizData = shuffledQuizList[currentQuizIndex];
-    
-    // クイズが回答済みの場合は回答結果を表示
-    if (newQuizData.answered) {
-      quizEndMessage.value = `正解！\n${newQuizData.explain}`;
-      // 「回答」ボタンを非表示にする
-      showAnswerButton.value = false;
-    } else {
-      quizEndMessage.value = '';
-      // 「回答」ボタンを表示する
-      showAnswerButton.value = true;
-    }
-    
-    // 新しく取得したクイズデータ newQuizData を quizData.value に代入して画面上のクイズ情報も更新する
+    // 新しく取得したクイズデータnewQuizDataをquizData.valueに代入して画面上のクイズ情報も更新する
     quizData.value = newQuizData;
     console.log('quizData.value', quizData.value);
-    
-    // シャッフルされた選択肢を shuffledChoices.value に代入して画面上のクイズ選択肢も更新する
+    // シャッフルされた選択肢をshuffledChoices.value代入して画面上のクイズ選択肢も更新する
     shuffledChoices.value = shuffleChoices([
       newQuizData.correct_answer,
       newQuizData.wrong_answer_1,
@@ -136,7 +118,7 @@ async function fetchAndShuffleQuizzes() {
         num_questions: props.selectedNumQuestions,
       },
     });
-    // クイズデータの問題情報全てをnextQuizzesに格納
+    // クイズデータの問題部分をnextQuizzesに格納
     const nextQuizzes = response.data;
     console.log('nextQuizzes', nextQuizzes);
     if (nextQuizzes.length > 0) {
@@ -148,19 +130,16 @@ async function fetchAndShuffleQuizzes() {
         quiz.user_answer = ''; // 初期値を空文字列に設定
       });
 
+          // 画像ファイルのファイルパスをクイズデータに追加
+    shuffledQuizList.forEach(quiz => {
+      quiz.image_src = quiz.image_path; // 画像ファイルのパスを追加
+    });
+
       console.log('shuffledQuizListの値:', shuffledQuizList);
       // 新しいセットのクイズが取得されるたびにクイズのindexをリセット
       currentQuizIndex = 0; 
       // presentRandomQuiz関数でランダムなクイズを出題
       presentRandomQuiz();
-
-          // クイズの出題を開始するための処理を追加
-    showAnswerButton.value = true;
-    quizEndMessage.value = '';
-    selectedChoice.value = '';
-
-      updateButtonVisibility(); // ボタンの表示を更新
-
     } else {
       console.error('次のクイズデータがありません');
     }
@@ -172,7 +151,11 @@ async function fetchAndShuffleQuizzes() {
 
 // 「回答」ボタンがクリックされたときの処理
 async function submitAnswer() {
-  // 現在のクイズを表示するためのデータを取得しnewQuizDataに格納
+    // ユーザーが回答した場合、最初のクイズフラグを解除
+    if (isFirstQuiz.value) {
+    isFirstQuiz.value = false;
+  }
+
   const newQuizData = shuffledQuizList[currentQuizIndex];
 
   // 選択した回答が正解かどうかの判定処理を行う
@@ -181,19 +164,12 @@ async function submitAnswer() {
   // 回答結果に基づいてメッセージを更新
   if (isCorrect) {
     quizEndMessage.value = `正解！\n${newQuizData.explain}`;
-    // ユーザが選択した回答をnewQuizDataオブジェクトのuser_answerプロパティに代入
     newQuizData.user_answer = selectedChoice.value;
-    newQuizData.answered = true; // クイズが回答されたことを示すフラグを立てる
-
-    // 回答が正解の場合に、そのクイズデータをcorrectAnswer配列に追加
     correctAnswers.push(newQuizData);
     correctPercentage.value = (correctAnswers.length / shuffledQuizList.length) * 100;
   } else {
     quizEndMessage.value = `不正解！正解は「${newQuizData.correct_answer}」です。\n${newQuizData.explain}`;
-    // ユーザが選択した回答をnewQuizDataオブジェクトのuser_answerプロパティに代入
     newQuizData.user_answer = selectedChoice.value;
-    newQuizData.answered = true; // クイズが回答されたことを示すフラグを立てる
-
   }
 
   // メッセージ更新が完了したら次のクイズに進む
@@ -202,11 +178,11 @@ async function submitAnswer() {
   // 「回答」ボタンを非表示にする
   showAnswerButton.value = false;
 
-  // 正解か不正解に関わらず、回答が行われたことを記録
-  answeredQuestions.value++;
+  // 正解または不正解、どちらの場合でも次のクイズに進む
+  currentQuizIndex++;
 
-  // もしすべてのクイズが回答された場合、結果を保存
-  if (answeredQuestions.value === shuffledQuizList.length) {
+  // もし最後のクイズであれば、結果を保存
+  if (currentQuizIndex === shuffledQuizList.length - 1) {
     try {
       // すべてのクイズが終了した場合に結果を保存
       const record = {
@@ -235,10 +211,8 @@ async function submitAnswer() {
         await axios.post('/api/result', result);
       }
 
-      // すべてのクイズが終了したことを判定し、結果を見るボタンを表示
-      if (answeredQuestions.value === shuffledQuizList.length) {
-        showResultButton.value = true;
-      }
+      // 結果を保存したら適切な処理を行う（例: 結果ページへの遷移）
+      // ここに遷移処理やメッセージ表示などを追加
 
     } catch (error) {
       console.error('結果の保存に失敗しました', error);
@@ -246,9 +220,6 @@ async function submitAnswer() {
     }
   }
 }
-
-
-
 
 
 // 「次へ」ボタンがクリックされた際の処理
@@ -259,56 +230,38 @@ async function goToNextQuestion() {
 
   if (currentQuizIndex < shuffledQuizList.length-1) {
 
-    currentQuizIndex++; // インデックスを次のクイズに更新
+    // currentQuizIndex++; // インデックスを次のクイズに更新
     
     presentRandomQuiz(); //次のクイズを出題する
     // 「回答」ボタンを再度表示する
     showAnswerButton.value = true;
-
-    updateButtonVisibility(); // 修正: ボタンの表示を更新
   } else {
+
     // 「回答」ボタンを再度表示する
     showAnswerButton.value = true;
-
-    updateButtonVisibility(); // 修正: ボタンの表示を更新
   }
 }
 
-// クイズ画面ごとの前後のクイズへの遷移ボタン制御を行う関数
-function updateButtonVisibility() {
-  // 最初のクイズ画面では「前のクイズへ」ボタンを非表示、
-  // 「次のクイズへ」ボタンを表示
-  if (currentQuizIndex === 0) {
-    showPrevButton.value = false;
-    showNextButton.value = true;
-  } 
-  // 最後のクイズ画面では「前のクイズへ」ボタンを表示し、
-  // 「次のクイズへ」ボタンを非表示
-  else if (currentQuizIndex === shuffledQuizList.length - 1) {
-    showPrevButton.value = true;
-    showNextButton.value = false;
-  } 
-  // それ以外のクイズ画面では両方のボタンを表示
-  else {
-    showPrevButton.value = true;
-    showNextButton.value = true;
-  }
-}
+// 「前へ」ボタンがクリックされた際の処理
+// async function goToPreviousQuestion() {
+//   // 前のクイズの情報をリセット
+//   quizEndMessage.value = ''; // クイズ終了メッセージをリセット
+//   selectedChoice.value = ''; // 選択した回答をリセット
 
+//   // ユーザーが最初のクイズでなければ、インデックスを前のクイズに更新
+//   if (!isFirstQuiz.value) {
+//     currentQuizIndex--; // インデックスを前のクイズに更新
+//     if (currentQuizIndex >= 0) {
+//       presentRandomQuiz(); // 前のクイズを出題する
+//       showAnswerButton.value = true; // 「回答」ボタンを再度表示する
+//     } else {
+//       showAnswerButton.value = false; // インデックスが0以下なら「前のクイズへ」ボタンを非表示にする
+//     }
+//   } else {
+//     showAnswerButton.value = false; // 最初のクイズの場合、「前のクイズへ」ボタンを非表示にする
+//   }
+// }
 
-
-// 「前のクイズへ」ボタンがクリックされた際の処理
-function goToPrevQuestion() {
-  // 前のクイズの情報をリセット
-  quizEndMessage.value = ''; // クイズ終了メッセージをリセット
-  selectedChoice.value = ''; // 選択した回答をリセット
-
-  if (currentQuizIndex > 0) {
-    currentQuizIndex--; // インデックスを前のクイズに更新
-    presentRandomQuiz(); // 前のクイズを出題する
-    updateButtonVisibility(); // ボタンの表示を更新
-  }
-}
 
 // 選択肢を選択する関数
 function selectChoice(choice) {
@@ -319,45 +272,28 @@ function selectChoice(choice) {
   }
 }
 
-// 画像のパスを生成する関数
-function getImageUrl(imageName) {
-  // Laravelのassetヘルパーを使って画像のパスを生成
-  return "{{ asset('storage/images') }}/" + imageName;
-}
+  // 画像のパスを生成する関数
+  function generateImagePath(imageSrc) {
+    // Laravelのasset()ヘルパー関数を使用して画像のパスを生成
+    return asset('storage/images/' + imageSrc);
+  }
 
 </script>
 
 <template>
-<p>正答率{{ correctPercentage }}</p>
-<p>何問目か{{ currentQuizIndex + 1 }}</p>
-<p>回答済みはいくつあるか{{ answeredQuestions }}</p>
-
+<p>{{ correctPercentage }}</p>
+{{ currentQuizIndex }}
   <div class="w-full max-w-md mx-auto p-6 bg-white rounded-md shadow-md">
     
-    <!-- 画像を表示 -->
-    <img :src="getImageUrl(quizData.image_src)" alt="Quiz Image" class="mb-4" />
-
-    
-    <div class="quiz-progress">
-    <!-- クイズ番号のリストをループ -->
-    <div
-      v-for="(quiz, index) in shuffledQuizList"
-      :key="index"
-      :class="{
-        'quiz-number': true,
-        'answered-quiz': quiz.answered,
-        'unanswered-quiz': !quiz.answered,
-      }"
-    >
-      {{ index + 1 }}
-    </div>
-  </div>
-
     <p class="mb-2 text-gray-600">
       {{ currentQuizIndex + 1 }}問目 / {{ shuffledQuizList.length }}問中
     </p>
 
-    <h2 class="text-xl font-semibold mb-4">{{ quizData.title }}</h2>
+  <!-- 画像を表示 -->
+  <img v-if="quizData.image_src" :src="quizData.image_src" alt="クイズ画像" class="mb-4 max-w-full" />
+
+    <img v-if="quizData.image_src" :src="generateImagePath(quizData.image_src)" alt="クイズ画像" class="my-4" />
+
     <ul class="space-y-2">
       <li v-for="(choice, index) in shuffledChoices" :key="index">
         <label class="block cursor-pointer">
@@ -376,16 +312,7 @@ function getImageUrl(imageName) {
       </li>
     </ul>
     <!-- 「次へ」をクリックすると回答ボタンを表示 -->
-    <button
-      v-if="showAnswerButton"
-      @click="submitAnswer"
-      :class="{
-        'bg-blue-500 hover:bg-blue-600 text-white': selectedChoice !== '',
-        'bg-gray-300 cursor-not-allowed': selectedChoice === '',
-      }"
-      :disabled="selectedChoice === ''"
-      class="mt-4 w-full py-2 px-4 rounded-md focus:outline-none transition duration-300"
-    >
+    <button v-if="showAnswerButton" @click="submitAnswer" :disabled="selectedChoice === ''" class="mt-4 w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300">
       回答
     </button>
     <div v-if="quizEndMessage !== ''">
@@ -395,119 +322,29 @@ function getImageUrl(imageName) {
         次へ
       </button>
       <Link
-        v-if="showResultButton"
-        :href="route('quiz.result', { correctPercentage: correctPercentage })"
-        class="mt-4 w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300"
-      >
-        結果を見る
-      </Link>
-
+      v-if="currentQuizIndex === shuffledQuizList.length - 1"
+      :href="route('quiz.result', { correctPercentage: correctPercentage })"
+      class="mt-4 w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300"
+    >
+      結果を見る
+    </Link>
 
     </div>
+
+    <button
+      v-if="currentQuizIndex < shuffledQuizList.length - 1"
+      @click="goToNextQuestion"
+      class="mt-4 w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300"
+    >
+      次のクイズへ
+    </button>
+    <button
+      v-if="currentQuizIndex > 0"
+      @click="goToPreviousQuestion"
+      class="mt-4 w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300"
+    >
+      前のクイズへ
+    </button>
 
   </div>
-
-      <!-- ボタン表示部分 -->
-    <div class="button-group">
-      <!-- 「前のクイズへ」ボタン -->
-      <button
-        v-if="showPrevButton"
-        @click="goToPrevQuestion"
-        :class="{
-          'bg-gray-500 hover:bg-gray-600 text-white': showPrevButton,
-          'bg-gray-300 cursor-not-allowed': !showPrevButton,
-        }"
-        class="prev-button"
-      >
-        前のクイズへ
-      </button>
-
-      <!-- 「次のクイズへ」ボタン -->
-      <button
-        v-if="showNextButton"
-        @click="goToNextQuestion"
-        :class="{
-          'bg-blue-500 hover:bg-blue-600 text-white': showNextButton,
-          'bg-gray-300 cursor-not-allowed': !showNextButton,
-        }"
-        class="next-button"
-      >
-        次のクイズへ
-      </button>
-    </div>
 </template>
-
-<style scoped>
-/* クイズ番号のスタイル */
-.quiz-progress {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-/* クイズ番号のデフォルトスタイル */
-.quiz-number {
-  width: 30px;
-  height: 30px;
-  border: 1px solid #ccc;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-weight: bold;
-  cursor: pointer;
-  margin: 0 5px;
-}
-
-/* 回答済みクイズの背景色スタイル */
-.answered-quiz {
-  background-color: #6ee7b7;
-  color: white;
-}
-
-/* 未回答クイズの背景色スタイル */
-.unanswered-quiz {
-  background-color: #ffffff;
-}
-
-/* ボタンのスタイル */
-.button-group {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 20px;
-}
-
-/* 前のクイズへボタンのスタイル */
-.prev-button {
-  width: calc(50% - 5px); /* 50% 幅からマージンを引いた幅 */
-  padding: 10px;
-  border-radius: 4px;
-  text-align: center;
-  background-color: #0074d9;
-  color: white;
-  cursor: pointer;
-  transition: background-color 0.3s, opacity 0.3s;
-}
-
-.prev-button:hover {
-  background-color: #0056b3;
-}
-
-/* 次のクイズへボタンのスタイル */
-.next-button {
-  width: calc(50% - 5px); /* 50% 幅からマージンを引いた幅 */
-  padding: 10px;
-  border-radius: 4px;
-  text-align: center;
-  background-color: #0074d9;
-  color: white;
-  cursor: pointer;
-  transition: background-color 0.3s, opacity 0.3s;
-  margin-left: auto; /* 追加: 左寄せ */
-}
-
-.next-button:hover {
-  background-color: #0056b3;
-}
-</style>

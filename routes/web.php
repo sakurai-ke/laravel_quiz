@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\QuizController;
 use App\Http\Controllers\Api\RecordController;
 use App\Http\Controllers\Api\CreateController; 
+use App\Http\Controllers\Api\RankController; 
 
 /*
 |--------------------------------------------------------------------------
@@ -20,7 +21,12 @@ use App\Http\Controllers\Api\CreateController;
 |
 */
 
+// ランキング表示用
+Route::get('/rank', [RankController::class, 'index'])
+    ->name('rank')
+    ->middleware(['auth', 'verified']);
 
+// クイズ一覧画面、詳細画面、編集画面用
 Route::middleware(['auth'])->group(function () {
     Route::get('/list', [CreateController::class, 'index'])->name('list');
     Route::get('/list/{id}', [CreateController::class, 'show'])->name('show');

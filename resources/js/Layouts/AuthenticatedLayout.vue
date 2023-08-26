@@ -42,7 +42,10 @@ const showingNavigationDropdown = ref(false);
                                     クイズ作成
                                 </NavLink>
                                 <NavLink :href="route('list')" :active="route().current('list')">
-                                    クイズ編集
+                                    クイズ詳細・編集
+                                </NavLink>
+                                <NavLink :href="route('rank')" :active="route().current('rank')">
+                                    ランキング
                                 </NavLink>
                             </div>
                         </div>
@@ -137,7 +140,10 @@ const showingNavigationDropdown = ref(false);
                             クイズ作成
                         </ResponsiveNavLink>
                         <ResponsiveNavLink :href="route('list')" :active="route().current('list')">
-                            クイズ編集
+                            クイズ詳細・編集
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink :href="route('rank')" :active="route().current('rank')">
+                            ランキング
                         </ResponsiveNavLink>
                     </div>
 
