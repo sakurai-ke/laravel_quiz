@@ -18,7 +18,7 @@
       required: true,
     },
   });
-  
+  // Canva要素に対するチャートの描画コンテキストを参照するために使用
   const radarChart = ref(null);
   
   onMounted(() => {
@@ -34,20 +34,22 @@
   function drawRadarChart() {
     const ctx = radarChart.value.getContext('2d');
   
-    const labels = [];
-    const dataValues = [];
+    const labels = []; //カテゴリー名を格納
+    const dataValues = []; //正答率を格納
   
+    // labels配列にはカテゴリー名、dataValues配列には各カテゴリーの正答率が順番に追加
     for (const category of props.categoryData) {
       labels.push(category.name);
       dataValues.push(category.accuracy);
     }
   
+    // もしカテゴリーが5つ未満の場合、足りない分のlabels配列には文字列「未回答」を、dataValues配列には数値0を追加
     while (labels.length < 5) {
       labels.push('未回答');
       dataValues.push(0);
     }
   
-    // チャートが既に存在する場合は破棄
+    // 新しいデータでレーダーチャートを再描画する前に古い情報を削除する（データの切り替えや更新時に問題が発生するのを防ぐため）
     if (radarChartInstance) {
       radarChartInstance.destroy();
     }

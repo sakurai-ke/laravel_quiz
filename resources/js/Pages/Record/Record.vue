@@ -7,19 +7,18 @@ import { format, parseISO } from 'date-fns';
 import { utcToZonedTime } from 'date-fns-tz';
 import Chart from './Chart.vue';
 
-// データを取得するためのリファレンス
-const quizRecords = ref([]);
+const quizRecords = ref([]); // クイズの結果情報を格納
 const expandedRecordId = ref(null); // アコーディオンの展開状態を管理する
 
 const fromDate = ref(null); // Fromの日付
 const toDate = ref(null); // Toの日付
 
-const categoryAccuracyData = ref([]); // カテゴリー別の正答率データを保持する変数
+const categoryAccuracyData = ref([]); // カテゴリーごとの正答率データを格納
 
-// データを取得する関数
+// クイズの結果情報を取得する
 async function fetchQuizRecords() {
     try {
-        const response = await axios.get('/api/quiz-results'); // データ取得エンドポイントを適切に変更
+        const response = await axios.get('/api/quiz-results'); // クイズの結果情報を取得
         quizRecords.value = response.data.sort((a, b) => {
             // created_at を比較して降順に並び替え
             return new Date(b.created_at) - new Date(a.created_at);
@@ -44,7 +43,8 @@ const errorMessages = {
 
 let validationError = ref("");
 
-let lastFilteredResults = []; // 前回の検索結果を保存する変数
+// フィルタリングされたクイズの結果情報を一時的に保存するための変数（フィルタリング後の結果に問題がある場合、元の状態に戻す必要があるため）
+let lastFilteredResults = [];
 
 // 検索ボタンがクリックされたときの処理
 async function searchQuizResults() {
@@ -175,6 +175,7 @@ async function fetchCategoryAccuracyData() {
 
 // 未回答のカテゴリーを特定する関数
 function fetchUnansweredCategories(answeredCategories) {
+  // カテゴリー名を含む全てのカテゴリーの配列を作成
   const allCategories = Object.keys(categoryMapping.value).map(Number);
   return allCategories.filter(categoryId => !answeredCategories.includes(categoryId));
 }
@@ -183,7 +184,6 @@ function fetchUnansweredCategories(answeredCategories) {
 function getCategoryName(categoryId) {
   return categoryMapping.value[categoryId] || 'Unknown Category';
 }
-
 
 // 正答率を計算する関数
 function calculateAccuracy(correctAnswers, totalQuestions) {
@@ -246,8 +246,9 @@ onMounted(() => {
                 <p class="text-gray-600">出題数: {{ record.total_questions }}</p>
               </div>
               <button class="bg-blue-500 text-white px-3 py-1 rounded-md" @click="toggleAccordion(record.id)">
-                回答詳細
+                  {{ expandedRecordId === record.id ? '閉じる' : '回答詳細' }}
               </button>
+
             </div>
             <div v-if="expandedRecordId === record.id" class="mt-2">
               <p class="text-gray-600">問題数: {{ record.total_questions }}</p>

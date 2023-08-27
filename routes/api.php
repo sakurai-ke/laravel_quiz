@@ -18,10 +18,10 @@ use App\Http\Controllers\Api\RankController;
 |
 */
 
-
-
 // ランキング表示用
-Route::middleware('auth:api')->get('/ranking', [RankController::class, 'getUserRanking']);
+Route::middleware('auth:sanctum')->group(function () {
+Route::get('/ranking', [RankController::class, 'getUserRanking']);
+});
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/quiz-results', [RecordController::class, 'showRecord']); // クイズ結果情報を取得するエンドポイント
