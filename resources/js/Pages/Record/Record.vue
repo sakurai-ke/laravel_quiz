@@ -250,15 +250,25 @@ onMounted(() => {
               </button>
 
             </div>
-            <div v-if="expandedRecordId === record.id" class="mt-2">
-              <p class="text-gray-600">問題数: {{ record.total_questions }}</p>
-              <p class="text-gray-600">正解数: {{ record.correct_answers }}</p>
-              <p class="text-gray-600">正答率: {{ record.accuracy }}%</p>
-              <ul class="mt-2">
-                <li v-for="result in record.results" :key="result.id" class="border-t border-gray-300 pt-2 mt-2">
-                  <p class="font-semibold">問題: {{ result.quiz.title }}</p>
-                  <p>選択した回答: {{ result.selected_choice }}</p>
-                  <p>結果: {{ result.correct ? '正解' : '不正解' }}</p>
+            <div v-if="expandedRecordId === record.id" class="mt-4 p-4 bg-gray-100 rounded-md">
+              <div class="border-b border-gray-300 pb-2 mb-2">
+                <h3 class="text-xl font-semibold mb-1">回答詳細</h3>
+                <p class="text-gray-600">問題数: {{ record.total_questions }}</p>
+                <p class="text-gray-600">正解数: {{ record.correct_answers }}</p>
+                <p class="text-gray-600">正答率: {{ record.accuracy }}%</p>
+              </div>
+              <ul class="space-y-4">
+                <li v-for="result in record.results" :key="result.id">
+                  <div class="border border-gray-300 rounded-md p-4">
+                    <h4 class="text-lg font-semibold mb-2">{{ result.quiz.title }}</h4>
+                    <p><strong>選択した回答:</strong> {{ result.selected_choice }}</p>
+                    <p><strong>結果:</strong> {{ result.correct ? '正解' : '不正解' }}</p>
+                    <p><strong>正解:</strong> {{ result.quiz.correct_answer }}</p>
+                    <p><strong>誤答1:</strong> {{ result.quiz.wrong_answer_1 }}</p>
+                    <p><strong>誤答2:</strong> {{ result.quiz.wrong_answer_2 }}</p>
+                    <p><strong>誤答3:</strong> {{ result.quiz.wrong_answer_3 }}</p>
+                    <p><strong>解説:</strong> {{ result.quiz.explain }}</p>
+                  </div>
                 </li>
               </ul>
             </div>

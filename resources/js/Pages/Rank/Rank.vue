@@ -1,5 +1,6 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { Head } from '@inertiajs/vue3';
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import Chart from 'chart.js/auto';
@@ -28,21 +29,26 @@ async function fetchCategories() {
   }
 }
 
-// 検索ボタンがクリックされたときの処理
+
 async function fetchRankingData() {
   try {
-    // FromとToの日付が逆転している場合のバリデーション
-    if (fromDate.value && toDate.value && new Date(fromDate.value) > new Date(toDate.value)) {
-      validationError.value = "Fromの日付はTo以前の日付を選択してください";
-      return; // バリデーションエラーがあるため処理を中断
-    } else {
-      validationError.value = ""; // バリデーションエラーメッセージをクリア
+    const categoryParam = selectedCategory.value === 'all' ? '' : `&category=${selectedCategory.value}`;
+    let dateParams = '';
+
+    if (fromDate.value && toDate.value) {
+      const fromDateTime = new Date(fromDate.value).toISOString();
+      const toDateTime = new Date(toDate.value).toISOString();
+      dateParams = `fromDate=${fromDateTime}&toDate=${toDateTime}`;
+    } else if (fromDate.value) {
+      const fromDateTime = new Date(fromDate.value).toISOString();
+      dateParams = `fromDate=${fromDateTime}`;
+    } else if (toDate.value) {
+      const toDateTime = new Date(toDate.value);
+      toDateTime.setDate(toDateTime.getDate() + 1); // この行は不要
+      dateParams = `toDate=${toDateTime.toISOString()}`;
     }
 
-    const categoryParam = selectedCategory.value === 'all' ? '' : `?category=${selectedCategory.value}`;
-    const dateParams = getDateFormatParams();
-
-    const response = await axios.get(`/api/ranking${categoryParam}${dateParams}`);
+    const response = await axios.get(`/api/ranking?${dateParams}${categoryParam}`);
     const rankingData = response.data;
 
     rankingData.sort((a, b) => b.accuracy - a.accuracy);
@@ -51,30 +57,39 @@ async function fetchRankingData() {
     const dataValues = rankingData.map(entry => entry.accuracy);
 
     drawRankingChart(labels, dataValues);
-
   } catch (error) {
     console.error('クイズ結果情報の取得に失敗しました', error);
   }
 }
 
 
-function getDateFormatParams() {
+
+
+function getDateParams() {
   let dateParams = '';
 
-  if (fromDate.value) {
-    dateParams += `&fromDate=${fromDate.value}`;
-  }
-  if (toDate.value) {
-    dateParams += `&toDate=${toDate.value}`;
+  if (fromDate.value && toDate.value) {
+    const fromDateTime = new Date(fromDate.value).toISOString();
+    const toDateTime = new Date(toDate.value).toISOString();
+    dateParams = `fromDate=${fromDateTime}&toDate=${toDateTime}`;
+  } else if (fromDate.value) {
+    const fromDateTime = new Date(fromDate.value).toISOString();
+    dateParams = `fromDate=${fromDateTime}`;
+  } else if (toDate.value) {
+    const toDateTime = new Date(toDate.value);
+    toDateTime.setDate(toDateTime.getDate() + 1); // この行は不要
+    dateParams = `toDate=${toDateTime.toISOString()}`;
   }
 
-  // 日付パラメータを正しく構築するための修正
   if (dateParams !== '') {
-    dateParams = `?${dateParams.slice(1)}`;
+    dateParams = `?${dateParams}`;
   }
 
   return dateParams;
 }
+
+
+
 
 
 function drawRankingChart(labels, dataValues) {
@@ -87,7 +102,7 @@ function drawRankingChart(labels, dataValues) {
   const maxAccuracy = Math.max(...dataValues);
 
   rankingChartInstance = new Chart(ctx, {
-    type: 'bar',
+    type: 'bar', // グラフの種類を bar に設定
     data: {
       labels: labels,
       datasets: [
@@ -101,8 +116,9 @@ function drawRankingChart(labels, dataValues) {
       ],
     },
     options: {
+      indexAxis: 'y', // x 軸をユーザー名にするために設定
       scales: {
-        y: {
+        x: {
           beginAtZero: true,
           max: Math.ceil(maxAccuracy),
         },

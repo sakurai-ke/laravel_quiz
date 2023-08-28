@@ -159,7 +159,7 @@ async function startQuiz() {
                 </button>
             </div>
     
-            <div v-else class="w-full max-w-md">
+            <div v-else class="w-full max-w-4xl">
                 <!-- クイズが開始された場合、クイズ出題画面を表示 -->
                 <Quiz :quizData="currentQuiz" :selectedNumQuestions="Number(selectedNumQuestions)" 
                 :selectedCategory="selectedCategory" />

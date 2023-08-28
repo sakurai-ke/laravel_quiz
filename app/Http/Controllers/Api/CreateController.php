@@ -99,8 +99,9 @@ return response()->json(['message' => 'クイズが作成されました'], 201)
      */
     public function showUserQuizzes(string $id)
     {
-        $quiz = Quiz::findOrFail($id); // クイズIDに対応するクイズを取得
-    
+        $quiz = Quiz::with('category') // カテゴリー情報も一緒に読み込む
+        ->findOrFail($id);
+        
         if (!$quiz) {
             abort(404); // クイズが存在しない場合は404エラーを返す
         }

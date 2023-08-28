@@ -343,7 +343,7 @@ function goToQuiz(index) {
 <p>何問目か{{ currentQuizIndex + 1 }}</p>
 <p>回答済みはいくつあるか{{ answeredQuestions }}</p>
 
-  <div class="w-full max-w-md mx-auto p-6 bg-white rounded-md shadow-md">
+<div class="w-full max-w4xl mx-auto p-6 bg-white rounded-md shadow-md h-auto">
     
     <!-- 画像を表示 -->
     <img :src="getImageUrl(quizData.image_src)" alt="Quiz Image" class="mb-4" />
@@ -373,28 +373,30 @@ function goToQuiz(index) {
     </p>
 
     <h2 class="text-xl font-semibold mb-4">{{ quizData.title }}</h2>
-    <ul class="space-y-2">
+    <ul class="choice-list">
       <li v-for="(choice, index) in shuffledChoices" :key="index">
-        <label class="block cursor-pointer">
+        <label class="choice-label">
           <input type="radio" :disabled="quizData.answered" v-model="selectedChoice" :value="choice" class="hidden" />
           <button
             :class="{
-              'bg-blue-500 hover:bg-blue-600 text-white': selectedChoice === choice,
-              'bg-gray-200 hover:bg-gray-300 text-gray-700': selectedChoice !== choice,
+              'choice-button': true,
+              'selected-choice': selectedChoice === choice,
+              'unselected-choice': selectedChoice !== choice,
             }"
             @click="selectChoice(choice)"
-            class="w-full py-2 px-4 rounded-md transition duration-300"
           >
             {{ choice }}
           </button>
         </label>
       </li>
     </ul>
+
     <!-- 「次へ」をクリックすると回答ボタンを表示 -->
     <button
     v-if="showAnswerButton && !quizData.answered"
       @click="submitAnswer"
       :class="{
+        'answer-button': true,
         'bg-blue-500 hover:bg-blue-600 text-white': selectedChoice !== '',
         'bg-gray-300 cursor-not-allowed': selectedChoice === '',
       }"
@@ -403,17 +405,21 @@ function goToQuiz(index) {
     >
       回答
     </button>
-    <div v-if="quizEndMessage !== ''">
-      <p v-if="quizEndMessage.startsWith('正解')" class="font-semibold">{{ quizEndMessage }}</p>
-      <p v-else>{{ quizEndMessage }}</p>
-      <button v-if="currentQuizIndex < shuffledQuizList.length - 1" @click="goToNextQuestion" @quizCompleted="quizCompleted" class="mt-4 w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300">
+      <div v-if="quizEndMessage !== ''" class="quiz-end-message">
+        <p v-if="quizEndMessage.startsWith('正解')" class="font-semibold">{{ quizEndMessage }}</p>
+        <p v-else>{{ quizEndMessage }}</p>
+      <div class="mb-4"></div>
+      <button v-if="currentQuizIndex < shuffledQuizList.length - 1" @click="goToNextQuestion" @quizCompleted="quizCompleted" 
+      class="mt-4 w-1/2 py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300"
+      style="margin: 16px auto 0; display: block;">
         次へ
       </button>
       <Link
         v-if="showResultButton"
         :href="route('quiz.result', { correctPercentage: correctPercentage })"
         class="mt-4 w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300"
-      >
+      
+        >
         結果を見る
       </Link>
 
@@ -453,12 +459,17 @@ function goToQuiz(index) {
 </template>
 
 <style scoped>
+
+.w-full {
+    width: 96%;
+}
 /* クイズ番号のスタイル */
 .quiz-progress {
   display: flex;
   justify-content: center;
   align-items: center;
   margin-bottom: 20px;
+  flex-wrap: wrap;
 }
 
 /* クイズ番号のデフォルトスタイル */
@@ -472,37 +483,41 @@ function goToQuiz(index) {
   font-weight: bold;
   cursor: pointer;
   margin: 0 5px;
+  margin-bottom: 5px; /* クイズ番号が改行される際の余白を設定 */
 }
 
 /* 回答済みクイズの背景色スタイル */
 .answered-quiz {
   background-color: #6ee7b7;
   color: white;
+  border-radius: 50%; /* 丸くする */
 }
 
 /* 未回答クイズの背景色スタイル */
 .unanswered-quiz {
   background-color: #ffffff;
+  border-radius: 50%; /* 丸くする */
 }
 
 /* ボタンのスタイル */
 .button-group {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between; /* ボタンを両端に寄せる */
   align-items: center;
   margin-top: 20px;
 }
 
 /* 前のクイズへボタンのスタイル */
 .prev-button {
-  width: calc(50% - 5px); /* 50% 幅からマージンを引いた幅 */
+  width: calc(50% - 17%); /* 右側のボタン幅を調整 */
   padding: 10px;
   border-radius: 4px;
-  text-align: center;
+  /* text-align: center; */
   background-color: #0074d9;
   color: white;
   cursor: pointer;
   transition: background-color 0.3s, opacity 0.3s;
+  margin: 0 auto;
 }
 
 .prev-button:hover {
@@ -511,15 +526,15 @@ function goToQuiz(index) {
 
 /* 次のクイズへボタンのスタイル */
 .next-button {
-  width: calc(50% - 5px); /* 50% 幅からマージンを引いた幅 */
+  width: calc(50% - 17%); /* 右側のボタン幅を調整 */
   padding: 10px;
   border-radius: 4px;
-  text-align: center;
+  /* text-align: center; */
   background-color: #0074d9;
   color: white;
   cursor: pointer;
   transition: background-color 0.3s, opacity 0.3s;
-  margin-left: auto; /* 追加: 左寄せ */
+  margin: 0 auto;
 }
 .next-button:hover {
   background-color: #0056b3;
@@ -527,7 +542,75 @@ function goToQuiz(index) {
 
 /* 現在のクイズ番号を強調表示するスタイル */
 .current-quiz {
+  background-color: #0074d9;
+  color: white;
   font-weight: bold;
-  border-width: 4px; /* 追加: 枠線を太くする */
+  border-radius: 50%; /* 丸くする */
+}
+
+/* 回答選択肢リストのスタイル */
+.choice-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2列に分割 */
+  grid-gap: 10px; /* 選択肢間のスペース */
+}
+
+/* 回答選択肢のスタイル */
+.choice-label {
+  display: block;
+}
+
+.choice-button {
+  width: 100%;
+  padding: 10px;
+  border-radius: 4px;
+  transition: background-color 0.3s, color 0.3s;
+  text-align: center;
+  cursor: pointer;
+}
+
+/* 選択された回答のスタイル */
+.selected-choice {
+  background-color: #0074d9;
+  color: white;
+}
+
+/* 未選択の回答のスタイル */
+.unselected-choice {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+/* 回答ボタンのスタイル */
+.answer-button {
+  width: 50%; /* ボタンを枠の幅に合わせる */
+  display: flex; /* 子要素を横方向に並べる */
+  justify-content: center; /* 子要素を横方向に中央寄せ */
+  padding: 10px;
+  border-radius: 4px;
+  transition: background-color 0.3s, color 0.3s;
+  text-align: center;
+  cursor: pointer;
+  margin: 0 auto;
+  margin-top: 16px;
+
+}
+
+/* レスポンシブ対応: 画面幅が小さい場合に縦4列に */
+@media (max-width: 768px) {
+  .choice-list {
+    grid-template-columns: repeat(1, 1fr); /* 4列に分割 */
+  }
+  
+    /* 画面幅が小さい場合の回答ボタンのスタイル */
+    .answer-button {
+    width: 100%; /* 画面幅が小さい場合は選択肢と同じ横幅 */
+  }
+  
+  .prev-button,
+  .next-button {
+    width: 46%;
+  }
+  
 }
 </style>

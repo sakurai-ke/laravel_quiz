@@ -1,23 +1,13 @@
-<template>
-    <div>
-      <canvas ref="radarChart"></canvas>
-      <!-- 未回答のカテゴリーを表示 -->
-      <div v-for="(category, index) in props.categoryData" :key="index">
-        <p v-if="category.accuracy === 0" class="unanswered-category">未回答: {{ category.name }}</p>
-      </div>
-    </div>
-  </template>
-  
-  <script setup>
+ <script setup>
   import { ref, onMounted, watch } from 'vue';
   import Chart from 'chart.js/auto';
   
-  const props = defineProps({
-    categoryData: {
-      type: Array,
-      required: true,
-    },
-  });
+const props = defineProps({
+  categoryData: {
+    type: Array,
+    required: true,
+  },
+});
   // Canva要素に対するチャートの描画コンテキストを参照するために使用
   const radarChart = ref(null);
   
@@ -81,6 +71,16 @@
   
   let radarChartInstance = null;
   </script>
+  
+  <template>
+    <div>
+      <canvas ref="radarChart"></canvas>
+      <!-- 未回答のカテゴリーを表示 -->
+      <div v-for="(category, index) in props.categoryData" :key="index">
+        <p v-if="category.accuracy === 0" class="unanswered-category">未回答: {{ category.name }}</p>
+      </div>
+    </div>
+  </template>
   
   <style>
   .unanswered-category {

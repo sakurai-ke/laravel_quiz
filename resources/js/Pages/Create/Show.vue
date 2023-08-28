@@ -6,6 +6,8 @@ import axios from 'axios';
 
   // クイズの詳細情報を格納するためのリアクティブ変数
 const quiz = ref({});
+const category = ref({});
+
 
 onMounted(() => {
     // URLからクイズIDを取得
@@ -18,6 +20,8 @@ async function getQuizDetails(quizId) {
     try {
         const response = await axios.get(`/api/showQuizzes/${quizId}`);
         quiz.value = response.data.quiz;
+        category.value = quiz.value.category; // カテゴリー情報をリアクティブ変数に格納
+
     } catch (error) {
         console.error('クイズの詳細情報の取得に失敗しました', error);
     }
@@ -43,6 +47,10 @@ function getImageUrl(imageSrc) {
             <div class="max-w-3xl mx-auto px-4">
                 <div class="bg-white rounded shadow-md p-4 space-y-4">
                     <!-- クイズの詳細情報を表示 -->
+                    <div class="border-b pb-2">
+            <p class="text-lg font-semibold">カテゴリー</p>
+            <p class="text-gray-700">{{ category.name }}</p>
+        </div>
                     <div class="border-b pb-2">
                         <p class="text-lg font-semibold">問題文</p>
                         <p class="text-gray-700">{{ quiz.title }}</p>
