@@ -21,6 +21,24 @@ const props = defineProps({
     });
   });
   
+  // ウィンドウのリサイズイベントを監視
+window.addEventListener('resize', () => {
+  // レーダーチャートが描画済みであれば再描画
+  if (radarChartInstance) {
+    updateChartSize();
+  }
+});
+
+// チャートのサイズを更新する関数
+function updateChartSize() {
+  const ctx = radarChart.value.getContext('2d');
+
+  // チャートのサイズを調整
+  radarChartInstance.resize();
+
+  radarChartInstance.update();
+}
+
   function drawRadarChart() {
     const ctx = radarChart.value.getContext('2d');
   

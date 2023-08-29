@@ -5,6 +5,7 @@ import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
 import { format, parseISO } from 'date-fns';
 import { utcToZonedTime } from 'date-fns-tz';
+import LineGraph from './LineGraph.vue'; 
 import Chart from './Chart.vue';
 
 const quizRecords = ref([]); // クイズの結果情報を格納
@@ -71,16 +72,18 @@ async function searchQuizResults() {
     }
 
     if (fromDate.value) {
-      // 日付をISO 8601 形式に変換してタイムゾーンを UTC に設定
-      const fromDateTime = utcToZonedTime(parseISO(fromDate.value), 'UTC');
-      filteredResults = filteredResults.filter(record => new Date(record.created_at) >= fromDateTime);
-    }
+  const fromDateTime = utcToZonedTime(parseISO(fromDate.value), 'Asia/Tokyo');
+  console.log('開始日時: ', fromDateTime);
+
+  filteredResults = filteredResults.filter(record => new Date(record.created_at) >= fromDateTime);
+}
 
     if (toDate.value) {
       // 日付をISO 8601 形式に変換してタイムゾーンを UTC に設定
-      // const toDateTime = utcToZonedTime(parseISO(toDate.value), 'UTC');
-      const nextDay = new Date(toDate.value);
-      nextDay.setDate(nextDay.getDate() + 1);
+      const toDateTime = utcToZonedTime(parseISO(toDate.value), 'Asia/Tokyo');
+      const nextDay = new Date(toDateTime);
+      nextDay.setDate(toDateTime.getDate() + 1);
+      console.log('終了日時: ', nextDay);
       filteredResults = filteredResults.filter(record => new Date(record.created_at) < nextDay);
     }
 
@@ -233,6 +236,7 @@ onMounted(() => {
               <p v-if="validationError" class="text-red-500">{{ validationError }}</p>
                   
               <Chart :categoryData="categoryAccuracyData" v-if="categoryAccuracyData.length > 0" />
+              <LineGraph :categoryAccuracyData="categoryAccuracyData" :fromDate="fromDate" :toDate="toDate" v-if="categoryAccuracyData.length > 0" />
 
 
         <ul>

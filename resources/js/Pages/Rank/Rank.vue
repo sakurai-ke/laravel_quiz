@@ -11,6 +11,32 @@ const categories = ref([]);
 const fromDate = ref(null);
 const toDate = ref(null);
 
+// ウィンドウのリサイズイベントを監視
+window.addEventListener('resize', () => {
+  // グラフが描画済みであれば再描画
+  if (rankingChartInstance) {
+    updateChartSize();
+  }
+});
+
+// グラフのサイズを更新する関数
+function updateChartSize() {
+  const ctx = rankingChart.value.getContext('2d');
+
+  // グラフのサイズを調整
+  rankingChartInstance.resize();
+
+  // データ数に応じて縦幅を再調整
+  const dataCount = rankingChartInstance.data.labels.length;
+  const suggestedMax = Math.max(10, Math.max(...rankingChartInstance.data.datasets[0].data));
+  const suggestedMin = Math.max(0, suggestedMax - (10 - dataCount));
+
+  rankingChartInstance.options.scales.y.ticks.suggestedMax = suggestedMax;
+  rankingChartInstance.options.scales.y.ticks.suggestedMin = suggestedMin;
+
+  rankingChartInstance.update();
+}
+
 // バリデーションエラーメッセージ
 let validationError = ref("");
 
@@ -29,25 +55,60 @@ async function fetchCategories() {
   }
 }
 
+// バリデーションチェックを行う関数
+function validateDate() {
+  validationError.value = ""; // エラーメッセージを初期化
+
+  if (fromDate.value && toDate.value) {
+    const fromDateObj = new Date(fromDate.value);
+    const toDateObj = new Date(toDate.value);
+
+    if (fromDateObj > toDateObj) {
+      validationError.value = "Fromの日付はTo以前の日付を選択してください。";
+      return false; // エラーがある場合はfalseを返す
+    }
+  }
+
+  return true; // エラーがない場合はtrueを返す
+}
 
 async function fetchRankingData() {
+  if (!validateDate()) {
+    return; // バリデーションエラーがある場合は処理を中断
+  }
   try {
     const categoryParam = selectedCategory.value === 'all' ? '' : `&category=${selectedCategory.value}`;
     let dateParams = '';
 
     if (fromDate.value && toDate.value) {
-      const fromDateTime = new Date(fromDate.value).toISOString();
-      const toDateTime = new Date(toDate.value).toISOString();
-      dateParams = `fromDate=${fromDateTime}&toDate=${toDateTime}`;
-    } else if (fromDate.value) {
-      const fromDateTime = new Date(fromDate.value).toISOString();
-      dateParams = `fromDate=${fromDateTime}`;
-    } else if (toDate.value) {
-      const toDateTime = new Date(toDate.value);
-      toDateTime.setDate(toDateTime.getDate() + 1); // この行は不要
-      dateParams = `toDate=${toDateTime.toISOString()}`;
-    }
+  const fromDateTime = new Date(fromDate.value);
+  const toDateTime = new Date(toDate.value);
 
+  // 日本のタイムゾーンを考慮して修正
+  fromDateTime.setHours(0, 0, 0, 0); // 開始日の午前0時
+  toDateTime.setHours(23, 59, 59, 999); // 終了日の午後11時59分59秒999ミリ秒
+
+  const fromDateTimeUTC = new Date(fromDateTime.toISOString());
+  const toDateTimeUTC = new Date(toDateTime.toISOString());
+
+  console.log('開始日時: ', fromDateTimeUTC);
+  console.log('終了日時: ', toDateTimeUTC);
+
+  dateParams = `fromDate=${fromDateTimeUTC.toISOString()}&toDate=${toDateTimeUTC.toISOString()}`;
+} else if (fromDate.value) {
+  const fromDateTime = new Date(fromDate.value);
+  fromDateTime.setHours(0, 0, 0, 0); // 開始日の午前0時
+  const fromDateTimeUTC = new Date(fromDateTime.toISOString());
+  console.log('開始日時: ', fromDateTimeUTC);
+  dateParams = `fromDate=${fromDateTimeUTC.toISOString()}`;
+} else if (toDate.value) {
+  const toDateTime = new Date(toDate.value);
+  toDateTime.setHours(23, 59, 59, 999); // 終了日の午後11時59分59秒999ミリ秒
+  const toDateTimeUTC = new Date(toDateTime.toISOString());
+  console.log('終了日時: ', toDateTimeUTC);
+  dateParams = `toDate=${toDateTimeUTC.toISOString()}`;
+}
+    
     const response = await axios.get(`/api/ranking?${dateParams}${categoryParam}`);
     const rankingData = response.data;
 
@@ -61,8 +122,6 @@ async function fetchRankingData() {
     console.error('クイズ結果情報の取得に失敗しました', error);
   }
 }
-
-
 
 
 function getDateParams() {
@@ -88,10 +147,6 @@ function getDateParams() {
   return dateParams;
 }
 
-
-
-
-
 function drawRankingChart(labels, dataValues) {
   const ctx = rankingChart.value.getContext('2d');
 
@@ -99,10 +154,13 @@ function drawRankingChart(labels, dataValues) {
     rankingChartInstance.destroy();
   }
 
-  const maxAccuracy = Math.max(...dataValues);
+  // データ数に応じて縦幅を調整
+  const dataCount = dataValues.length;
+  const suggestedMax = Math.max(10, Math.max(...dataValues));
+  const suggestedMin = Math.max(0, suggestedMax - (10 - dataCount));
 
   rankingChartInstance = new Chart(ctx, {
-    type: 'bar', // グラフの種類を bar に設定
+    type: 'bar',
     data: {
       labels: labels,
       datasets: [
@@ -116,11 +174,17 @@ function drawRankingChart(labels, dataValues) {
       ],
     },
     options: {
-      indexAxis: 'y', // x 軸をユーザー名にするために設定
+      indexAxis: 'y',
       scales: {
         x: {
           beginAtZero: true,
-          max: Math.ceil(maxAccuracy),
+          max: Math.ceil(Math.max(...dataValues)),
+        },
+        y: {
+          ticks: {
+            suggestedMax: suggestedMax,
+            suggestedMin: suggestedMin,
+          },
         },
       },
     },
@@ -167,6 +231,16 @@ let rankingChartInstance = null;
 </template>
 
 <style>
+/* カテゴリー選択肢のスタイルを調整 */
+.category-select {
+  margin-bottom: 20px;
+}
+
+/* 選択肢の横幅を広げる */
+#categorySelect {
+  width: 110px; /* 適宜調整してください */
+}
+
 .date-select {
   margin-bottom: 10px;
 }
