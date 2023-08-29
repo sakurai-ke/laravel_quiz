@@ -1,7 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import axios from 'axios';
 import { format, parseISO } from 'date-fns';
 import { utcToZonedTime } from 'date-fns-tz';
@@ -95,10 +95,28 @@ async function searchQuizResults() {
         // カテゴリー別の正答率データを取得
         await fetchCategoryAccuracyData();
 
+            // 正答率の折れ線グラフのデータをフィルタリングして再描画
+    const filteredQuizRecords = filterQuizRecordsByDate(quizRecords.value);
+    quizRecords.value = filteredQuizRecords;
+
+    updateLineGraphKey(); // グラフのキーを更新して再描画
+
+  
         console.log('categoryAccuracyData.valueの値:', categoryAccuracyData.value);
   } catch (error) {
     console.error('クイズの結果情報の取得に失敗しました', error);
   }
+}
+
+// データを日付でフィルタリングする関数
+function filterQuizRecordsByDate(data) {
+  const fromDateValue = fromDate.value ? new Date(fromDate.value).getTime() : 0;
+  const toDateValue = toDate.value ? new Date(toDate.value).getTime() : Date.now();
+
+  return data.filter(record => {
+    const recordDate = new Date(record.created_at).getTime();
+    return recordDate >= fromDateValue && recordDate <= toDateValue;
+  });
 }
 
 const categoryMapping = ref({});
@@ -205,6 +223,25 @@ onMounted(() => {
 
 });
 
+const filteredQuizRecords = computed(() => filterQuizRecordsByDate(quizRecords.value));
+
+// ランダムな値を生成する関数
+function generateRandomKey() {
+  return Math.random().toString(36).substring(7);
+}
+
+// リアクティブなキーを生成
+const lineGraphKey = ref(generateRandomKey());
+
+// fromDate か toDate が変更されたら新しいキーを設定する
+function updateLineGraphKey() {
+  lineGraphKey.value = generateRandomKey();
+}
+
+// fromDate か toDate が変更されたら新しいキーを設定する
+// watch([fromDate, toDate], () => {
+//   lineGraphKey.value = generateRandomKey();
+// });
 </script>
 
 <template>
@@ -236,8 +273,13 @@ onMounted(() => {
               <p v-if="validationError" class="text-red-500">{{ validationError }}</p>
                   
               <Chart :categoryData="categoryAccuracyData" v-if="categoryAccuracyData.length > 0" />
-              <LineGraph :categoryAccuracyData="categoryAccuracyData" :fromDate="fromDate" :toDate="toDate" v-if="categoryAccuracyData.length > 0" />
-
+                <LineGraph
+    :quizRecords="filteredQuizRecords"
+    :fromDate="fromDate"
+    :toDate="toDate"
+    :key="lineGraphKey"
+    v-if="filteredQuizRecords.length > 0"
+  />
 
         <ul>
           <li v-for="record in quizRecords" :key="record.id" class="bg-white shadow-md p-4 mb-4 rounded-md">

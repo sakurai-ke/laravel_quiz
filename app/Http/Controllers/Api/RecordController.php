@@ -8,6 +8,7 @@ use Inertia\Inertia;
 use App\Models\Record;
 use App\Models\Result;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class RecordController extends Controller
 {
@@ -72,14 +73,27 @@ public function index()
     ]);
 }
 
-public function showRecord()
+// ... これまでのコードをそのまま ...
+
+public function showRecord(Request $request)
 {
     // ログインユーザーのIDを取得
     $userId = Auth::id();
 
     $quizResults = Record::with(['category', 'results', 'results.quiz'])
-        ->where('user_id', $userId) // ログインユーザーのクイズ結果のみ取得
-        ->select('id', 'category_id', 'correct_answers', 'total_questions', 'accuracy', 'created_at')
+        ->where('user_id', $userId); // ログインユーザーのクイズ結果のみ取得
+
+    if ($request->has('fromDate')) {
+        $fromDate = Carbon::parse($request->fromDate)->startOfDay();
+        $quizResults->whereDate('created_at', '>=', $fromDate);
+    }
+
+    if ($request->has('toDate')) {
+        $toDate = Carbon::parse($request->toDate)->endOfDay();
+        $quizResults->whereDate('created_at', '<=', $toDate);
+    }
+
+    $quizResults = $quizResults->select('id', 'category_id', 'correct_answers', 'total_questions', 'accuracy', 'created_at')
         ->get();
 
     return response()->json($quizResults);
