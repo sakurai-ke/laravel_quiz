@@ -73,8 +73,6 @@ public function index()
     ]);
 }
 
-// ... これまでのコードをそのまま ...
-
 public function showRecord(Request $request)
 {
     // ログインユーザーのIDを取得
