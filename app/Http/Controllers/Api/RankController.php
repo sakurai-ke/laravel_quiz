@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Inertia\Inertia;
-
 use App\Models\Record;
 use Illuminate\Support\Facades\DB;
 
@@ -15,9 +14,18 @@ class RankController extends Controller
     public function getUserRanking(Request $request)
     {
         $categoryId = $request->input('category'); // 特定のカテゴリーを示す値が取得
-        $fromDate = $request->input('fromDate'); //クエリ範囲の開始日が取得
-        $toDate = $request->input('toDate'); //クエリ範囲の終了日が取得
-    
+// クエリから開始日と終了日を取得
+$fromDate = $request->input('fromDate');
+$toDate = $request->input('toDate');
+
+// 開始日と終了日を日本のタイムゾーンに変換
+if ($fromDate) {
+    $fromDate = \Carbon\Carbon::parse($fromDate)->setTimezone('Asia/Tokyo')->startOfDay()->format('Y-m-d');
+}
+
+if ($toDate) {
+    $toDate = \Carbon\Carbon::parse($toDate)->setTimezone('Asia/Tokyo')->endOfDay()->format('Y-m-d');
+}
         // usersテーブルのidカラムとrecordsテーブルのuser_idカラムが一致する場合に結合
         $query = User::leftJoin('records', 'users.id', '=', 'records.user_id')
         // categoriesテーブルのid ラムとrecordsテーブルのcategory_id ラムが一致する場合に結合
@@ -34,11 +42,11 @@ class RankController extends Controller
                 return $query->whereDate('records.created_at', '<=', $toDate);
             });
 
-        // 日付範囲が指定された場合、クエリに追加
-        if ($fromDate && $toDate) {
-            // recordsテーブルのcreated_atカラムの値が、指定した開始日から終了日までの日付範囲内にあるデータを絞り込む
-            $query->whereBetween('records.created_at', [$fromDate, $toDate]);
-        }
+// 日付範囲が指定された場合、クエリに追加
+if ($fromDate && $toDate) {
+    // recordsテーブルのcreated_atカラムの値が、指定した開始日から終了日までの日付範囲内にあるデータを絞り込む
+    $query->whereBetween('records.created_at', [$fromDate . ' 00:00:00', $toDate . ' 23:59:59']);
+}
     
         // 指定された日付範囲内のクイズ結果のみを取得するための条件をクエリに追加。
         // 開始日と終了日が指定されていない場合、この条件は追加されず、日付範囲の制約は無視

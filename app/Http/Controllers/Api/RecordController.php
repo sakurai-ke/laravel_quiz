@@ -57,15 +57,24 @@ class RecordController extends Controller
         return response()->json(['message' => 'Result created successfully', 'data' => $result]);
     }
 
+    public function paginate(Request $request)
+{
+    $results = Record::orderBy('created_at', 'desc')
+        ->paginate(10); // 1ページに10個ずつ表示する
+
+    return $results;
+}
+
 public function index()
 {
     // ログインユーザーのIDを取得
     $userId = Auth::id();
 
-    // ログインユーザーが実施したクイズの結果情報を取得
+    // ログインユーザーが実施したクイズの結果情報をページネーションで取得
     $records = Record::with(['results', 'user'])
         ->where('user_id', $userId)
-        ->get();
+        ->orderBy('created_at', 'desc') // 任意の並び替えを追加
+        ->paginate(10); // 1ページあたり10件ずつ表示
 
     // Inertiaを使用してデータをVueコンポーネントに渡す
     return Inertia::render('Record/Record', [
@@ -73,28 +82,27 @@ public function index()
     ]);
 }
 
-public function showRecord(Request $request)
-{
-    // ログインユーザーのIDを取得
-    $userId = Auth::id();
+    public function showRecord(Request $request)
+    {
+        // ログインユーザーのIDを取得
+        $userId = Auth::id();
 
-    $quizResults = Record::with(['category', 'results', 'results.quiz'])
-        ->where('user_id', $userId); // ログインユーザーのクイズ結果のみ取得
+        $quizResults = Record::with(['category', 'results', 'results.quiz'])
+            ->where('user_id', $userId); // ログインユーザーのクイズ結果のみ取得
 
-    if ($request->has('fromDate')) {
-        $fromDate = Carbon::parse($request->fromDate)->startOfDay();
-        $quizResults->whereDate('created_at', '>=', $fromDate);
+        if ($request->has('fromDate')) {
+            $fromDate = Carbon::parse($request->fromDate)->startOfDay();
+            $quizResults->whereDate('created_at', '>=', $fromDate);
+        }
+
+        if ($request->has('toDate')) {
+            $toDate = Carbon::parse($request->toDate)->endOfDay();
+            $quizResults->whereDate('created_at', '<=', $toDate);
+        }
+
+        $quizResults = $quizResults->select('id', 'category_id', 'correct_answers', 'total_questions', 'accuracy', 'created_at')
+            ->get();
+            
+        return response()->json($quizResults);
     }
-
-    if ($request->has('toDate')) {
-        $toDate = Carbon::parse($request->toDate)->endOfDay();
-        $quizResults->whereDate('created_at', '<=', $toDate);
-    }
-
-    $quizResults = $quizResults->select('id', 'category_id', 'correct_answers', 'total_questions', 'accuracy', 'created_at')
-        ->get();
-
-    return response()->json($quizResults);
-}
-
 }

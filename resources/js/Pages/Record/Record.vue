@@ -8,6 +8,9 @@ import { utcToZonedTime } from 'date-fns-tz';
 import Chart from './Chart.vue';
 import Line from 'chart.js/auto';
 
+const currentPage = ref(1); // 現在のページ
+let totalPages = computed(() => Math.ceil(quizRecords.value.length / 10)); // 10件ずつのページ数
+
 const quizRecords = ref([]); // クイズの結果情報を格納
 const expandedRecordId = ref(null); // アコーディオンの展開状態を管理する
 const fromDate = ref(null); // Fromの日付
@@ -25,6 +28,55 @@ const categories = ref([]);
 // セレクトボックスで選択したカテゴリーのID
 const selectedCategory = ref('all');
 
+// const props = defineProps({
+// 'records' : Object
+// })
+// onMounted(() => { //ページが表示されたタイミングで実行
+// console.log(props.records)
+// })
+
+const goToPage = (page) => {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page;
+  }
+};
+
+const paginatedRecords = computed(() => {
+    const startIndex = (currentPage.value - 1) * 10;
+    const endIndex = startIndex + 10;
+    return quizRecords.value.slice(startIndex, endIndex);
+  });
+
+// 省略部分を含むページネーションのリンクを生成
+function generatePaginationLinks(totalPages, currentPage) {
+  const maxVisibleLinks = 5; // 表示するページリンクの最大数
+  const links = [];
+
+  // 常に最初のページを表示
+  links.push(1);
+
+  // 省略部分の追加
+  if (currentPage > 3) {
+    links.push('...'); // 省略部分の前に「...」を追加
+  }
+
+  // 現在のページの前後に一定数のページリンクを表示
+  for (let i = currentPage - 2; i <= currentPage + 2; i++) {
+    if (i > 1 && i < totalPages) {
+      links.push(i);
+    }
+  }
+
+  // 省略部分の追加
+  if (currentPage < totalPages - 2) {
+    links.push('...'); // 省略部分の後に「...」を追加
+  }
+
+  // 常に最後のページを表示
+  links.push(totalPages);
+
+  return links;
+}
 
 
 
@@ -82,13 +134,23 @@ async function searchQuizResults() {
       validationError.value = "";
     }
 
-    const fromDateTime = fromDate.value ? utcToZonedTime(parseISO(fromDate.value), 'Asia/Tokyo') : null;
-    const toDateTime = toDate.value ? utcToZonedTime(parseISO(toDate.value), 'Asia/Tokyo') : null;
+    console.log('quizRecords.value', quizRecords.value);
+
+    const fromDateTime = fromDate.value ? utcToZonedTime(new Date(fromDate.value), 'UTC') : null;
+    const toDateTime = toDate.value ? utcToZonedTime(new Date(toDate.value), 'UTC') : null;
+
+if (toDateTime) {
+  toDateTime.setHours(toDateTime.getHours() + 24);
+}
+    console.log('fromDateTime', fromDateTime);
+   console.log('toDateTime', toDateTime);
 
     filteredResults = filteredResults.filter(record => {
-      const recordDateTime = utcToZonedTime(parseISO(record.created_at), 'Asia/Tokyo');
+      const recordDateTime = utcToZonedTime(new Date(record.created_at), 'Asia/Tokyo');
       return (!fromDateTime || recordDateTime >= fromDateTime) && (!toDateTime || recordDateTime <= toDateTime);
     });
+
+    console.log('filteredResult2', filteredResults);
 
     // 正しい時間帯で created_at を修正
     filteredResults.forEach(record => {
@@ -102,28 +164,38 @@ async function searchQuizResults() {
     await fetchCategoryAccuracyData();
     // 正答率の折れ線グラフのデータをフィルタリングして再描画
     const filteredQuizRecords = filterQuizRecordsByDate(filteredResults);
-    console.log('filteredQuizRecords', filteredQuizRecords);
     quizRecords.value = filteredQuizRecords;
     updateLineGraphKey();
     drawLineChart(filterAccuracyData(filteredQuizRecords));
-    console.log('quizRecords.value', quizRecords.value);
   } catch (error) {
     console.error('クイズの結果情報の取得に失敗しました', error);
   }
 }
 
 
-
 // データを日付でフィルタリングする関数
 function filterQuizRecordsByDate(data) {
-  const fromDateValue = fromDate.value ? new Date(fromDate.value).getTime() : 0;
-  const toDateValue = toDate.value ? new Date(toDate.value).getTime() : Date.now();
+  if (!fromDate.value && !toDate.value) {
+    return data; // FromとToが未選択の場合は全データを表示
+  }
 
+  const fromDateValue = fromDate.value ? utcToZonedTime(new Date(fromDate.value), 'UTC') : null;
+  const toDateValue = toDate.value ? utcToZonedTime(new Date(toDate.value), 'UTC') : null;
+
+if (toDateValue) {
+  toDateValue.setHours(toDateValue.getHours() + 24);
+}
+  console.log('fromDateValue3', fromDateValue);
+  console.log('toDateValue3', toDateValue);
   return data.filter(record => {
-    const recordDate = new Date(record.created_at).getTime();
-    return recordDate >= fromDateValue && recordDate <= toDateValue;
+    const recordDate = utcToZonedTime(new Date(record.created_at), 'Asia/Tokyo');
+
+    // FromとToの日付範囲内にあるレコードをフィルタリング
+    return (!fromDateValue || recordDate >= fromDateValue) && (!toDateValue || recordDate <= toDateValue);
   });
 }
+
+
 
 const categoryMapping = ref({});
 
@@ -152,14 +224,16 @@ async function fetchCategoryAccuracyData() {
     let filteredResults = response.data;
     
     if (fromDate.value) {
-      const fromDateTime = utcToZonedTime(parseISO(fromDate.value), 'UTC');
+      const fromDateTime = utcToZonedTime(new Date(fromDate.value), 'UTC');
       filteredResults = filteredResults.filter(record => new Date(record.created_at) >= fromDateTime);
+      console.log('fromDateTime2', fromDateTime);
     }
 
     if (toDate.value) {
-      const nextDay = new Date(toDate.value);
+      const nextDay = utcToZonedTime(new Date(toDate.value), 'UTC');
       nextDay.setDate(nextDay.getDate() + 1);
       filteredResults = filteredResults.filter(record => new Date(record.created_at) < nextDay);
+   console.log('toDateTime2', nextDay);
     }
 
     // カテゴリー別の正答数を計算
@@ -248,6 +322,7 @@ function updateLineGraphKey() {
 
 
 
+
 // フィルタリングされた正答率データを保持する変数を追加
 const filteredCategoryAccuracyData = ref([]);
 
@@ -283,9 +358,18 @@ function filterAccuracyData(records) {
     return records; // FromとToが未選択の場合は全データを表示
   }
 
-  const fromDateValue = fromDate.value ? new Date(fromDate.value).getTime() : 0;
-  const toDateValue = toDate.value ? new Date(toDate.value).getTime() : Date.now();
+  const fromDateValue = fromDate.value ? utcToZonedTime(new Date(fromDate.value), 'UTC') : null;
+const toDateValue = toDate.value ? utcToZonedTime(new Date(toDate.value), 'UTC') : null;
+if (toDateValue) {
+  toDateValue.setHours(toDateValue.getHours() + 24);
+}
 
+// fromDateValue と toDateValue が null でない場合にフォーマットする
+const formattedFromDate = fromDateValue ? fromDateValue.toLocaleString('ja-JP') : '';
+const formattedToDate = toDateValue ? toDateValue.toLocaleString('ja-JP') : '';
+
+console.log('fromDateValue4', formattedFromDate);
+console.log('toDateValue4', formattedToDate);
   return records.filter(record => {
     const recordDate = new Date(record.created_at).getTime();
     return recordDate >= fromDateValue && recordDate <= toDateValue;
@@ -427,7 +511,7 @@ watch(selectedCategory, () => {
   </div>
 
         <ul>
-          <li v-for="record in quizRecords" :key="record.id" class="bg-white shadow-md p-4 mb-4 rounded-md">
+          <li v-for="record in paginatedRecords" :key="record.id" class="bg-white shadow-md p-4 mb-4 rounded-md">
             <div class="flex justify-between items-center">
               <div>
                 <h2 class="text-lg font-semibold">{{ new Date(record.created_at).toLocaleString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }) }}</h2>
@@ -435,12 +519,16 @@ watch(selectedCategory, () => {
                 <p class="text-gray-600">カテゴリー: {{ record.category.name }}</p>
                 <!-- 日付の横にクイズの出題数を表示 -->
                 <p class="text-gray-600">出題数: {{ record.total_questions }}</p>
+                        <!-- 正答率を表示 -->
+                <p class="text-gray-600">正答率: {{ record.accuracy }}%</p>
               </div>
               <button class="bg-blue-500 text-white px-3 py-1 rounded-md" @click="toggleAccordion(record.id)">
                   {{ expandedRecordId === record.id ? '閉じる' : '回答詳細' }}
               </button>
 
             </div>
+
+            
             <div v-if="expandedRecordId === record.id" class="mt-4 p-4 bg-gray-100 rounded-md">
               <div class="border-b border-gray-300 pb-2 mb-2">
                 <h3 class="text-xl font-semibold mb-1">回答詳細</h3>
@@ -465,8 +553,41 @@ watch(selectedCategory, () => {
             </div>
           </li>
         </ul>
+        
       </div>
     </div>
+    
+    <div class="mt-4 flex justify-center space-x-1">
+      <button
+    @click="goToPage(currentPage - 1)"
+    :disabled="currentPage === 1"
+    class="px-3 py-1 rounded-md bg-white text-blue-500 border border-blue-500"
+  >
+    前へ
+  </button>
+    <!-- ページネーション用のリンクを生成 -->
+    <button
+  v-for="page in generatePaginationLinks(totalPages, currentPage)"
+  :key="page"
+  @click="goToPage(page)"
+  :class="[
+      'px-3 py-1 rounded-md',
+      currentPage === page ? 'bg-blue-500 text-white' : 'bg-white text-blue-500 border border-blue-500',
+    ]"
+>
+  {{ page }}
+</button>
+
+<button
+    @click="goToPage(currentPage + 1)"
+    :disabled="currentPage === totalPages"
+    class="px-3 py-1 rounded-md bg-white text-blue-500 border border-blue-500"
+  >
+    次へ
+  </button>
+
+  </div>
+
   </AuthenticatedLayout>
 </template>
 

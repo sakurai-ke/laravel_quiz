@@ -84,30 +84,46 @@ async function fetchRankingData() {
   const fromDateTime = new Date(fromDate.value);
   const toDateTime = new Date(toDate.value);
 
-  // 日本のタイムゾーンを考慮して修正
-  fromDateTime.setHours(0, 0, 0, 0); // 開始日の午前0時
-  toDateTime.setHours(23, 59, 59, 999); // 終了日の午後11時59分59秒999ミリ秒
+// 日本のタイムゾーンを考慮
+fromDateTime.setUTCHours(0, 0, 0, 0); // 開始日の午前0時 (UTC時刻)
+toDateTime.setUTCHours(0, 0, 0, 0); // 終了日の午前0時 (UTC時刻)
 
-  const fromDateTimeUTC = new Date(fromDateTime.toISOString());
-  const toDateTimeUTC = new Date(toDateTime.toISOString());
+console.log('fromDateTime: ', fromDateTime);
+  console.log('toDateTime: ', toDateTime);
+  // console.log('fromDateTimeISO: ', fromDateTimeStr);
+  // console.log('toDateTimeISO: ', toDateTimeStr);
 
-  console.log('開始日時: ', fromDateTimeUTC);
-  console.log('終了日時: ', toDateTimeUTC);
+// 開始日と終了日をISOフォーマットの文字列に変換
+const fromDateTimeISO = fromDateTime.toISOString();
+const toDateTimeISO = toDateTime.toISOString();
 
-  dateParams = `fromDate=${fromDateTimeUTC.toISOString()}&toDate=${toDateTimeUTC.toISOString()}`;
+  dateParams = `fromDate=${fromDateTimeISO}&toDate=${toDateTimeISO}`;
+
+  console.log('dateParamsfromto: ', dateParams);
 } else if (fromDate.value) {
   const fromDateTime = new Date(fromDate.value);
-  fromDateTime.setHours(0, 0, 0, 0); // 開始日の午前0時
-  const fromDateTimeUTC = new Date(fromDateTime.toISOString());
-  console.log('開始日時: ', fromDateTimeUTC);
-  dateParams = `fromDate=${fromDateTimeUTC.toISOString()}`;
+
+  // 日本のタイムゾーンを考慮
+  fromDateTime.setUTCHours(0, 0, 0, 0); // 開始日の午前0時 (UTC時刻)
+
+  // 開始日をISOフォーマットの文字列に変換
+  const fromDateTimeISO = fromDateTime.toISOString();
+
+  dateParams = `fromDate=${fromDateTimeISO}`;
+  console.log('dateParamsfrom: ', dateParams);
 } else if (toDate.value) {
   const toDateTime = new Date(toDate.value);
-  toDateTime.setHours(23, 59, 59, 999); // 終了日の午後11時59分59秒999ミリ秒
-  const toDateTimeUTC = new Date(toDateTime.toISOString());
-  console.log('終了日時: ', toDateTimeUTC);
-  dateParams = `toDate=${toDateTimeUTC.toISOString()}`;
+
+  // 日本のタイムゾーンを考慮
+  toDateTime.setUTCHours(0, 0, 0, 0); // 終了日の午前0時 (UTC時刻)
+
+  // 終了日をISOフォーマットの文字列に変換
+  const toDateTimeISO = toDateTime.toISOString();
+
+  dateParams = `toDate=${toDateTimeISO}`;
+  console.log('dateParamsto: ', dateParams);
 }
+
     
     const response = await axios.get(`/api/ranking?${dateParams}${categoryParam}`);
     const rankingData = response.data;
@@ -116,6 +132,10 @@ async function fetchRankingData() {
 
     const labels = rankingData.map(entry => entry.user.name);
     const dataValues = rankingData.map(entry => entry.accuracy);
+    console.log('response: ', response);
+    console.log('rankingData: ', rankingData);
+    console.log('labels: ', labels);
+    console.log('dataValues: ', dataValues);
 
     drawRankingChart(labels, dataValues);
   } catch (error) {
@@ -124,28 +144,32 @@ async function fetchRankingData() {
 }
 
 
-function getDateParams() {
-  let dateParams = '';
+// function getDateParams() {
+//   let dateParams = '';
 
-  if (fromDate.value && toDate.value) {
-    const fromDateTime = new Date(fromDate.value).toISOString();
-    const toDateTime = new Date(toDate.value).toISOString();
-    dateParams = `fromDate=${fromDateTime}&toDate=${toDateTime}`;
-  } else if (fromDate.value) {
-    const fromDateTime = new Date(fromDate.value).toISOString();
-    dateParams = `fromDate=${fromDateTime}`;
-  } else if (toDate.value) {
-    const toDateTime = new Date(toDate.value);
-    toDateTime.setDate(toDateTime.getDate() + 1); // この行は不要
-    dateParams = `toDate=${toDateTime.toISOString()}`;
-  }
+//   if (fromDate.value && toDate.value) {
+//     const fromDateTime = new Date(fromDate.value).toISOString();
+//     const toDateTime = new Date(toDate.value).toISOString();
+//     console.log('fromDateTime1: ', fromDateTime);
+//     console.log('toDateTime1: ', toDateTime);
+//     dateParams = `fromDate=${fromDateTime}&toDate=${toDateTime}`;
+//   } else if (fromDate.value) {
+//     const fromDateTime = new Date(fromDate.value).toISOString();
+//     console.log('fromDateTime2: ', fromDateTime);
+//     dateParams = `fromDate=${fromDateTime}`;
+//   } else if (toDate.value) {
+//     const toDateTime = new Date(toDate.value);
+//     toDateTime.setDate(toDateTime.getDate() + 1); // この行は不要
+//     console.log('toDateTime2: ', toDateTime);
+//     dateParams = `toDate=${toDateTime.toISOString()}`;
+//   }
 
-  if (dateParams !== '') {
-    dateParams = `?${dateParams}`;
-  }
+//   if (dateParams !== '') {
+//     dateParams = `?${dateParams}`;
+//   }
 
-  return dateParams;
-}
+//   return dateParams;
+// }
 
 function drawRankingChart(labels, dataValues) {
   const ctx = rankingChart.value.getContext('2d');

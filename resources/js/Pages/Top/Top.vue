@@ -5,6 +5,7 @@ import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import Quiz from './Quiz.vue'; // Quiz.vue のインポート
 import Record from '@/Pages/Record/Record.vue'; // Record.vue のインポート
+import MicroModal from '@/MicroModal/TopModal.vue'
 
 // import FlashMessage from '@/Components/FlashMessage.vue';
 
@@ -124,9 +125,6 @@ async function startQuiz() {
     }
 }
 
-
-
-
 </script>
 
 <template>
@@ -137,7 +135,11 @@ async function startQuiz() {
             <h2 class="font-semibold text-2xl text-gray-800 leading-tight">トップ</h2>
         </template>
     
-        <div class="flex flex-col items-center justify-start h-screen p-16">
+        <div class="fixed top-40 right-4 z-50">
+            <MicroModal />
+        </div>
+
+        <div class="flex flex-col items-center justify-start h-screen p-28">
             <div v-if="!isQuizStarted" class="max-w-md mb-6 text-center">
                 <h2 class="text-xl font-semibold mb-2 mx-auto">クイズカテゴリーを選択してください</h2>
                 <select v-model="selectedCategory" class="py-2 px-4 border rounded-md w-full">

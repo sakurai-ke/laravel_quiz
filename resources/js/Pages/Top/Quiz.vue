@@ -5,7 +5,7 @@ import { ref, onMounted, defineProps, defineEmits, nextTick } from 'vue';
 import axios from 'axios';
 import Result from './Result.vue'; // Result コンポーネントをインポート
 import { computed } from 'vue';
-// import FlashMessage from '@/Components/FlashMessage.vue';
+import MicroModal from '@/MicroModal/QuizModal.vue'
 
 // 親コンポーネントから渡されるプロパティを定義
 const props = defineProps({
@@ -61,13 +61,11 @@ onMounted(() => {
   fetchAndShuffleQuizzes();
 });
 
-
   // 各クイズデータの user_answer プロパティを空文字列にリセット
   shuffledQuizList.forEach(quiz => {
     quiz.user_answer = ''; // 初期値を空文字列に設定
     quiz.answered = false; // 回答したクイズがどれかを管理する
   });
-
 
 // クイズの選択肢をシャッフルする関数
 function shuffleChoices(choices) {
@@ -123,7 +121,6 @@ function presentRandomQuiz() {
   }
 }
 
-
 // クイズデータの取得とシャッフル
 async function fetchAndShuffleQuizzes() {
   try {
@@ -168,7 +165,6 @@ async function fetchAndShuffleQuizzes() {
     console.error('クイズの取得に失敗しました', error);
   }
 }
-
 
 // 「回答」ボタンがクリックされたときの処理
 async function submitAnswer() {
@@ -307,17 +303,19 @@ function updateButtonVisibility() {
   }
 }
 
-
 // 選択肢を選択する関数
 function selectChoice(choice) {
-  // 「回答」ボタンが表示されている場合
-  if (!quizData.answered && showAnswerButton.value) {
-    // 選択した回答をselectedChoice.valueに格納
-    selectedChoice.value = choice;
-
-    // ユーザー選択プロパティを更新
-    shuffledQuizList[currentQuizIndex].user_choice = choice;
+  // 回答済みクイズの場合、選択肢のクリックを無効にする
+  if (shuffledQuizList[currentQuizIndex].answered) {
+    return;
   }
+
+  // それ以外の場合は選択した回答を設定
+  selectedChoice.value = choice;
+  selectedChoiceColor.value = choice;
+
+  // ユーザー選択プロパティを更新
+  shuffledQuizList[currentQuizIndex].user_choice = choice;
 }
 
 
@@ -327,18 +325,32 @@ function getImageUrl(imageName) {
   return "{{ asset('storage/images') }}/" + imageName;
 }
 
+const selectedChoiceColor = ref(null);
+
 // クイズ画面を表示する関数
 function goToQuiz(index) {
   // クイズ番号をクリックしたときに、そのクイズの index を受け取り、該当するクイズを表示
   currentQuizIndex = index;
+
+  // 回答済みクイズの場合、選択肢のクリックを無効にする
+  if (shuffledQuizList[currentQuizIndex].answered) {
+    selectedChoiceColor.value = shuffledQuizList[currentQuizIndex].user_choice;
+  } else {
+    selectedChoiceColor.value = null;
+  }
+
   presentRandomQuiz();
   showAnswerButton.value = true;
   updateButtonVisibility();
 }
 
+
 </script>
 
 <template>
+          <div class="fixed top-40 right-4 z-50">
+            <MicroModal />
+        </div>
 <p>正答率{{ correctPercentage }}</p>
 <p>何問目か{{ currentQuizIndex + 1 }}</p>
 <p>回答済みはいくつあるか{{ answeredQuestions }}</p>

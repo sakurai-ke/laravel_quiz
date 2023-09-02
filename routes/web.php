@@ -35,7 +35,6 @@ Route::middleware(['auth'])->group(function () {
 
 // クイズ作成ページの表示
 Route::get('/create', [CreateController::class, 'create'])->name('create');
-
 // クイズ作成フォームの送信処理
 Route::post('/create', [CreateController::class, 'createQuiz']);
 
@@ -43,6 +42,8 @@ Route::post('/create', [CreateController::class, 'createQuiz']);
 Route::get('/records', [RecordController::class, 'index'])
     ->name('records')
     ->middleware(['auth', 'verified']);
+
+Route::get('/quiz-results', [RecordController::class, 'paginate']);
 
 // クイズの結果表示用ページ
 Route::get('/result', [QuizController::class, 'show'])
