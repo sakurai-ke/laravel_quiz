@@ -5,7 +5,8 @@ import { ref, onMounted, defineProps, defineEmits, nextTick } from 'vue';
 import axios from 'axios';
 import Result from './Result.vue'; // Result コンポーネントをインポート
 import { computed } from 'vue';
-import MicroModal from '@/MicroModal/QuizModal.vue'
+import QuizModal from '@/MicroModal/QuizModal.vue'
+// import ChatGptModal from '@/MicroModal/ChatGptModal.vue'
 
 // 親コンポーネントから渡されるプロパティを定義
 const props = defineProps({
@@ -215,7 +216,7 @@ async function submitAnswer() {
       };
 
       // レコードを保存
-      const response = await axios.post('/api/record', record);
+      const response = await axios.t('/api/record', record);
       const recordId = response.data.data.id;
 
       // クイズ結果を保存
@@ -345,12 +346,42 @@ function goToQuiz(index) {
 }
 
 
+const hint = ref(''); // ヒントの初期値は空
+
+// ヒントを取得する関数
+async function getHint() {
+    try {
+        // クイズの問題文（title）と正解をコントローラに送信
+        const response = await axios.post('/api/get-hint', {
+            problem_statement: quizData.value.title, // titleを使用
+            correct_answer: quizData.value.correct_answer,
+        });
+        console.log('responseの値:', response);
+
+        // レスポンスデータからヒントを取得
+        const hintData = response.data.hint;
+
+        if (hintData) {
+            // ヒントが含まれている場合、hint変数に代入
+            hint.value = hintData;
+            console.log('ヒントの値:', hint.value); // ヒントの値をコンソールに表示
+        } else {
+            // ヒントが含まれていない場合、適切なメッセージを設定
+            hint.value = 'このクイズにはヒントがありません。';
+        }
+    } catch (error) {
+        console.error('ヒントの取得に失敗しました', error);
+        // エラー処理を追加
+    }
+}
+
+
 </script>
 
 <template>
-          <div class="fixed top-40 right-4 z-50">
-            <MicroModal />
-        </div>
+  <div class="absolute top-40 right-4 z-50">
+      <QuizModal />
+  </div>
 <p>正答率{{ correctPercentage }}</p>
 <p>何問目か{{ currentQuizIndex + 1 }}</p>
 <p>回答済みはいくつあるか{{ answeredQuestions }}</p>
@@ -418,8 +449,8 @@ function goToQuiz(index) {
       回答
     </button>
       <div v-if="quizEndMessage !== ''" class="quiz-end-message">
-        <p v-if="quizEndMessage.startsWith('正解')" class="font-semibold">{{ quizEndMessage }}</p>
-        <p v-else>{{ quizEndMessage }}</p>
+        <p v-if="quizEndMessage.startsWith('正解')" class="font-semibold text-green-500">{{ quizEndMessage }}</p>
+        <p v-else class="text-red-500">{{ quizEndMessage }}</p>
       <div class="mb-4"></div>
       <button v-if="currentQuizIndex < shuffledQuizList.length - 1" @click="goToNextQuestion" @quizCompleted="quizCompleted" 
       class="mt-4 w-1/2 py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300"
@@ -468,6 +499,25 @@ function goToQuiz(index) {
         次のクイズへ
       </button>
     </div>
+
+    <!-- <div class="absolute top-40 right-28 z-50">
+      <ChatGptModal />
+  </div> -->
+
+  <!-- ヒントボタン -->
+  <button
+    @click="getHint"
+    class="mt-4 py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300"
+  >
+    ヒント
+  </button>
+
+  <!-- ヒントの表示エリア -->
+  <div v-if="hint" class="mt-4 p-4 bg-gray-100 rounded-md">
+    <h3 class="text-lg font-semibold mb-2">ヒント</h3>
+    <p class="text-gray-700">{{ hint }}</p>
+  </div>
+
 </template>
 
 <style scoped>

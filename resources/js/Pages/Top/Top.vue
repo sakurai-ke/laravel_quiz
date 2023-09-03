@@ -135,11 +135,11 @@ async function startQuiz() {
             <h2 class="font-semibold text-2xl text-gray-800 leading-tight">トップ</h2>
         </template>
     
-        <div class="fixed top-40 right-4 z-50">
+        <div class="absolute top-40 right-4 z-50">
             <MicroModal />
         </div>
 
-        <div class="flex flex-col items-center justify-start h-screen p-28">
+        <div class="flex flex-col items-center justify-start h-screen p-8">
             <div v-if="!isQuizStarted" class="max-w-md mb-6 text-center">
                 <h2 class="text-xl font-semibold mb-2 mx-auto">クイズカテゴリーを選択してください</h2>
                 <select v-model="selectedCategory" class="py-2 px-4 border rounded-md w-full">

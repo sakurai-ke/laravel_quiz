@@ -259,4 +259,24 @@ public function deleteImage(string $id)
         return response()->json(['message' => 'クイズが見つかりませんでした'], 404);
     }
     
+    // クイズ情報削除用
+    public function quizDestroy(string $id)
+{
+    $quiz = Quiz::find($id);
+
+    if ($quiz) {
+        if ($quiz->image_src) {
+            // 画像が存在する場合は削除
+            $imagePath = public_path('storage/images/') . $quiz->image_src;
+            if (file_exists($imagePath)) {
+                unlink($imagePath);
+            }
+        }
+
+        $quiz->delete();
+        return response()->json(['message' => 'クイズが削除されました']);
+    }
+
+    return response()->json(['message' => 'クイズが見つかりませんでした'], 404);
+}
 }

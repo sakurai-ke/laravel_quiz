@@ -14,26 +14,21 @@ const toggleStatus = () => { isShow.value = !isShow.value}
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </button>
+
+                
                 <header class="modal__header flex justify-between items-center px-4 py-2 bg-gray-100 rounded-t-lg mt-4">
                     <h2 class="modal__title text-lg font-semibold text-gray-800">
-                        <span class="font-bold text-blue-700">クイズサイトへようこそ！</span><br>
+                        <span class="font-bold text-blue-700">ChatGptからのヒント！
+                        </span><br>
                     </h2>
                 </header>
+
                 <main class="modal__content p-4 text-gray-700">
-                    <!-- ヘルプの文章 -->
                     <p class="mb-4">
                         <span class="font-bold text-blue-700">カテゴリーを選択</span><br>
                         最初に、クイズのカテゴリーを選択してください。カテゴリーは異なるトピックやテーマに関連しており、あなたの興味に合ったものを選ぶことができます。
                     </p>
-                    <p class="mb-4">
-                        <span class="font-bold text-blue-700">出題数を選択</span><br>
-                        次に、出題される問題の数を選んでください。5問から20問まで選べます。
-                    </p>
-                    <p>
-                        <span class="font-bold text-blue-700">クイズ開始！</span><br>
-                        カテゴリーと問題数を選択したら、"クイズ開始" ボタンをクリックしてください。クイズが始まり、最初の問題が表示されます。
-                    </p>
-                    <!-- ヘルプの文章ここまで -->
+
                 </main>
                 <footer class="modal__footer px-4 py-2">
                     <button @click="toggleStatus" type="button" class="modal__btn modal__btn-primary bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded focus:outline-none mr-2">
@@ -43,5 +38,5 @@ const toggleStatus = () => { isShow.value = !isShow.value}
             </div>
         </div>
     </div>
-    <button @click="toggleStatus" type="button" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded focus:outline-none">ヘルプ</button>
+    <button @click="toggleStatus" type="button" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded focus:outline-none">ヒント</button>
 </template>

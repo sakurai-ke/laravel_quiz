@@ -71,10 +71,7 @@ function getImageUrl(imageSrc) {
                         <p class="text-lg font-semibold">選択肢3</p>
                         <p class="text-gray-700">{{ quiz.wrong_answer_3 }}</p>
                     </div>
-                    <div class="border-b pb-2">
-                        <p class="text-lg font-semibold">ヒント</p>
-                        <p class="text-gray-700">{{ quiz.hint }}</p>
-                    </div>
+
                     <div class="border-b pb-2">
                         <p class="text-lg font-semibold">解説</p>
                         <p class="text-gray-700">{{ quiz.explain }}</p>

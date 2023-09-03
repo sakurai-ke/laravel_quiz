@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\QuizController;
 use App\Http\Controllers\Api\RecordController;
 use App\Http\Controllers\Api\CreateController;
 use App\Http\Controllers\Api\RankController;
+use App\Http\Controllers\Api\ChatGptController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -18,9 +19,14 @@ use App\Http\Controllers\Api\RankController;
 |
 */
 
+// ヒント取得のための記述
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/get-hint', [ChatGptController::class, 'getHint']);
+});
+
 // ランキング表示用
 Route::middleware('auth:sanctum')->group(function () {
-Route::get('/ranking', [RankController::class, 'getUserRanking']);
+    Route::get('/ranking', [RankController::class, 'getUserRanking']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -41,7 +47,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/editQuizzes/{id}', [CreateController::class, 'editUserQuizzes']); // 編集画面表示
     Route::put('/updateQuizzes/{id}', [CreateController::class, 'updateUserQuizzes']); // クイズ更新処理
     Route::post('/uploadImage', [CreateController::class, 'uploadImage']); // クイズ更新処理
-    Route::delete('/deleteImage/{id}', [CreateController::class, 'deleteImage']); // 画像ファイル削除用のルート
+    Route::delete('/deleteImage/{id}', [CreateController::class, 'deleteImage']); // 画像ファイル削除用
+    Route::middleware('auth:sanctum')->delete('/quizzes/{id}', [CreateController::class, 'quizDestroy']); // クイズ情報削除用
 
 });
 

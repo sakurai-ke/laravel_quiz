@@ -125,6 +125,33 @@ async function removeImage() {
   }
 }
 
+// クイズ情報の削除
+async function deleteQuiz() {
+  try {
+    const response = await axios.delete(`/api/quizzes/${quiz.value.id}`);
+    if (response.data.message === 'クイズが削除されました') {
+      // フラッシュメッセージをlocalStorageに保存
+      localStorage.setItem('flashMessage', 'クイズが削除されました');
+      // リダイレクト
+      window.location.href = '/list'; // クイズ一覧ページへリダイレクト
+    }
+  } catch (error) {
+    console.error('クイズの削除に失敗しました', error);
+  }
+}
+
+// 削除ボタンがクリックされた際に確認ダイアログを表示
+function confirmDelete() {
+  if (confirm('本当にクイズデータを削除しますか？')) {
+    // "はい" を選択した場合の処理
+    deleteQuiz();
+  } else {
+    // "いいえ" を選択した場合の処理（ページ遷移をキャンセル）
+    event.preventDefault(); // デフォルトのページ遷移をキャンセル
+  }
+}
+
+
 </script>
 
 <template>
@@ -196,6 +223,11 @@ async function removeImage() {
           <div class="mt-4">
             <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">更新</button>
           </div>
+          <div class="mt-4">
+    <!-- 削除ボタンのクリック時に確認ダイアログを表示 -->
+    <button @click="confirmDelete" class="bg-red-500 text-white px-4 py-2 rounded">削除</button>
+  </div>
+
         </form>
       </div>
     </div>

@@ -28,12 +28,8 @@ const categories = ref([]);
 // セレクトボックスで選択したカテゴリーのID
 const selectedCategory = ref('all');
 
-// const props = defineProps({
-// 'records' : Object
-// })
-// onMounted(() => { //ページが表示されたタイミングで実行
-// console.log(props.records)
-// })
+
+
 
 const goToPage = (page) => {
   if (page >= 1 && page <= totalPages.value) {
@@ -52,6 +48,11 @@ function generatePaginationLinks(totalPages, currentPage) {
   const maxVisibleLinks = 5; // 表示するページリンクの最大数
   const links = [];
 
+    // totalPagesが1以下の場合はページネーションを表示しない
+    if (totalPages <= 1) {
+    return links;
+  }
+  
   // 常に最初のページを表示
   links.push(1);
 
@@ -77,7 +78,6 @@ function generatePaginationLinks(totalPages, currentPage) {
 
   return links;
 }
-
 
 
 // クイズの結果情報を取得する
@@ -134,23 +134,18 @@ async function searchQuizResults() {
       validationError.value = "";
     }
 
-    console.log('quizRecords.value', quizRecords.value);
-
-    const fromDateTime = fromDate.value ? utcToZonedTime(new Date(fromDate.value), 'UTC') : null;
-    const toDateTime = toDate.value ? utcToZonedTime(new Date(toDate.value), 'UTC') : null;
-
-if (toDateTime) {
+    const fromDateTime = fromDate.value ? utcToZonedTime(parseISO(fromDate.value), 'Asia/Tokyo') : null;
+    const toDateTime = toDate.value ? utcToZonedTime(parseISO(toDate.value), 'Asia/Tokyo') : null;
+    if (toDateTime) {
   toDateTime.setHours(toDateTime.getHours() + 24);
 }
     console.log('fromDateTime', fromDateTime);
    console.log('toDateTime', toDateTime);
 
     filteredResults = filteredResults.filter(record => {
-      const recordDateTime = utcToZonedTime(new Date(record.created_at), 'Asia/Tokyo');
+      const recordDateTime = utcToZonedTime(parseISO(record.created_at), 'Asia/Tokyo');
       return (!fromDateTime || recordDateTime >= fromDateTime) && (!toDateTime || recordDateTime <= toDateTime);
     });
-
-    console.log('filteredResult2', filteredResults);
 
     // 正しい時間帯で created_at を修正
     filteredResults.forEach(record => {
@@ -164,9 +159,11 @@ if (toDateTime) {
     await fetchCategoryAccuracyData();
     // 正答率の折れ線グラフのデータをフィルタリングして再描画
     const filteredQuizRecords = filterQuizRecordsByDate(filteredResults);
+    console.log('filteredQuizRecords', filteredQuizRecords);
     quizRecords.value = filteredQuizRecords;
     updateLineGraphKey();
     drawLineChart(filterAccuracyData(filteredQuizRecords));
+    console.log('quizRecords.value', quizRecords.value);
   } catch (error) {
     console.error('クイズの結果情報の取得に失敗しました', error);
   }
@@ -194,8 +191,6 @@ if (toDateValue) {
     return (!fromDateValue || recordDate >= fromDateValue) && (!toDateValue || recordDate <= toDateValue);
   });
 }
-
-
 
 const categoryMapping = ref({});
 
@@ -233,7 +228,7 @@ async function fetchCategoryAccuracyData() {
       const nextDay = utcToZonedTime(new Date(toDate.value), 'UTC');
       nextDay.setDate(nextDay.getDate() + 1);
       filteredResults = filteredResults.filter(record => new Date(record.created_at) < nextDay);
-   console.log('toDateTime2', nextDay);
+      console.log('toDateTime2', nextDay);
     }
 
     // カテゴリー別の正答数を計算
@@ -322,7 +317,6 @@ function updateLineGraphKey() {
 
 
 
-
 // フィルタリングされた正答率データを保持する変数を追加
 const filteredCategoryAccuracyData = ref([]);
 
@@ -370,6 +364,7 @@ const formattedToDate = toDateValue ? toDateValue.toLocaleString('ja-JP') : '';
 
 console.log('fromDateValue4', formattedFromDate);
 console.log('toDateValue4', formattedToDate);
+
   return records.filter(record => {
     const recordDate = new Date(record.created_at).getTime();
     return recordDate >= fromDateValue && recordDate <= toDateValue;
@@ -511,7 +506,7 @@ watch(selectedCategory, () => {
   </div>
 
         <ul>
-          <li v-for="record in paginatedRecords" :key="record.id" class="bg-white shadow-md p-4 mb-4 rounded-md">
+          <li v-for="record in quizRecords" :key="record.id" class="bg-white shadow-md p-4 mb-4 rounded-md">
             <div class="flex justify-between items-center">
               <div>
                 <h2 class="text-lg font-semibold">{{ new Date(record.created_at).toLocaleString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }) }}</h2>
@@ -519,7 +514,6 @@ watch(selectedCategory, () => {
                 <p class="text-gray-600">カテゴリー: {{ record.category.name }}</p>
                 <!-- 日付の横にクイズの出題数を表示 -->
                 <p class="text-gray-600">出題数: {{ record.total_questions }}</p>
-                        <!-- 正答率を表示 -->
                 <p class="text-gray-600">正答率: {{ record.accuracy }}%</p>
               </div>
               <button class="bg-blue-500 text-white px-3 py-1 rounded-md" @click="toggleAccordion(record.id)">
@@ -527,8 +521,6 @@ watch(selectedCategory, () => {
               </button>
 
             </div>
-
-            
             <div v-if="expandedRecordId === record.id" class="mt-4 p-4 bg-gray-100 rounded-md">
               <div class="border-b border-gray-300 pb-2 mb-2">
                 <h3 class="text-xl font-semibold mb-1">回答詳細</h3>
@@ -553,10 +545,9 @@ watch(selectedCategory, () => {
             </div>
           </li>
         </ul>
-        
       </div>
     </div>
-    
+
     <div class="mt-4 flex justify-center space-x-1">
       <button
     @click="goToPage(currentPage - 1)"
