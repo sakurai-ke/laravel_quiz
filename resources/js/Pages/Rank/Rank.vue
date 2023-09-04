@@ -208,6 +208,9 @@ function drawRankingChart(labels, dataValues) {
           ticks: {
             suggestedMax: suggestedMax,
             suggestedMin: suggestedMin,
+              font: {
+              size: 14, // フォントサイズを設定
+              },
           },
         },
       },
@@ -247,7 +250,7 @@ let rankingChartInstance = null;
           </select>
         </div>
       </div>
-      <div class="mt-6">
+      <div class="mt-6" style="max-width: 1500px; max-height: 1200px;"> 
         <canvas ref="rankingChart" class="rounded-md border"></canvas>
       </div>
     </div>

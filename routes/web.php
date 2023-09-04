@@ -51,8 +51,8 @@ Route::get('/result', [QuizController::class, 'show'])
     ->middleware(['auth', 'verified']);
 
 
-Route::get('/top', [CategoryController::class, 'index'])->name('top')
-->middleware(['auth', 'verified']);
+Route::get('/top', [CategoryController::class, 'index'])->name('top');
+// ->middleware(['auth', 'verified']);
 
 
 Route::get('/', function () {

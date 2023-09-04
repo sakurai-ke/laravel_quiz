@@ -10,12 +10,15 @@ import Line from 'chart.js/auto';
 
 const currentPage = ref(1); // 現在のページ
 let totalPages = computed(() => Math.ceil(quizRecords.value.length / 10)); // 10件ずつのページ数
+// 1ページに表示するアイテム数
+const itemsPerPage = 10;
 
 const quizRecords = ref([]); // クイズの結果情報を格納
 const expandedRecordId = ref(null); // アコーディオンの展開状態を管理する
 const fromDate = ref(null); // Fromの日付
 const toDate = ref(null); // Toの日付
 const categoryAccuracyData = ref([]); // カテゴリーごとの正答率データを格納
+const isLoading = ref(true); // データが読み込まれるまでを示すフラグ
 
 
 
@@ -31,17 +34,19 @@ const selectedCategory = ref('all');
 
 
 
+// ページネーション用の関数：指定したページに移動
 const goToPage = (page) => {
   if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page;
   }
 };
 
+// 現在のページに対応するクイズ結果の一部を取得する計算プロパティ
 const paginatedRecords = computed(() => {
-    const startIndex = (currentPage.value - 1) * 10;
-    const endIndex = startIndex + 10;
-    return quizRecords.value.slice(startIndex, endIndex);
-  });
+  const startIndex = (currentPage.value - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  return quizRecords.value.slice(startIndex, endIndex);
+});
 
 // 省略部分を含むページネーションのリンクを生成
 function generatePaginationLinks(totalPages, currentPage) {
@@ -352,18 +357,11 @@ function filterAccuracyData(records) {
     return records; // FromとToが未選択の場合は全データを表示
   }
 
-  const fromDateValue = fromDate.value ? utcToZonedTime(new Date(fromDate.value), 'UTC') : null;
-const toDateValue = toDate.value ? utcToZonedTime(new Date(toDate.value), 'UTC') : null;
-if (toDateValue) {
-  toDateValue.setHours(toDateValue.getHours() + 24);
-}
+const fromDateValue = fromDate.value ? utcToZonedTime(new Date(fromDate.value), 'UTC').getTime() : 0;
+const toDateValue = toDate.value ? utcToZonedTime(new Date(toDate.value), 'UTC').getTime() + (24 * 60 * 60 * 1000) : Date.now();
 
-// fromDateValue と toDateValue が null でない場合にフォーマットする
-const formattedFromDate = fromDateValue ? fromDateValue.toLocaleString('ja-JP') : '';
-const formattedToDate = toDateValue ? toDateValue.toLocaleString('ja-JP') : '';
-
-console.log('fromDateValue4', formattedFromDate);
-console.log('toDateValue4', formattedToDate);
+console.log('fromDateValue4:', new Date(fromDateValue).toLocaleString('ja-JP'));
+console.log('toDateValue4:', new Date(toDateValue).toLocaleString('ja-JP'));
 
   return records.filter(record => {
     const recordDate = new Date(record.created_at).getTime();
@@ -477,6 +475,11 @@ watch(selectedCategory, () => {
     <div class="bg-gray-100 py-8 px-4">
       <div class="max-w-3xl mx-auto">
 
+        <!-- 結果が存在しない場合のメッセージ -->
+        <div v-if="quizRecords.length === 0 && !isLoading">
+          <p class="text-xl font-semibold text-gray-800">あなたはまだクイズを実施していません。</p>
+        </div>
+        <div v-else>
         <!-- FromとToの日付選択フォーム -->
         <div class="flex space-x-4 mb-4">
           <label for="fromDate" class="flex items-center">
@@ -506,7 +509,7 @@ watch(selectedCategory, () => {
   </div>
 
         <ul>
-          <li v-for="record in quizRecords" :key="record.id" class="bg-white shadow-md p-4 mb-4 rounded-md">
+          <li v-for="record in paginatedRecords" :key="record.id" class="bg-white shadow-md p-4 mb-4 rounded-md">
             <div class="flex justify-between items-center">
               <div>
                 <h2 class="text-lg font-semibold">{{ new Date(record.created_at).toLocaleString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }) }}</h2>
@@ -545,40 +548,37 @@ watch(selectedCategory, () => {
             </div>
           </li>
         </ul>
+        <div class="mt-4 flex justify-center space-x-1">
+          <button
+        @click="goToPage(currentPage - 1)"
+        :disabled="currentPage === 1"
+        class="px-3 py-1 rounded-md bg-white text-blue-500 border border-blue-500"
+      >
+        前へ
+      </button>
+      <!-- ページネーション用のリンクを生成 -->
+      <button
+        v-for="page in generatePaginationLinks(totalPages, currentPage)"
+        :key="page"
+        @click="goToPage(page)"
+        :class="[
+          'px-3 py-1 rounded-md',
+          currentPage === page ? 'bg-blue-500 text-white' : 'bg-white text-blue-500 border border-blue-500',
+        ]"
+      >
+        {{ page }}
+      </button>
+      <button
+        @click="goToPage(currentPage + 1)"
+        :disabled="currentPage === totalPages"
+        class="px-3 py-1 rounded-md bg-white text-blue-500 border border-blue-500"
+      >
+        次へ
+      </button>
+      </div>
       </div>
     </div>
-
-    <div class="mt-4 flex justify-center space-x-1">
-      <button
-    @click="goToPage(currentPage - 1)"
-    :disabled="currentPage === 1"
-    class="px-3 py-1 rounded-md bg-white text-blue-500 border border-blue-500"
-  >
-    前へ
-  </button>
-    <!-- ページネーション用のリンクを生成 -->
-    <button
-  v-for="page in generatePaginationLinks(totalPages, currentPage)"
-  :key="page"
-  @click="goToPage(page)"
-  :class="[
-      'px-3 py-1 rounded-md',
-      currentPage === page ? 'bg-blue-500 text-white' : 'bg-white text-blue-500 border border-blue-500',
-    ]"
->
-  {{ page }}
-</button>
-
-<button
-    @click="goToPage(currentPage + 1)"
-    :disabled="currentPage === totalPages"
-    class="px-3 py-1 rounded-md bg-white text-blue-500 border border-blue-500"
-  >
-    次へ
-  </button>
-
   </div>
-
   </AuthenticatedLayout>
 </template>
 

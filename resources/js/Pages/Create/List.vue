@@ -4,15 +4,79 @@ import { Link, Head } from '@inertiajs/vue3';
 import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
 
+const currentPage = ref(1); // 現在のページ
+let totalPages = computed(() => Math.ceil(filteredQuizzes.value.length / 20)); // 10件ずつのページ数
+// 1ページに表示するアイテム数
+const itemsPerPage = 20;
+
 const quizzes = ref([]);
 console.log('quizzes', quizzes);
 const categories = ref([]);
 const selectedCategory = ref('all'); // 初期選択は「全て」
 
+const isLoading = ref(true); // データが読み込まれるまでを示すフラグ
+
 onMounted(() => {
   getquizzes();
   getCategories();
 });
+
+onMounted(async () => {
+  await Promise.all([getquizzes(), getCategories()]);
+  isLoading.value = false; // データが読み込み完了後にisLoadingをfalseに設定
+});
+
+// ページネーション用の関数：指定したページに移動
+const goToPage = (page) => {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page;
+  }
+};
+
+// 現在のページに対応するクイズ結果の一部を取得する計算プロパティ
+const paginatedRecords = computed(() => {
+  const startIndex = (currentPage.value - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  return filteredQuizzes.value.slice(startIndex, endIndex);
+});
+
+// 省略部分を含むページネーションのリンクを生成
+function generatePaginationLinks(totalPages, currentPage) {
+  const maxVisibleLinks = 5; // 表示するページリンクの最大数
+  const links = [];
+
+    // totalPagesが1以下の場合はページネーションを表示しない
+    if (totalPages <= 1) {
+    return links;
+  }
+  
+  // 常に最初のページを表示
+  links.push(1);
+
+  // 省略部分の追加
+  if (currentPage > 3) {
+    links.push('...'); // 省略部分の前に「...」を追加
+  }
+
+  // 現在のページの前後に一定数のページリンクを表示
+  for (let i = currentPage - 2; i <= currentPage + 2; i++) {
+    if (i > 1 && i < totalPages) {
+      links.push(i);
+    }
+  }
+
+  // 省略部分の追加
+  if (currentPage < totalPages - 2) {
+    links.push('...'); // 省略部分の後に「...」を追加
+  }
+
+  // 常に最後のページを表示
+  links.push(totalPages);
+
+  return links;
+}
+
+
 
 async function getquizzes() {
   try {
@@ -48,6 +112,65 @@ function formatDate(dateTime) {
   return new Date(dateTime).toLocaleDateString(undefined, options);
 }
 
+// クイズアイテムごとに選択状態を管理するプロパティを追加
+quizzes.value.forEach(quiz => {
+  quiz.selected = false;
+});
+
+// クイズアイテムごとに選択状態を管理するプロパティを追加
+const selectedQuizzes = ref([]);
+
+// チェックボックスの状態変更を処理するメソッド
+const handleCheckboxChange = (quiz) => {
+  if (quiz.selected) {
+    // 選択されている場合、選択リストから削除
+    selectedQuizzes.value = selectedQuizzes.value.filter(selectedQuiz => selectedQuiz.id !== quiz.id);
+  } else {
+    // 選択されていない場合、選択リストに追加
+    selectedQuizzes.value.push(quiz);
+  }
+  quiz.selected = !quiz.selected;
+};
+
+// 選択されたクイズの削除処理
+const deleteSelectedQuizzes = async () => {
+  if (selectedQuizzes.value.length === 0) {
+    return; // 選択されたクイズがない場合は何もしない
+  }
+
+  try {
+    const selectedQuizIds = selectedQuizzes.value.map(quiz => quiz.id);
+
+    // 選択されたクイズのIDをサーバーに送信して削除を実行
+    const response = await axios.delete('/api/deleteQuizzes', { data: { quiz_ids: selectedQuizIds } });
+
+    if (response.status === 200) {
+      // 削除成功時の処理
+      // 削除されたクイズを一覧から削除
+      quizzes.value = quizzes.value.filter(quiz => !selectedQuizIds.includes(quiz.id));
+      // 選択リストをクリア
+      selectedQuizzes.value = [];
+    }
+  } catch (error) {
+    console.error('クイズの削除に失敗しました', error);
+  }
+};
+
+// 削除ボタンがクリックされた際に確認ダイアログを表示
+function confirmDelete() {
+  if (confirm('本当にクイズデータを削除しますか？')) {
+    // "はい" を選択した場合の処理
+    deleteSelectedQuizzes();
+  } else {
+    // "いいえ" を選択した場合の処理（ページ遷移をキャンセル）
+    event.preventDefault(); // デフォルトのページ遷移をキャンセル
+  }
+}
+
+
+// 選択されたクイズが少なくとも1つ以上あるかどうかを確認
+const hasSelectedQuizzes = computed(() => quizzes.value.some(quiz => quiz.selected));
+
 </script>
 
 <template>
@@ -59,20 +182,65 @@ function formatDate(dateTime) {
     </template>
     <div class="bg-gray-100 py-8">
       <div class="max-w-3xl mx-auto px-4">
+        
+        <!-- クイズが一つもない場合のメッセージ -->
+        <div v-if="quizzes.length === 0 && !isLoading">
+          <p class="text-xl font-semibold text-gray-800">あなたはまだクイズを作成していません。</p>
+        </div>
 
-        <select v-model="selectedCategory" class="block w-40 bg-white border border-gray-300 p-2 rounded shadow-sm">
-          <option value="all">全て</option>
-          <option v-for="category in categories" :key="category.id" :value="category.id">{{ category.name }}</option>
-        </select>
+        <div v-else>
+          <div class="flex items-center mb-4 justify-between"> <!-- カテゴリー選択と削除ボタンのコンテナ -->
+            <button @click="confirmDelete" :disabled="!hasSelectedQuizzes" class="px-4 py-2 rounded-md bg-red-500 text-white">削除</button>
+            <select v-model="selectedCategory" class="block w-40 bg-white border border-gray-300 p-2 rounded shadow-sm ml-6">
+              <option value="all">全て</option>
+              <option v-for="category in categories" :key="category.id" :value="category.id">{{ category.name }}</option>
+            </select>
+          </div>
 
-        <ul class="mt-4 space-y-4">
-          <li v-for="quiz in filteredQuizzes" :key="quiz.id" class="bg-white rounded shadow-md p-4">
-            <Link :href="'/list/' + quiz.id" class="block hover:underline text-xl font-semibold mb-2">{{ quiz.title }}</Link>
-            <p class="text-gray-600">作成日時: {{ formatDate(quiz.created_at) }}</p>
-            <p class="text-gray-600">カテゴリー名: {{ quiz.category.name }}</p>
-          </li>
-        </ul>
+
+          <ul class="mt-4 space-y-4">
+            <li v-for="quiz in paginatedRecords" :key="quiz.id" class="bg-white rounded shadow-md p-4 flex items-center justify-between">
+              <div class="flex items-center"> 
+                <input type="checkbox" :checked="quiz.selected" class="mr-6" @input="handleCheckboxChange(quiz)">
+                <Link :href="'/list/' + quiz.id" class="hover:underline text-xl font-semibold mb-2">{{ quiz.title }}</Link>
+              </div>
+              <div class="text-right">
+                <p class="text-gray-600">作成日時: {{ formatDate(quiz.created_at) }}</p>
+                <p class="text-gray-600">カテゴリー名: {{ quiz.category.name }}</p>
+              </div>
+            </li>
+          </ul>
+        </div>
       </div>
+    </div>
+
+    <div class="mt-4 flex justify-center space-x-1">
+      <button
+        @click="goToPage(currentPage - 1)"
+        :disabled="currentPage === 1"
+        class="px-3 py-1 rounded-md bg-white text-blue-500 border border-blue-500"
+      >
+        前へ
+      </button>
+      <!-- ページネーション用のリンクを生成 -->
+      <button
+        v-for="page in generatePaginationLinks(totalPages, currentPage)"
+        :key="page"
+        @click="goToPage(page)"
+        :class="[
+          'px-3 py-1 rounded-md',
+          currentPage === page ? 'bg-blue-500 text-white' : 'bg-white text-blue-500 border border-blue-500',
+        ]"
+      >
+        {{ page }}
+      </button>
+      <button
+        @click="goToPage(currentPage + 1)"
+        :disabled="currentPage === totalPages"
+        class="px-3 py-1 rounded-md bg-white text-blue-500 border border-blue-500"
+      >
+        次へ
+      </button>
     </div>
   </AuthenticatedLayout>
 </template>

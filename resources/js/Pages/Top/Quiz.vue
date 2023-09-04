@@ -5,8 +5,7 @@ import { ref, onMounted, defineProps, defineEmits, nextTick } from 'vue';
 import axios from 'axios';
 import Result from './Result.vue'; // Result コンポーネントをインポート
 import { computed } from 'vue';
-import QuizModal from '@/MicroModal/QuizModal.vue'
-// import ChatGptModal from '@/MicroModal/ChatGptModal.vue'
+import MicroModal from '@/MicroModal/QuizModal.vue'
 
 // 親コンポーネントから渡されるプロパティを定義
 const props = defineProps({
@@ -56,6 +55,9 @@ const answeredQuestions = ref(0);
 const showNextButton = ref(true);
 const showPrevButton = ref(false);
 const showResultButton = ref(false);
+
+// 新しい変数を追加
+const usedQuizIds = new Set();
 
 // 初回にクイズデータを取得してシャッフル
 onMounted(() => {
@@ -134,19 +136,24 @@ async function fetchAndShuffleQuizzes() {
     const nextQuizzes = response.data;
 
     if (nextQuizzes.length > 0) {
+      // 除外するクイズIDを収集
+      const excludedQuizIds = shuffledQuizList.map(quiz => quiz.id);
+
       // 各クイズデータに正解フラグとユーザー選択プロパティを追加
-      shuffledQuizList = nextQuizzes.map(quiz => ({
-        ...quiz,
-        isCorrect: selectedChoice.value === quiz.correct_answer,
-        user_choice: '',
-        // 選択肢のシャッフル
-        choices: shuffleChoices([
-          quiz.correct_answer,
-          quiz.wrong_answer_1,
-          quiz.wrong_answer_2,
-          quiz.wrong_answer_3,
-        ]),
-      }));
+      shuffledQuizList = nextQuizzes
+        .filter(quiz => !excludedQuizIds.includes(quiz.id)) // 除外対象のクイズを除外
+        .map(quiz => ({
+          ...quiz,
+          isCorrect: selectedChoice.value === quiz.correct_answer,
+          user_choice: '',
+          // 選択肢のシャッフル
+          choices: shuffleChoices([
+            quiz.correct_answer,
+            quiz.wrong_answer_1,
+            quiz.wrong_answer_2,
+            quiz.wrong_answer_3,
+          ]),
+        }));
 
       // 以前の選択肢選択状態を更新
       if (shuffledQuizList[currentQuizIndex].answered) {
@@ -158,7 +165,6 @@ async function fetchAndShuffleQuizzes() {
       showAnswerButton.value = true;
       quizEndMessage.value = '';
       updateButtonVisibility();
-
     } else {
       console.error('次のクイズデータがありません');
     }
@@ -216,7 +222,7 @@ async function submitAnswer() {
       };
 
       // レコードを保存
-      const response = await axios.t('/api/record', record);
+      const response = await axios.post('/api/record', record);
       const recordId = response.data.data.id;
 
       // クイズ結果を保存
@@ -244,7 +250,6 @@ async function submitAnswer() {
   }
 }
 
-
 // 「次へ」ボタンがクリックされた際の処理
 async function goToNextQuestion() {
   // 前のクイズの情報をリセット
@@ -252,13 +257,11 @@ async function goToNextQuestion() {
   selectedChoice.value = ''; // 選択した回答をリセット
 
   if (currentQuizIndex < shuffledQuizList.length-1) {
-
     currentQuizIndex++; // インデックスを次のクイズに更新
-    
     presentRandomQuiz(); //次のクイズを出題する
 
- // 回答済みクイズの場合は「回答」ボタンを非表示にする
- if (shuffledQuizList[currentQuizIndex].answered) {
+    // 回答済みクイズの場合は「回答」ボタンを非表示にする
+    if (shuffledQuizList[currentQuizIndex].answered) {
       showAnswerButton.value = false;
     } else {
       // 未回答クイズの場合は「回答」ボタンを表示する
@@ -267,6 +270,8 @@ async function goToNextQuestion() {
 
     updateButtonVisibility(); // ボタンの表示を更新
   } else {
+    // もしクイズが最後まで行った場合、新しいクイズデータを取得する
+    fetchAndShuffleQuizzes();
   }
 }
 
@@ -345,7 +350,6 @@ function goToQuiz(index) {
   updateButtonVisibility();
 }
 
-
 const hint = ref(''); // ヒントの初期値は空
 
 // ヒントを取得する関数
@@ -374,14 +378,12 @@ async function getHint() {
         // エラー処理を追加
     }
 }
-
-
 </script>
 
 <template>
-  <div class="absolute top-40 right-4 z-50">
-      <QuizModal />
-  </div>
+          <div class="fixed top-40 right-4 z-50">
+            <MicroModal />
+        </div>
 <p>正答率{{ correctPercentage }}</p>
 <p>何問目か{{ currentQuizIndex + 1 }}</p>
 <p>回答済みはいくつあるか{{ answeredQuestions }}</p>
@@ -449,8 +451,8 @@ async function getHint() {
       回答
     </button>
       <div v-if="quizEndMessage !== ''" class="quiz-end-message">
-        <p v-if="quizEndMessage.startsWith('正解')" class="font-semibold text-green-500">{{ quizEndMessage }}</p>
-        <p v-else class="text-red-500">{{ quizEndMessage }}</p>
+        <p v-if="quizEndMessage.startsWith('正解')" class="font-semibold">{{ quizEndMessage }}</p>
+        <p v-else>{{ quizEndMessage }}</p>
       <div class="mb-4"></div>
       <button v-if="currentQuizIndex < shuffledQuizList.length - 1" @click="goToNextQuestion" @quizCompleted="quizCompleted" 
       class="mt-4 w-1/2 py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300"
@@ -500,11 +502,7 @@ async function getHint() {
       </button>
     </div>
 
-    <!-- <div class="absolute top-40 right-28 z-50">
-      <ChatGptModal />
-  </div> -->
-
-  <!-- ヒントボタン -->
+    <!-- ヒントボタン -->
   <button
     @click="getHint"
     class="mt-4 py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300"
@@ -517,7 +515,7 @@ async function getHint() {
     <h3 class="text-lg font-semibold mb-2">ヒント</h3>
     <p class="text-gray-700">{{ hint }}</p>
   </div>
-
+  
 </template>
 
 <style scoped>

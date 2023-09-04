@@ -48,8 +48,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/updateQuizzes/{id}', [CreateController::class, 'updateUserQuizzes']); // クイズ更新処理
     Route::post('/uploadImage', [CreateController::class, 'uploadImage']); // クイズ更新処理
     Route::delete('/deleteImage/{id}', [CreateController::class, 'deleteImage']); // 画像ファイル削除用
-    Route::middleware('auth:sanctum')->delete('/quizzes/{id}', [CreateController::class, 'quizDestroy']); // クイズ情報削除用
-
+    Route::middleware('auth:sanctum')->delete('/quizzes/{id}', [CreateController::class, 'quizDestroy']); // 編集画面のクイズ情報削除用
+    Route::middleware('auth:sanctum')->delete('/deleteQuizzes', [CreateController::class, 'quizzesDestroy']); // 編集画面のクイズ情報削除用
 });
 
 

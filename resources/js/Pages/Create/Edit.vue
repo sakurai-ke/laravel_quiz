@@ -88,7 +88,7 @@ if (response.data.message === 'クイズが更新されました') {
     // フラッシュメッセージをlocalStorageに保存
     localStorage.setItem('flashMessage', 'クイズが更新されました');
     // リダイレクト
-    window.location.href = '/top'; // トップページへリダイレクト
+    window.location.href = '/list'; // トップページへリダイレクト
 }
 
   } catch (error) {

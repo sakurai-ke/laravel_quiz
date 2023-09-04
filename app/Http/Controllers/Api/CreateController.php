@@ -279,4 +279,16 @@ public function deleteImage(string $id)
 
     return response()->json(['message' => 'クイズが見つかりませんでした'], 404);
 }
+
+public function quizzesDestroy(Request $request)
+{
+    $quizIds = $request->input('quiz_ids');
+
+    // クイズを削除する処理を実行
+    Quiz::whereIn('id', $quizIds)->delete();
+
+    return response()->json(['message' => 'クイズが削除されました'], 200);
+}
+
+
 }
