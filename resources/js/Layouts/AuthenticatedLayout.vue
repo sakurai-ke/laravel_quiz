@@ -29,11 +29,39 @@ const showingNavigationDropdown = ref(false);
                             </div>
 
                             <!-- Navigation Links -->
+
+
+
                             <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                                <NavLink :href="route('top')" :active="route().current('top')">
+                                    クイズを解く
+                                </NavLink>
+                                <NavLink :href="route('records')" :active="route().current('records')">
+                                    記録
+                                </NavLink>
+                                <!-- 他のリンクも同様に設定 -->
+
+                                <!-- ログインユーザーの場合に表示するリンク -->
+                                <template v-if="$page.props.auth.user">
+                                    <NavLink :href="route('create')" :active="route().current('create')">
+                                        クイズ作成
+                                    </NavLink>
+                                    <NavLink :href="route('list')" :active="route().current('list')">
+                                        クイズ詳細・編集
+                                    </NavLink>
+                                    <NavLink :href="route('rank')" :active="route().current('rank')">
+                                        ランキング
+                                    </NavLink>
+                                </template>
+                            </div>
+
+
+
+                            <!-- <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex"> -->
                                 <!-- <NavLink :href="route('dashboard')" :active="route().current('dashboard')">
                                     Dashboard
                                 </NavLink> -->
-                                <NavLink :href="route('top')" :active="route().current('top')">
+                                <!-- <NavLink :href="route('top')" :active="route().current('top')">
                                     クイズを解く
                                 </NavLink>
                                 <NavLink :href="route('records')" :active="route().current('records')">
@@ -48,7 +76,10 @@ const showingNavigationDropdown = ref(false);
                                 <NavLink :href="route('rank')" :active="route().current('rank')">
                                     ランキング
                                 </NavLink>
-                            </div>
+                            </div> -->
+
+
+                            
                         </div>
 
                         <div class="hidden sm:flex sm:items-center sm:ml-6">
@@ -61,7 +92,8 @@ const showingNavigationDropdown = ref(false);
                                                 type="button"
                                                 class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
                                             >
-                                                {{ $page.props.auth.user.name }}
+                                                <!-- $page.props.auth.user が存在する場合に表示 -->
+                                                {{ $page.props.auth.user ? $page.props.auth.user.name : '' }}
 
                                                 <svg
                                                     class="ml-2 -mr-0.5 h-4 w-4"
@@ -151,10 +183,14 @@ const showingNavigationDropdown = ref(false);
                     <!-- Responsive Settings Options -->
                     <div class="pt-4 pb-1 border-t border-gray-200">
                         <div class="px-4">
-                            <div class="font-medium text-base text-gray-800">
+                            <!-- $page.props.auth.user が存在する場合に表示 -->
+                            <div v-if="$page.props.auth.user" class="font-medium text-base text-gray-800">
                                 {{ $page.props.auth.user.name }}
                             </div>
-                            <div class="font-medium text-sm text-gray-500">{{ $page.props.auth.user.email }}</div>
+                            <!-- $page.props.auth.user が存在する場合に表示 -->
+                            <div v-if="$page.props.auth.user" class="font-medium text-sm text-gray-500">
+                                {{ $page.props.auth.user.email }}
+                            </div>
                         </div>
 
                         <div class="mt-3 space-y-1">

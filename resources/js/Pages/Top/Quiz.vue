@@ -378,6 +378,48 @@ async function getHint() {
         // エラー処理を追加
     }
 }
+
+const quizResults = ref([]);
+const userIsLoggedIn = ref(false); // デフォルトでは未ログイン状態
+
+
+
+// クイズ結果を保存する関数を修正
+async function saveQuizResult() {
+  const newQuizData = shuffledQuizList[currentQuizIndex];
+  const isCorrect = selectedChoice.value === newQuizData.correct_answer;
+
+  if (isCorrect) {
+    quizEndMessage.value = `正解！\n${newQuizData.explain}`;
+    newQuizData.user_answer = selectedChoice.value;
+    newQuizData.answered = true;
+    correctAnswers.push(newQuizData);
+    correctPercentage.value = (correctAnswers.length / shuffledQuizList.length) * 100;
+  } else {
+    quizEndMessage.value = `不正解！正解は「${newQuizData.correct_answer}」です。\n${newQuizData.explain}`;
+    newQuizData.user_answer = selectedChoice.value;
+    newQuizData.answered = true;
+  }
+
+  answeredQuestions.value++;
+
+  // 未ログインのユーザーの場合はクイズ結果をquizResultsに追加
+  if (!userIsLoggedIn) {
+    quizResults.value.push({
+      isCorrect: isCorrect,
+      quizData: newQuizData,
+    });
+  }
+
+  await nextTick();
+
+  showAnswerButton.value = false;
+
+  if (answeredQuestions.value === shuffledQuizList.length) {
+    showResultButton.value = true;
+  }
+}
+
 </script>
 
 <template>
@@ -461,7 +503,8 @@ async function getHint() {
       </button>
       <Link
         v-if="showResultButton"
-        :href="route('quiz.result', { correctPercentage: correctPercentage })"
+        :href="userIsLoggedIn ? route('quiz.result', { correctPercentage: correctPercentage }) : null"
+        :quiz-results="userIsLoggedIn ? null : quizResults"
         class="mt-4 w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300"
       
         >

@@ -14,19 +14,27 @@ class RecordController extends Controller
 {
     public function storeRecord(Request $request)
     {
-        // リクエストから受け取ったデータを元に新しいRecordモデルを作成し保存
-        $record = Record::create([
-            'category_id' => $request->category_id,
-            'user_id' => auth()->user()->id, // ログイン中のユーザーIDを使用
-            'total_questions' => $request->total_questions,
-            'correct_answers' => $request->correct_answers,
-            'accuracy' => $request->accuracy,
-            'created_at' => $request->created_at,
-            'updated_at' => $request->updated_at,
-        ]);
-
-        return response()->json(['message' => 'Record created successfully', 'data' => $record]);
+        // ユーザーがログインしているかどうかを確認
+        if (auth()->check()) {
+            // リクエストから受け取ったデータを元に新しいRecordモデルを作成し保存
+            $record = Record::create([
+                'category_id' => $request->category_id,
+                'user_id' => auth()->user()->id, // ログイン中のユーザーIDを使用
+                'total_questions' => $request->total_questions,
+                'correct_answers' => $request->correct_answers,
+                'accuracy' => $request->accuracy,
+                'created_at' => $request->created_at,
+                'updated_at' => $request->updated_at,
+            ]);
+    
+            return response()->json(['message' => 'Record created successfully', 'data' => $record]);
+        } else {
+            // ユーザーがログインしていない場合の処理
+            return response()->json(['message' => 'User not authenticated'], 401);
+        }
     }
+    
+    
 
     public function storeResult(Request $request)
     {
