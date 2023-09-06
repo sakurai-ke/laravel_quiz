@@ -143,34 +143,6 @@ const toDateTimeISO = toDateTime.toISOString();
   }
 }
 
-
-// function getDateParams() {
-//   let dateParams = '';
-
-//   if (fromDate.value && toDate.value) {
-//     const fromDateTime = new Date(fromDate.value).toISOString();
-//     const toDateTime = new Date(toDate.value).toISOString();
-//     console.log('fromDateTime1: ', fromDateTime);
-//     console.log('toDateTime1: ', toDateTime);
-//     dateParams = `fromDate=${fromDateTime}&toDate=${toDateTime}`;
-//   } else if (fromDate.value) {
-//     const fromDateTime = new Date(fromDate.value).toISOString();
-//     console.log('fromDateTime2: ', fromDateTime);
-//     dateParams = `fromDate=${fromDateTime}`;
-//   } else if (toDate.value) {
-//     const toDateTime = new Date(toDate.value);
-//     toDateTime.setDate(toDateTime.getDate() + 1); // この行は不要
-//     console.log('toDateTime2: ', toDateTime);
-//     dateParams = `toDate=${toDateTime.toISOString()}`;
-//   }
-
-//   if (dateParams !== '') {
-//     dateParams = `?${dateParams}`;
-//   }
-
-//   return dateParams;
-// }
-
 function drawRankingChart(labels, dataValues) {
   const ctx = rankingChart.value.getContext('2d');
 

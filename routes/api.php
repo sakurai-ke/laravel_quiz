@@ -25,9 +25,9 @@ use App\Http\Controllers\Api\ChatGptController;
 // });
 
 // ランキング表示用
-Route::middleware('auth:sanctum')->group(function () {
+// Route::middleware('auth:sanctum')->group(function () {
     Route::get('/ranking', [RankController::class, 'getUserRanking']);
-});
+// });
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/makeQuizzes', [CreateController::class, 'createQuiz']); // クイズ作成APIエンドポイント

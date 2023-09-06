@@ -173,6 +173,8 @@ async function fetchAndShuffleQuizzes() {
   }
 }
 
+const loggedIn = ref(true); // ログインしている場合はtrueにセット
+
 // 「回答」ボタンがクリックされたときの処理
 async function submitAnswer() {
   // 現在のクイズを表示するためのデータを取得しnewQuizDataに格納
@@ -211,31 +213,34 @@ async function submitAnswer() {
   // もしすべてのクイズが回答された場合、結果を保存
   if (answeredQuestions.value === shuffledQuizList.length) {
     try {
-      // すべてのクイズが終了した場合に結果を保存
-      const record = {
-        category_id: selectedCategory.value,
-        total_questions: shuffledQuizList.length,
-        correct_answers: correctAnswers.length,
-        accuracy: correctPercentage.value,
-        created_at: new Date(),
-        updated_at: new Date(),
-      };
-
-      // レコードを保存
-      const response = await axios.post('/api/record', record);
-      const recordId = response.data.data.id;
-
-      // クイズ結果を保存
-      for (const quizResult of shuffledQuizList) {
-        const result = {
-          record_id: recordId,
-          quiz_id: quizResult.id,
-          selected_choice: quizResult.user_answer,
-          correct: quizResult.user_answer === quizResult.correct_answer,
+      // ログインしている場合のみクイズ結果を保存
+      if (loggedIn.value) { // ログイン状態かどうかの条件を追加
+        // すべてのクイズが終了した場合に結果を保存
+        const record = {
+          category_id: selectedCategory.value,
+          total_questions: shuffledQuizList.length,
+          correct_answers: correctAnswers.length,
+          accuracy: correctPercentage.value,
           created_at: new Date(),
           updated_at: new Date(),
         };
-        await axios.post('/api/result', result);
+
+        // レコードを保存
+        const response = await axios.post('/api/record', record);
+        const recordId = response.data.data.id;
+
+        // クイズ結果を保存
+        for (const quizResult of shuffledQuizList) {
+          const result = {
+            record_id: recordId,
+            quiz_id: quizResult.id,
+            selected_choice: quizResult.user_answer,
+            correct: quizResult.user_answer === quizResult.correct_answer,
+            created_at: new Date(),
+            updated_at: new Date(),
+          };
+          await axios.post('/api/result', result);
+        }
       }
 
       // すべてのクイズが終了したことを判定し、結果を見るボタンを表示
@@ -378,98 +383,57 @@ async function getHint() {
         // エラー処理を追加
     }
 }
-
-const quizResults = ref([]);
-const userIsLoggedIn = ref(false); // デフォルトでは未ログイン状態
-
-
-
-// クイズ結果を保存する関数を修正
-async function saveQuizResult() {
-  const newQuizData = shuffledQuizList[currentQuizIndex];
-  const isCorrect = selectedChoice.value === newQuizData.correct_answer;
-
-  if (isCorrect) {
-    quizEndMessage.value = `正解！\n${newQuizData.explain}`;
-    newQuizData.user_answer = selectedChoice.value;
-    newQuizData.answered = true;
-    correctAnswers.push(newQuizData);
-    correctPercentage.value = (correctAnswers.length / shuffledQuizList.length) * 100;
-  } else {
-    quizEndMessage.value = `不正解！正解は「${newQuizData.correct_answer}」です。\n${newQuizData.explain}`;
-    newQuizData.user_answer = selectedChoice.value;
-    newQuizData.answered = true;
-  }
-
-  answeredQuestions.value++;
-
-  // 未ログインのユーザーの場合はクイズ結果をquizResultsに追加
-  if (!userIsLoggedIn) {
-    quizResults.value.push({
-      isCorrect: isCorrect,
-      quizData: newQuizData,
-    });
-  }
-
-  await nextTick();
-
-  showAnswerButton.value = false;
-
-  if (answeredQuestions.value === shuffledQuizList.length) {
-    showResultButton.value = true;
-  }
-}
-
 </script>
 
 <template>
-          <div class="fixed top-40 right-4 z-50">
-            <MicroModal />
-        </div>
-<p>正答率{{ correctPercentage }}</p>
-<p>何問目か{{ currentQuizIndex + 1 }}</p>
-<p>回答済みはいくつあるか{{ answeredQuestions }}</p>
+  <div class="fixed top-40 right-4 z-50">
+    <MicroModal />
+  </div>
+  <p class="text-blue-500 font-semibold">正答率{{ correctPercentage }}</p>
+  <p class="text-blue-500 font-semibold">何問目か{{ currentQuizIndex + 1 }}</p>
+  <p class="text-blue-500 font-semibold">回答済みはいくつあるか{{ answeredQuestions }}</p>
 
-<div class="w-full max-w4xl mx-auto p-6 bg-white rounded-md shadow-md h-auto">
-    
+  <div class="w-full max-w-4xl mx-auto p-6 bg-white rounded-md shadow-md h-auto">
+
     <!-- 画像を表示 -->
     <img :src="getImageUrl(quizData.image_src)" alt="Quiz Image" class="mb-4" />
 
-    
-    <div class="quiz-progress">
-    <!-- クイズ番号のリストをループ -->
-    <div
-      v-for="(quiz, index) in shuffledQuizList"
-      :key="index"
-      :class="{
-        'quiz-number': true,
-        'answered-quiz': quiz.answered,
-        'unanswered-quiz': !quiz.answered,
-        'current-quiz': index === currentQuizIndex, // 現在の問題番号に対応する要素にクラスを追加
-      }"
-
-      @click="goToQuiz(index)"
-
-    >
-      {{ index + 1 }}
+    <div class="quiz-progress flex justify-center items-center flex-wrap mb-4">
+      <!-- クイズ番号のリストをループ -->
+      <div
+        v-for="(quiz, index) in shuffledQuizList"
+        :key="index"
+        :class="[
+          'quiz-number',
+          quiz.answered ? 'bg-green-500 text-white' : 'bg-white border',
+          index === currentQuizIndex ? 'current-quiz' : '',
+        ]"
+        @click="goToQuiz(index)"
+      >
+        {{ index + 1 }}
+      </div>
     </div>
-  </div>
 
     <p class="mb-2 text-gray-600">
       {{ currentQuizIndex + 1 }}問目 / {{ shuffledQuizList.length }}問中
     </p>
 
     <h2 class="text-xl font-semibold mb-4">{{ quizData.title }}</h2>
-    <ul class="choice-list">
+    <ul class="choice-list grid grid-cols-2 gap-4">
       <li v-for="(choice, index) in shuffledChoices" :key="index">
-        <label class="choice-label">
-          <input type="radio" :disabled="quizData.answered" v-model="selectedChoice" :value="choice" class="hidden" />
+        <label class="choice-label block">
+          <input
+            type="radio"
+            :disabled="quizData.answered"
+            v-model="selectedChoice"
+            :value="choice"
+            class="hidden"
+          />
           <button
-            :class="{
-              'choice-button': true,
-              'selected-choice': selectedChoice === choice,
-              'unselected-choice': selectedChoice !== choice,
-            }"
+            :class="[
+              'choice-button w-full py-2 px-4 rounded-md focus:outline-none transition duration-300',
+              selectedChoice === choice ? 'bg-blue-500 text-white' : 'bg-gray-300 cursor-not-allowed',
+            ]"
             @click="selectChoice(choice)"
           >
             {{ choice }}
@@ -480,53 +444,48 @@ async function saveQuizResult() {
 
     <!-- 「次へ」をクリックすると回答ボタンを表示 -->
     <button
-    v-if="showAnswerButton && !quizData.answered"
+      v-if="showAnswerButton && !quizData.answered"
       @click="submitAnswer"
-      :class="{
-        'answer-button': true,
-        'bg-blue-500 hover:bg-blue-600 text-white': selectedChoice !== '',
-        'bg-gray-300 cursor-not-allowed': selectedChoice === '',
-      }"
+      :class="[
+        'answer-button mt-4 w-full py-2 px-4 rounded-md focus:outline-none transition duration-300',
+        selectedChoice !== '' ? 'bg-blue-500 hover:bg-blue-600 text-white' : 'bg-gray-300 cursor-not-allowed',
+      ]"
       :disabled="selectedChoice === ''"
-      class="mt-4 w-full py-2 px-4 rounded-md focus:outline-none transition duration-300"
     >
       回答
     </button>
-      <div v-if="quizEndMessage !== ''" class="quiz-end-message">
-        <p v-if="quizEndMessage.startsWith('正解')" class="font-semibold">{{ quizEndMessage }}</p>
-        <p v-else>{{ quizEndMessage }}</p>
+
+    <div v-if="quizEndMessage !== ''" class="quiz-end-message mt-4">
+      <p v-if="quizEndMessage.startsWith('正解')" class="font-semibold text-green-500">{{ quizEndMessage }}</p>
+      <p v-else>{{ quizEndMessage }}</p>
       <div class="mb-4"></div>
-      <button v-if="currentQuizIndex < shuffledQuizList.length - 1" @click="goToNextQuestion" @quizCompleted="quizCompleted" 
-      class="mt-4 w-1/2 py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300"
-      style="margin: 16px auto 0; display: block;">
+      <button
+        v-if="currentQuizIndex < shuffledQuizList.length - 1"
+        @click="goToNextQuestion"
+        @quizCompleted="quizCompleted"
+        class="w-1/2 mx-auto py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300"
+      >
         次へ
       </button>
       <Link
         v-if="showResultButton"
-        :href="userIsLoggedIn ? route('quiz.result', { correctPercentage: correctPercentage }) : null"
-        :quiz-results="userIsLoggedIn ? null : quizResults"
+        :href="route('quiz.result', { correctPercentage: correctPercentage })"
         class="mt-4 w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300"
-      
-        >
+      >
         結果を見る
       </Link>
-
-
     </div>
 
-  </div>
-
-      <!-- ボタン表示部分 -->
-    <div class="button-group">
+    <!-- ボタン表示部分 -->
+    <div class="button-group flex justify-between items-center mt-4">
       <!-- 「前のクイズへ」ボタン -->
       <button
         v-if="showPrevButton"
         @click="goToPrevQuestion"
-        :class="{
-          'bg-blue-500 hover:bg-blue-600 text-white': showPrevButton,
-          'bg-gray-300 cursor-not-allowed': !showPrevButton,
-        }"
-        class="prev-button"
+        :class="[
+          'prev-button',
+          showPrevButton ? 'bg-blue-500 hover:bg-blue-600 text-white' : 'bg-gray-300 cursor-not-allowed',
+        ]"
       >
         前のクイズへ
       </button>
@@ -535,185 +494,166 @@ async function saveQuizResult() {
       <button
         v-if="showNextButton"
         @click="goToNextQuestion"
-        :class="{
-          'bg-blue-500 hover:bg-blue-600 text-white': showNextButton,
-          'bg-gray-300 cursor-not-allowed': !showNextButton,
-        }"
-        class="next-button"
+        :class="[
+          'next-button',
+          showNextButton ? 'bg-blue-500 hover:bg-blue-600 text-white' : 'bg-gray-300 cursor-not-allowed',
+        ]"
       >
         次のクイズへ
       </button>
     </div>
 
     <!-- ヒントボタン -->
-  <button
-    @click="getHint"
-    class="mt-4 py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300"
-  >
-    ヒント
-  </button>
+    <button
+      @click="getHint"
+      class="mt-4 py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300"
+    >
+      ヒント
+    </button>
 
-  <!-- ヒントの表示エリア -->
-  <div v-if="hint" class="mt-4 p-4 bg-gray-100 rounded-md">
-    <h3 class="text-lg font-semibold mb-2">ヒント</h3>
-    <p class="text-gray-700">{{ hint }}</p>
+    <!-- ヒントの表示エリア -->
+    <div v-if="hint" class="mt-4 p-4 bg-gray-100 rounded-md">
+      <h3 class="text-lg font-semibold mb-2">ヒント</h3>
+      <p class="text-gray-700">{{ hint }}</p>
+    </div>
   </div>
-  
 </template>
 
 <style scoped>
-
-.w-full {
-    width: 96%;
-}
-/* クイズ番号のスタイル */
-.quiz-progress {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
-
-/* クイズ番号のデフォルトスタイル */
-.quiz-number {
-  width: 30px;
-  height: 30px;
-  border: 1px solid #ccc;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-weight: bold;
-  cursor: pointer;
-  margin: 0 5px;
-  margin-bottom: 5px; /* クイズ番号が改行される際の余白を設定 */
-}
-
-/* 回答済みクイズの背景色スタイル */
-.answered-quiz {
-  background-color: #6ee7b7;
-  color: white;
-  border-radius: 50%; /* 丸くする */
-}
-
-/* 未回答クイズの背景色スタイル */
-.unanswered-quiz {
-  background-color: #ffffff;
-  border-radius: 50%; /* 丸くする */
-}
-
-/* ボタンのスタイル */
-.button-group {
-  display: flex;
-  justify-content: space-between; /* ボタンを両端に寄せる */
-  align-items: center;
-  margin-top: 20px;
-}
-
-/* 前のクイズへボタンのスタイル */
-.prev-button {
-  width: calc(50% - 17%); /* 右側のボタン幅を調整 */
-  padding: 10px;
-  border-radius: 4px;
-  /* text-align: center; */
-  background-color: #0074d9;
-  color: white;
-  cursor: pointer;
-  transition: background-color 0.3s, opacity 0.3s;
-  margin: 0 auto;
-}
-
-.prev-button:hover {
-  background-color: #0056b3;
-}
-
-/* 次のクイズへボタンのスタイル */
-.next-button {
-  width: calc(50% - 17%); /* 右側のボタン幅を調整 */
-  padding: 10px;
-  border-radius: 4px;
-  /* text-align: center; */
-  background-color: #0074d9;
-  color: white;
-  cursor: pointer;
-  transition: background-color 0.3s, opacity 0.3s;
-  margin: 0 auto;
-}
-.next-button:hover {
-  background-color: #0056b3;
-}
-
-/* 現在のクイズ番号を強調表示するスタイル */
-.current-quiz {
-  background-color: #0074d9;
-  color: white;
-  font-weight: bold;
-  border-radius: 50%; /* 丸くする */
-}
-
-/* 回答選択肢リストのスタイル */
-.choice-list {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr); /* 2列に分割 */
-  grid-gap: 10px; /* 選択肢間のスペース */
-}
-
-/* 回答選択肢のスタイル */
-.choice-label {
-  display: block;
-}
-
-.choice-button {
-  width: 100%;
-  padding: 10px;
-  border-radius: 4px;
-  transition: background-color 0.3s, color 0.3s;
-  text-align: center;
-  cursor: pointer;
-}
-
-/* 選択された回答のスタイル */
-.selected-choice {
-  background-color: #0074d9;
-  color: white;
-}
-
-/* 未選択の回答のスタイル */
-.unselected-choice {
-  background-color: #f0f0f0;
-  color: #333;
-}
-
-/* 回答ボタンのスタイル */
-.answer-button {
-  width: 50%; /* ボタンを枠の幅に合わせる */
-  display: flex; /* 子要素を横方向に並べる */
-  justify-content: center; /* 子要素を横方向に中央寄せ */
-  padding: 10px;
-  border-radius: 4px;
-  transition: background-color 0.3s, color 0.3s;
-  text-align: center;
-  cursor: pointer;
-  margin: 0 auto;
-  margin-top: 16px;
-
-}
-
-/* レスポンシブ対応: 画面幅が小さい場合に縦4列に */
-@media (max-width: 768px) {
-  .choice-list {
-    grid-template-columns: repeat(1, 1fr); /* 4列に分割 */
+  /* クイズ番号のデフォルトスタイル */
+  .quiz-number {
+    width: 30px;
+    height: 30px;
+    border: 1px solid #ccc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    cursor: pointer;
+    margin: 0 5px;
+    margin-bottom: 5px; /* クイズ番号が改行される際の余白を設定 */
   }
-  
+
+  /* 回答済みクイズの背景色スタイル */
+  .answered-quiz {
+    background-color: #6ee7b7;
+    color: white;
+    border-radius: 50%; /* 丸くする */
+  }
+
+  /* 未回答クイズの背景色スタイル */
+  .unanswered-quiz {
+    background-color: #ffffff;
+    border-radius: 50%; /* 丸くする */
+  }
+
+  /* 前のクイズへボタンのスタイル */
+  .prev-button {
+    width: calc(50% - 17%); /* 右側のボタン幅を調整 */
+    padding: 10px;
+    border-radius: 4px;
+    background-color: #0074d9;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s, opacity 0.3s;
+    margin: 0 auto;
+  }
+
+  .prev-button:hover {
+    background-color: #0056b3;
+  }
+
+  /* 次のクイズへボタンのスタイル */
+  .next-button {
+    width: calc(50% - 17%); /* 右側のボタン幅を調整 */
+    padding: 10px;
+    border-radius: 4px;
+    background-color: #0074d9;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s, opacity 0.3s;
+    margin: 0 auto;
+  }
+
+  .next-button:hover {
+    background-color: #0056b3;
+  }
+
+  /* 現在のクイズ番号を強調表示するスタイル */
+  .current-quiz {
+    background-color: #0074d9;
+    color: white;
+    font-weight: bold;
+    border-radius: 50%; /* 丸くする */
+  }
+
+  /* 回答選択肢リストのスタイル */
+  .choice-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2列に分割 */
+    grid-gap: 10px; /* 選択肢間のスペース */
+  }
+
+  /* 回答選択肢のスタイル */
+  .choice-label {
+    display: block;
+  }
+
+  .choice-button {
+    width: 100%;
+    padding: 10px;
+    border-radius: 4px;
+    transition: background-color 0.3s, color 0.3s;
+    text-align: center;
+    cursor: pointer;
+  }
+
+  /* 選択された回答のスタイル */
+  .selected-choice {
+    background-color: #0074d9;
+    color: white;
+  }
+
+  /* 未選択の回答のスタイル */
+  .unselected-choice {
+    background-color: #f0f0f0;
+    color: #333;
+  }
+
+  /* 回答ボタンのスタイル */
+  .answer-button {
+    width: 50%;
+    display: flex;
+    justify-content: center;
+    padding: 10px;
+    border-radius: 4px;
+    transition: background-color 0.3s, color 0.3s;
+    text-align: center;
+    cursor: pointer;
+    margin: 0 auto;
+    margin-top: 16px;
+  }
+
+  /* レスポンシブ対応: 画面幅が小さい場合に縦4列に */
+  @media (max-width: 768px) {
+    /* 画面幅が小さい場合の回答選択肢リストのスタイル */
+    .choice-list {
+      grid-template-columns: repeat(1, 1fr); /* 4列に分割 */
+    }
+
     /* 画面幅が小さい場合の回答ボタンのスタイル */
     .answer-button {
-    width: 100%; /* 画面幅が小さい場合は選択肢と同じ横幅 */
+      width: 100%; /* 画面幅が小さい場合は選択肢と同じ横幅 */
+    }
+
+    /* 画面幅が小さい場合の前のクイズへボタンのスタイル */
+    .prev-button {
+      width: 46%;
+    }
+
+    /* 画面幅が小さい場合の次のクイズへボタンのスタイル */
+    .next-button {
+      width: 46%;
+    }
   }
-  
-  .prev-button,
-  .next-button {
-    width: 46%;
-  }
-  
-}
 </style>

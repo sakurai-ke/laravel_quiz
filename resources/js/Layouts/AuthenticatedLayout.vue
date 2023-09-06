@@ -25,61 +25,27 @@ const showingNavigationDropdown = ref(false);
                                         class="block h-9 w-auto fill-current text-gray-800"
                                     />
                                 </Link>
-
                             </div>
-
                             <!-- Navigation Links -->
-
-
-
                             <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
                                 <NavLink :href="route('top')" :active="route().current('top')">
                                     クイズを解く
                                 </NavLink>
-                                <NavLink :href="route('records')" :active="route().current('records')">
-                                    記録
-                                </NavLink>
-                                <!-- 他のリンクも同様に設定 -->
-
-                                <!-- ログインユーザーの場合に表示するリンク -->
                                 <template v-if="$page.props.auth.user">
+                                    <NavLink :href="route('records')" :active="route().current('records')">
+                                        記録
+                                    </NavLink>
                                     <NavLink :href="route('create')" :active="route().current('create')">
                                         クイズ作成
                                     </NavLink>
                                     <NavLink :href="route('list')" :active="route().current('list')">
                                         クイズ詳細・編集
                                     </NavLink>
-                                    <NavLink :href="route('rank')" :active="route().current('rank')">
-                                        ランキング
-                                    </NavLink>
                                 </template>
-                            </div>
-
-
-
-                            <!-- <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex"> -->
-                                <!-- <NavLink :href="route('dashboard')" :active="route().current('dashboard')">
-                                    Dashboard
-                                </NavLink> -->
-                                <!-- <NavLink :href="route('top')" :active="route().current('top')">
-                                    クイズを解く
-                                </NavLink>
-                                <NavLink :href="route('records')" :active="route().current('records')">
-                                    記録
-                                </NavLink>
-                                <NavLink :href="route('create')" :active="route().current('create')">
-                                    クイズ作成
-                                </NavLink>
-                                <NavLink :href="route('list')" :active="route().current('list')">
-                                    クイズ詳細・編集
-                                </NavLink>
                                 <NavLink :href="route('rank')" :active="route().current('rank')">
                                     ランキング
                                 </NavLink>
-                            </div> -->
-
-
-                            
+                            </div>
                         </div>
 
                         <div class="hidden sm:flex sm:items-center sm:ml-6">

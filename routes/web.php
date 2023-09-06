@@ -23,8 +23,8 @@ use App\Http\Controllers\Api\RankController;
 
 // ランキング表示用
 Route::get('/rank', [RankController::class, 'index'])
-    ->name('rank')
-    ->middleware(['auth', 'verified']);
+    ->name('rank');
+    // ->middleware(['auth', 'verified']);
 
 // クイズ一覧画面、詳細画面、編集画面用
 Route::middleware(['auth'])->group(function () {
@@ -47,8 +47,8 @@ Route::get('/quiz-results', [RecordController::class, 'paginate']);
 
 // クイズの結果表示用ページ
 Route::get('/result', [QuizController::class, 'show'])
-    ->name('quiz.result')
-    ->middleware(['auth', 'verified']);
+    ->name('quiz.result');
+    // ->middleware(['auth', 'verified']);
 
 
 Route::get('/top', [CategoryController::class, 'index'])->name('top');

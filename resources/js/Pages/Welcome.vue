@@ -25,7 +25,7 @@
         </div>
   
         <!-- ログインと登録リンク -->
-        <div class="absolute bottom-1/4 left-1/2 transform -translate-x-1/2">
+        <div class="absolute bottom-1/4 left-1/2 transform -translate-x-1/2" style="bottom:22%;">
         <template v-if="canLogin || canRegister">
           <div class="mb-4 text-center">
             <Link
@@ -41,6 +41,13 @@
               :href="route('register')"
               class="font-semibold text-white bg-blue-500 hover:bg-blue-600 py-2 px-6 rounded-full transition duration-300 inline-block"
             >ご登録はこちら</Link>
+          </div>
+          <div class="text-center">
+            <Link
+              v-if="canRegister"
+              :href="route('top')"
+              class="font-semibold text-white bg-blue-500 hover:bg-blue-600 mt-4 py-2 px-6 rounded-full transition duration-300 inline-block"
+            >クイズを試してみる</Link>
           </div>
         </template>
       </div>
@@ -74,8 +81,5 @@
     animation: bounce-slow 2s infinite;
   }
 
-  .bottom-1\/2 {
-    bottom: 35%;
-}
   </style>
   

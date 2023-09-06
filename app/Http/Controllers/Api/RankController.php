@@ -80,13 +80,20 @@ if ($fromDate && $toDate) {
 
     public function index(Request $request)
     {
-        // ユーザーごとのクイズ結果を取得
-        $userId = auth()->user()->id; // ログインユーザーのIDを取得
+        // ログインユーザーのクイズ結果を取得
+    $userId = auth()->user() ? auth()->user()->id : null;
+
         $quizResults = Record::with(['category', 'results', 'results.quiz'])
             ->where('user_id', $userId) // ログインユーザーのクイズ結果のみ取得
             ->select('id', 'category_id', 'correct_answers', 'total_questions', 'accuracy', 'created_at')
             ->get();
-    
+
         return Inertia::render('Rank/Rank', ['quizResults' => $quizResults]);
     }
+
+    public function __construct()
+    {
+        $this->middleware('auth')->except(['index', 'getUserRanking']);
+    }
+    
 }
