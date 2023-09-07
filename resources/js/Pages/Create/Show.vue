@@ -3,6 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Link, Head } from '@inertiajs/vue3';
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
+import MicroModal from '@/MicroModal/ShowModal.vue'
 
   // クイズの詳細情報を格納するためのリアクティブ変数
 const quiz = ref({});
@@ -40,6 +41,11 @@ function getImageUrl(imageSrc) {
     <Head title="クイズ詳細" />
 
     <AuthenticatedLayout>
+
+        <div class="absolute top-40 right-4 z-50">
+            <MicroModal />
+        </div>
+
     <template #header>
         <h2 class="font-semibold text-2xl text-gray-800 leading-tight">クイズ詳細</h2>
     </template>    

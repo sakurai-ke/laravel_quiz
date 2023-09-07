@@ -17,12 +17,12 @@ const selectedCategory = ref('all'); // 初期選択は「全て」
 const isLoading = ref(true); // データが読み込まれるまでを示すフラグ
 
 onMounted(() => {
-  getquizzes();
+  getQuizzes();
   getCategories();
 });
 
 onMounted(async () => {
-  await Promise.all([getquizzes(), getCategories()]);
+  await Promise.all([getQuizzes(), getCategories()]);
   isLoading.value = false; // データが読み込み完了後にisLoadingをfalseに設定
 });
 
@@ -74,18 +74,6 @@ function generatePaginationLinks(totalPages, currentPage) {
   links.push(totalPages);
 
   return links;
-}
-
-
-
-async function getquizzes() {
-  try {
-    const response = await axios.get('/api/getQuizzes'); // クイズ一覧を取得するAPIエンドポイントに合わせて変更
-    console.log('response.data', response.data.quizzes);
-    quizzes.value = response.data.quizzes;
-  } catch (error) {
-    console.error('クイズ一覧の取得に失敗しました', error);
-  }
 }
 
 async function getCategories() {
@@ -167,9 +155,39 @@ function confirmDelete() {
   }
 }
 
-
 // 選択されたクイズが少なくとも1つ以上あるかどうかを確認
 const hasSelectedQuizzes = computed(() => quizzes.value.some(quiz => quiz.selected));
+
+const isAdmin = ref(false); // 管理者かどうかを管理するフラグ
+
+async function getQuizzes() {
+  try {
+    let apiUrl = '/api/getQuizzes'; // クイズ一覧を取得するAPIのデフォルトのエンドポイント
+
+    if (isAdmin.value) {
+      // 管理者の場合はすべてのクイズを取得するAPIを呼び出す
+      apiUrl = '/api/getAllQuizzes'; // すべてのクイズを取得するAPIエンドポイントに合わせて変更
+    }
+
+    const response = await axios.get(apiUrl);
+    quizzes.value = response.data.quizzes;
+    console.log('response.data', response.data.quizzes);
+  } catch (error) {
+    console.error('クイズ一覧の取得に失敗しました', error);
+  }
+}
+
+onMounted(async () => {
+  // 現在のユーザーの役割を取得するAPIを呼び出す
+  try {
+    const response = await axios.get('/api/userRole'); // ユーザーの役割を取得するAPIエンドポイントに合わせて変更
+    isAdmin.value = response.data.role === 'admin';
+  } catch (error) {
+    console.error('ユーザーの役割の取得に失敗しました', error);
+  }
+  await Promise.all([getQuizzes(), getCategories()]);
+  isLoading.value = false;
+});
 
 </script>
 

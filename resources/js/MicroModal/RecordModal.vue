@@ -2,7 +2,6 @@
 import { ref } from 'vue'
 const isShow = ref(false)
 const toggleStatus = () => { isShow.value = !isShow.value}
-
 const closeOnOverlayClick = (event) => {
     if (event.target.classList.contains('modal__overlay')) {
         toggleStatus()
@@ -22,39 +21,27 @@ const closeOnOverlayClick = (event) => {
                 </button>
                 <header class="modal__header flex justify-between items-center px-4 py-2 bg-gray-100 rounded-t-lg mt-4">
                     <h2 class="modal__title text-lg font-semibold text-gray-800">
-                        <span class="font-bold text-blue-700">クイズ画面ヘルプ</span><br>
+                        <span class="font-bold text-blue-700">記録画面ヘルプ</span><br>
                     </h2>
                 </header>
                 <main class="modal__content p-4 text-gray-700">
+                    <!-- ヘルプの文章 -->
                     <p class="mb-4">
-                        <span class="font-bold text-blue-700">問題の表示:</span><br>
-                        画面上部に問題文が表示されます。問題文をよく読み、正しい答えを選んでください。
+                        <span class="font-bold text-blue-700">レーダーチャート</span><br>
+                        レーダーチャートは、各クイズカテゴリーの正答率を比較するための視覚的なグラフです。チャートの中心から外側に
+                        向かって正答率が高くなり、各項目がカテゴリーを表します。グラフ上でカーソルを合わせると正確な数値を表示します。
                     </p>
                     <p class="mb-4">
-                        <span class="font-bold text-blue-700">選択肢の選択:</span><br>
-                        問題文の下には選択肢が表示されます。正しい選択肢を選んでください。クイズには1つの正解があります。
+                        <span class="font-bold text-blue-700">折れ線グラフ</span><br>
+                        折れ線グラフは、クイズの正答率の推移を時間に基づいて示しています。クイズ結果のデータはカテゴリーごとに
+                        表示することが可能です。グラフ上でカーソルを合わせると正確な数値を表示します。
                     </p>
                     <p class="mb-4">
-                        <span class="font-bold text-blue-700">ヒントボタン:</span><br>
-                        「ヒント」ボタンをクリックすると、ChatGPTのAPIからヒントを取得します。このヒントは、問題文と正解の情報
-                        からChatGPTによって生成されます。
+                        <span class="font-bold text-blue-700">クイズの結果一覧</span><br>
+                        過去のクイズ結果が一覧表示されます。各結果には、クイズの日付、カテゴリー、出題数、正答率などが表示されます。
+                        「回答詳細」をクリックすると、それぞれのクイズの結果についての詳細情報が表示されます。
                     </p>
-                    <p class="mb-4">
-                        <span class="font-bold text-blue-700">回答ボタン:</span><br>
-                        選択肢を選んだら、「回答」ボタンをクリックして回答を提出してください。正解か不正解かが表示されます。
-                    </p>
-                    <p class="mb-4">
-                        <span class="font-bold text-blue-700">クイズ番号のリスト:</span><br>
-                        画面上側にはクイズ番号のリストが表示されます。クイズを飛び越えて選択することができます。
-                    </p>
-                    <p class="mb-4">
-                        <span class="font-bold text-blue-700">前のクイズへ / 次のクイズへ:</span><br>
-                        「前のクイズへ」ボタンと「次のクイズへ」ボタンを使用して、前後の問題に移動できます。
-                    </p>
-                    <p class="mb-4">
-                        <span class="font-bold text-blue-700">結果を見る:</span><br>
-                        すべてのクイズに回答した後、結果（クイズの正解率）を確認するためのボタンが表示されます。
-                    </p>
+                    <!-- ヘルプの文章ここまで -->
                 </main>
                 <footer class="modal__footer px-4 py-2">
                     <button @click="toggleStatus" type="button" class="modal__btn modal__btn-primary bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded focus:outline-none mr-2">

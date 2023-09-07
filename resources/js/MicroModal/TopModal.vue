@@ -2,12 +2,18 @@
 import { ref } from 'vue'
 const isShow = ref(false)
 const toggleStatus = () => { isShow.value = !isShow.value}
+
+const closeOnOverlayClick = (event) => {
+    if (event.target.classList.contains('modal__overlay')) {
+        toggleStatus()
+    }
+}
 </script>
 
 <template>
     <div v-show="isShow" class="fixed inset-0 flex items-center justify-center z-50" aria-hidden="true">
         <div class="modal fixed inset-0 flex items-center justify-center z-50">
-            <div class="modal__overlay fixed inset-0 bg-opacity-50 bg-black"></div>
+            <div @click="closeOnOverlayClick" class="modal__overlay fixed inset-0 bg-opacity-50 bg-black"></div>
             <div class="modal__container bg-white rounded-lg shadow-lg max-w-md mx-auto p-4 z-50 relative" role="dialog" aria-modal="true" aria-labelledby="modal-1-title">
                 <button @click="toggleStatus" type="button" class="modal__close absolute top-4 right-4 focus:outline-none text-gray-500 hover:text-gray-700">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

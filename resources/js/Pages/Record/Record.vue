@@ -7,6 +7,7 @@ import { format, parseISO } from 'date-fns';
 import { utcToZonedTime } from 'date-fns-tz';
 import Chart from './Chart.vue';
 import Line from 'chart.js/auto';
+import MicroModal from '@/MicroModal/RecordModal.vue'
 
 const currentPage = ref(1); // 現在のページ
 let totalPages = computed(() => Math.ceil(quizRecords.value.length / 10)); // 10件ずつのページ数
@@ -21,8 +22,6 @@ const categoryAccuracyData = ref([]); // カテゴリーごとの正答率デー
 const isLoading = ref(true); // データが読み込まれるまでを示すフラグ
 
 
-
-
 // チャートのインスタンス
 const lineChartCanvas = ref(null);
 const lineChartInstance = ref(null); // グラフのインスタンスを保持する変数を宣言
@@ -30,8 +29,6 @@ const lineChartInstance = ref(null); // グラフのインスタンスを保持�
 const categories = ref([]);
 // セレクトボックスで選択したカテゴリーのID
 const selectedCategory = ref('all');
-
-
 
 
 // ページネーション用の関数：指定したページに移動
@@ -173,7 +170,6 @@ async function searchQuizResults() {
     console.error('クイズの結果情報の取得に失敗しました', error);
   }
 }
-
 
 // データを日付でフィルタリングする関数
 function filterQuizRecordsByDate(data) {
@@ -428,7 +424,6 @@ function drawLineChart(data) {
   });
 }
 
-
 // セレクトボックスで選択したカテゴリー情報を取得する関数
 function getSelectedCategoryData() {
   if (selectedCategory.value === 'all') {
@@ -472,9 +467,13 @@ watch(selectedCategory, () => {
     <template #header>
         <h2 class="font-semibold text-2xl text-gray-800 leading-tight">クイズの結果情報</h2>
     </template>
+
+    <div class="absolute top-40 right-4 z-50">
+        <MicroModal />
+    </div>
+
     <div class="bg-gray-100 py-8 px-4">
       <div class="max-w-3xl mx-auto">
-
         <!-- 結果が存在しない場合のメッセージ -->
         <div v-if="quizRecords.length === 0 && !isLoading">
           <p class="text-xl font-semibold text-gray-800">あなたはまだクイズを実施していません。</p>

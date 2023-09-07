@@ -4,6 +4,7 @@ import axios from 'axios';
 import { Head } from '@inertiajs/vue3';
 import { ref, onMounted } from 'vue';
 import BreezeValidationErrors from '@/Components/ValidationErrors.vue'
+import MicroModal from '@/MicroModal/CreateModal.vue'
 
 const selectedCategory = ref('');
 const categories = ref([]);
@@ -148,6 +149,11 @@ function handleImageUpload(event) {
         <template #header>
             <h2 class="font-semibold text-2xl text-gray-800 leading-tight">クイズ作成</h2>
         </template>
+
+        <div class="absolute top-40 right-4 z-50">
+            <MicroModal />
+        </div>
+
         <div class="w-full max-w-screen-md mx-auto p-6 bg-white rounded-md shadow-md mt-4">
             <BreezeValidationErrors :errors="errors" />
             <div v-if="errorMessage" class="mb-4 text-red-600" v-html="errorMessage"></div>

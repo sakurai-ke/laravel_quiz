@@ -4,6 +4,7 @@ import { ref, onMounted } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import axios from 'axios';
 import BreezeValidationErrors from '@/Components/ValidationErrors.vue'
+import MicroModal from '@/MicroModal/EditModal.vue'
 
 defineProps({
 errors: Object
@@ -161,6 +162,11 @@ function confirmDelete() {
     <template #header>
         <h2 class="font-semibold text-2xl text-gray-800 leading-tight">クイズ編集</h2>
     </template>
+
+    <div class="absolute top-40 right-4 z-50">
+        <MicroModal />
+    </div>
+
     <div class="bg-gray-100 py-8">
       <div class="max-w-3xl mx-auto px-4">
         <h2 class="text-2xl font-semibold mb-4">クイズ編集</h2>

@@ -38,7 +38,6 @@ Route::get('/create', [CreateController::class, 'create'])->name('create');
 // クイズ作成フォームの送信処理
 Route::post('/create', [CreateController::class, 'createQuiz']);
 
-// 以下のルートを追加
 Route::get('/records', [RecordController::class, 'index'])
     ->name('records')
     ->middleware(['auth', 'verified']);

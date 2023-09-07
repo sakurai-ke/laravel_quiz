@@ -2,7 +2,6 @@
 import { ref } from 'vue'
 const isShow = ref(false)
 const toggleStatus = () => { isShow.value = !isShow.value}
-
 const closeOnOverlayClick = (event) => {
     if (event.target.classList.contains('modal__overlay')) {
         toggleStatus()
@@ -22,39 +21,36 @@ const closeOnOverlayClick = (event) => {
                 </button>
                 <header class="modal__header flex justify-between items-center px-4 py-2 bg-gray-100 rounded-t-lg mt-4">
                     <h2 class="modal__title text-lg font-semibold text-gray-800">
-                        <span class="font-bold text-blue-700">クイズ画面ヘルプ</span><br>
+                        <span class="font-bold text-blue-700">クイズ作成画面ヘルプ</span><br>
                     </h2>
                 </header>
                 <main class="modal__content p-4 text-gray-700">
+                    <!-- ヘルプの文章 -->
                     <p class="mb-4">
-                        <span class="font-bold text-blue-700">問題の表示:</span><br>
-                        画面上部に問題文が表示されます。問題文をよく読み、正しい答えを選んでください。
+                        <span class="font-bold text-blue-700">問題文の入力:</span><br>
+                        クイズを作成する際に、まず画面上部の「問題文」欄に問題の内容を入力します。
+                        問題文はクイズの鍵となる部分ですので、よく考えて記入しましょう。
                     </p>
                     <p class="mb-4">
-                        <span class="font-bold text-blue-700">選択肢の選択:</span><br>
-                        問題文の下には選択肢が表示されます。正しい選択肢を選んでください。クイズには1つの正解があります。
+                        <span class="font-bold text-blue-700">カテゴリーの選択:</span><br>
+                        問題に対応するカテゴリーを選択してください。カテゴリーはクイズを分類するためのものです。
                     </p>
                     <p class="mb-4">
-                        <span class="font-bold text-blue-700">ヒントボタン:</span><br>
-                        「ヒント」ボタンをクリックすると、ChatGPTのAPIからヒントを取得します。このヒントは、問題文と正解の情報
-                        からChatGPTによって生成されます。
+                        <span class="font-bold text-blue-700">選択肢の入力:</span><br>
+                        問題文の下には正解と不正解の選択肢を入力します。
+                        正解の選択肢は問題の答えとなり、不正解の選択肢は誤答の選択肢として表示されます。
                     </p>
                     <p class="mb-4">
-                        <span class="font-bold text-blue-700">回答ボタン:</span><br>
-                        選択肢を選んだら、「回答」ボタンをクリックして回答を提出してください。正解か不正解かが表示されます。
+                        <span class="font-bold text-blue-700">解説の入力:</span><br>
+                        クイズの正解に対する詳細な解説を提供します。ユーザーがクイズに回答した際に、
+                        正しい理由や補足情報を提供する場所です。
                     </p>
                     <p class="mb-4">
-                        <span class="font-bold text-blue-700">クイズ番号のリスト:</span><br>
-                        画面上側にはクイズ番号のリストが表示されます。クイズを飛び越えて選択することができます。
+                        <span class="font-bold text-blue-700">画像のアップロード (オプション):</span><br>
+                        もし問題に関連する画像を含めたい場合、画面下部の「画像ファイル」セクションから画像をアップロードできます。
+                        画像のアップロードはオプションです。
                     </p>
-                    <p class="mb-4">
-                        <span class="font-bold text-blue-700">前のクイズへ / 次のクイズへ:</span><br>
-                        「前のクイズへ」ボタンと「次のクイズへ」ボタンを使用して、前後の問題に移動できます。
-                    </p>
-                    <p class="mb-4">
-                        <span class="font-bold text-blue-700">結果を見る:</span><br>
-                        すべてのクイズに回答した後、結果（クイズの正解率）を確認するためのボタンが表示されます。
-                    </p>
+                    <!-- ヘルプの文章ここまで -->
                 </main>
                 <footer class="modal__footer px-4 py-2">
                     <button @click="toggleStatus" type="button" class="modal__btn modal__btn-primary bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded focus:outline-none mr-2">

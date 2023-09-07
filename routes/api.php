@@ -37,8 +37,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/updateQuizzes/{id}', [CreateController::class, 'updateUserQuizzes']); // クイズ更新処理
     Route::post('/uploadImage', [CreateController::class, 'uploadImage']); // クイズ更新処理
     Route::delete('/deleteImage/{id}', [CreateController::class, 'deleteImage']); // 画像ファイル削除用
-    Route::middleware('auth:sanctum')->delete('/quizzes/{id}', [CreateController::class, 'quizDestroy']); // 編集画面のクイズ情報削除用
-    Route::middleware('auth:sanctum')->delete('/deleteQuizzes', [CreateController::class, 'quizzesDestroy']); // 編集画面のクイズ情報削除用
+    Route::delete('/quizzes/{id}', [CreateController::class, 'quizDestroy']); // 編集画面のクイズ情報削除用
+    Route::delete('/deleteQuizzes', [CreateController::class, 'quizzesDestroy']); // 編集画面のクイズ情報削除用
+    // adminロールを持つユーザーのためにすべてのクイズ情報を取得
+    Route::get('/getAllQuizzes', [CreateController::class, 'getAllQuizzes']);
+    Route::get('/userRole', [CreateController::class, 'getUserRole']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {

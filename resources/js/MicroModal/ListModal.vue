@@ -2,7 +2,6 @@
 import { ref } from 'vue'
 const isShow = ref(false)
 const toggleStatus = () => { isShow.value = !isShow.value}
-
 const closeOnOverlayClick = (event) => {
     if (event.target.classList.contains('modal__overlay')) {
         toggleStatus()
@@ -22,39 +21,28 @@ const closeOnOverlayClick = (event) => {
                 </button>
                 <header class="modal__header flex justify-between items-center px-4 py-2 bg-gray-100 rounded-t-lg mt-4">
                     <h2 class="modal__title text-lg font-semibold text-gray-800">
-                        <span class="font-bold text-blue-700">クイズ画面ヘルプ</span><br>
+                        <span class="font-bold text-blue-700">クイズ一覧画面ヘルプ</span><br>
                     </h2>
                 </header>
                 <main class="modal__content p-4 text-gray-700">
+                    <!-- ヘルプの文章 -->
                     <p class="mb-4">
-                        <span class="font-bold text-blue-700">問題の表示:</span><br>
-                        画面上部に問題文が表示されます。問題文をよく読み、正しい答えを選んでください。
+                        <span class="font-bold text-blue-700">クイズ一覧表示:</span><br>
+                        画面上部にはあなたが作成したクイズ一覧が表示されます。それぞれのクイズにはタイトル、
+                        作成日時、カテゴリー名が表示されています。
                     </p>
                     <p class="mb-4">
-                        <span class="font-bold text-blue-700">選択肢の選択:</span><br>
-                        問題文の下には選択肢が表示されます。正しい選択肢を選んでください。クイズには1つの正解があります。
+                        <span class="font-bold text-blue-700">カテゴリーのフィルター:</span><br>
+                        クイズ一覧の上にはカテゴリーのドロップダウンメニューがあります。特定のカテゴリーのクイズだけを
+                        表示するには、ここからカテゴリーを選択してください。
                     </p>
                     <p class="mb-4">
-                        <span class="font-bold text-blue-700">ヒントボタン:</span><br>
-                        「ヒント」ボタンをクリックすると、ChatGPTのAPIからヒントを取得します。このヒントは、問題文と正解の情報
-                        からChatGPTによって生成されます。
+                        <span class="font-bold text-blue-700">クイズの削除:</span><br>
+                        削除したいクイズのチェックボックスをクリックして選択状態にしてください。
+                        「削除」ボタンをクリックすると、選択されたクイズは一括削除されます。
+                        実際にクイズが削除される前に、削除確認のための確認ダイアログが表示されます。
                     </p>
-                    <p class="mb-4">
-                        <span class="font-bold text-blue-700">回答ボタン:</span><br>
-                        選択肢を選んだら、「回答」ボタンをクリックして回答を提出してください。正解か不正解かが表示されます。
-                    </p>
-                    <p class="mb-4">
-                        <span class="font-bold text-blue-700">クイズ番号のリスト:</span><br>
-                        画面上側にはクイズ番号のリストが表示されます。クイズを飛び越えて選択することができます。
-                    </p>
-                    <p class="mb-4">
-                        <span class="font-bold text-blue-700">前のクイズへ / 次のクイズへ:</span><br>
-                        「前のクイズへ」ボタンと「次のクイズへ」ボタンを使用して、前後の問題に移動できます。
-                    </p>
-                    <p class="mb-4">
-                        <span class="font-bold text-blue-700">結果を見る:</span><br>
-                        すべてのクイズに回答した後、結果（クイズの正解率）を確認するためのボタンが表示されます。
-                    </p>
+                    <!-- ヘルプの文章ここまで -->
                 </main>
                 <footer class="modal__footer px-4 py-2">
                     <button @click="toggleStatus" type="button" class="modal__btn modal__btn-primary bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded focus:outline-none mr-2">

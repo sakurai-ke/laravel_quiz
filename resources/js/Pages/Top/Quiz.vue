@@ -386,8 +386,8 @@ async function getHint() {
 </script>
 
 <template>
-  <div class="fixed top-40 right-4 z-50">
-    <MicroModal />
+  <div class="absolute top-40 right-4 z-50">
+      <MicroModal />
   </div>
   <p class="text-blue-500 font-semibold">正答率{{ correctPercentage }}</p>
   <p class="text-blue-500 font-semibold">何問目か{{ currentQuizIndex + 1 }}</p>
