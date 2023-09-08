@@ -13,7 +13,6 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            // RoleSeeder::class,
             // UserSeeder::class,
             // RoleSeeder::class,
             // RoleUserSeeder::class,
@@ -22,7 +21,7 @@ class DatabaseSeeder extends Seeder
             ResultSeeder::class,
             ]);
 
-        \App\Models\Quiz::factory(1000)->create();
+        // \App\Models\Quiz::factory(1000)->create();
         // \App\Models\User::factory(10)->create();
 
         // \App\Models\User::factory()->create([

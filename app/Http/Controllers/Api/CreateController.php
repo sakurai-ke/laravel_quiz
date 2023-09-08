@@ -12,6 +12,7 @@ use App\Models\Quiz;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\JsonResponse;
+use App\Models\User;
 
 class CreateController extends Controller
 {
@@ -62,23 +63,6 @@ return response()->json(['message' => 'クイズが作成されました'], 201)
         // ログインしていない場合はエラーレスポンスを返す
         return response()->json(['message' => 'ログインしていません'], 401);
     }
-    /**
-     * Display a listing of the resource.
-     */
-    public function getUserQuizzes()
-    {
-        $userId = auth()->id();
-        $quizzes = Quiz::with('category') // カテゴリー情報を取得
-                    ->where('user_id', $userId)
-                    ->orderBy('created_at', 'desc')
-                    ->get();
-        return response()->json(['quizzes' => $quizzes]);
-    }
-
-    public function index()
-    {
-        return Inertia::render('Create/List');
-    }
 
     /**
      * Show the form for creating a new resource.
@@ -123,7 +107,6 @@ return response()->json(['message' => 'クイズが作成されました'], 201)
         
     }
     
-
     public function edit(string $id)
     {
         // Edit.vueコンポーネントを表示
@@ -137,15 +120,12 @@ return response()->json(['message' => 'クイズが作成されました'], 201)
     {
         try {
             $quiz = Quiz::findOrFail($id);
-    
             // リクエストからクイズデータを取得
             $quizData = $request->all();
-    
             // もし画像データがアップロードされている場合
             if ($request->hasFile('image_src')) {
                 $original = $request->file('image_src')->getClientOriginalName();
                 $name = date('Ymd_His') . '_' . $original;
-    
                 // 旧画像が存在する場合は削除
                 if ($quiz->image_src) {
                     $imagePath = storage_path('app/public/images/') . $quiz->image_src;
@@ -153,7 +133,6 @@ return response()->json(['message' => 'クイズが作成されました'], 201)
                         Storage::delete('public/images/' . $quiz->image_src);
                     }
                 }
-    
                 // 新しいファイル名で画像を保存
                 $request->file('image_src')->storeAs('public/images', $name);
                 $quizData['image_src'] = $name;
@@ -206,13 +185,11 @@ public function deleteImage(string $id)
                 if (file_exists($imagePath)) {
                     Storage::delete('public/images/' . $quiz->image_src);
                 }
-
                 // クイズ情報の画像ファイル名を削除
                 $quiz->update(['image_src' => null]);
 
                 return response()->json(['message' => '画像ファイルを削除しました']);
             }
-
             return response()->json(['message' => '画像ファイルが見つかりませんでした'], 404);
         } catch (\Exception $e) {
             return response()->json(['error' => '画像ファイルの削除に失敗しました'], 500);
@@ -264,39 +241,80 @@ public function deleteImage(string $id)
     public function quizzesDestroy(Request $request)
     {
         $quizIds = $request->input('quiz_ids');
-
         // クイズを削除する処理を実行
         Quiz::whereIn('id', $quizIds)->delete();
-
         return response()->json(['message' => 'クイズが削除されました'], 200);
     }
 
-    public function getAllQuizzes()
+        /**
+     * Display a listing of the resource.
+     */
+    public function getUserQuizzes()
     {
-        if (Auth::user()->role->name === 'admin') {
-            // 管理者の場合、すべてのクイズ情報を取得
-            $quizzes = Quiz::with('category')
-                        ->orderBy('created_at', 'desc')
-                        ->get();
-            return response()->json(['quizzes' => $quizzes]);
-        }
-    
-        // 管理者でない場合はエラーレスポンスを返す
-        return response()->json(['message' => '管理者権限が必要です'], 403);
+        $userId = auth()->id();
+        $quizzes = Quiz::with('category') // カテゴリー情報を取得
+                    ->where('user_id', $userId)
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+        return response()->json(['quizzes' => $quizzes]);
     }
 
+    public function index()
+    {
+        return Inertia::render('Create/List');
+    }
+    
+    public function getAllQuizzes()
+    {
+        $user = Auth::user();
+    
+        if (!$user) {
+            // 認証されていない場合、エラーレスポンスを返す
+            return response()->json(['message' => '認証されていません'], 401);
+        }
+    
+        // ユーザーの役割情報を取得
+        $role = $user->roles->first();
+    
+        if ($role && $role->name === 'admin') {
+            // 管理者の場合、すべてのクイズ情報を取得
+            $quizzes = Quiz::with('category')
+                ->orderBy('created_at', 'desc')
+                ->get();
+        } else {
+            // 一般ユーザーの場合はログインユーザーごとのクイズ情報を取得
+            $quizzes = Quiz::with('category')
+                ->where('user_id', $user->id)
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
+    
+        return response()->json(['quizzes' => $quizzes]);
+    }
+    
     public function getUserRole()
     {
         $user = Auth::user(); // 現在の認証ユーザーを取得
     
         if ($user) {
             // ユーザーがログインしており、役割情報が存在する場合
-            $role = optional($user->role)->name; // ユーザーの役割名を取得 (null の場合も考慮)
+            $role = optional($user->roles->first())->name; // ユーザーの役割名を取得 (null の場合も考慮)
             return response()->json(['role' => $role]);
         } else {
             // 認証されていない場合、エラーレスポンスを返す
             return response()->json(['message' => '認証されていません'], 401);
         }
     }
-    
+
+    public function getUsernames()
+    {
+        $usernames = User::pluck('name')->toArray(); // ユーザー名を取得
+        return response()->json(['usernames' => $usernames]);
+    }
+
+    public function getLoggedInUsername()
+    {
+        return response()->json(['username' => auth()->user()->username]);
+    }
+
 }

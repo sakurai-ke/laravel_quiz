@@ -16,15 +16,42 @@ const selectedCategory = ref('all'); // 初期選択は「全て」
 
 const isLoading = ref(true); // データが読み込まれるまでを示すフラグ
 
+const usernames = ref([]); // ユーザー名の選択肢を格納するデータプロパティ
+const selectedUsername = ref(''); // デフォルトの選択肢は空文字列
+
 onMounted(() => {
   getQuizzes();
   getCategories();
 });
 
 onMounted(async () => {
-  await Promise.all([getQuizzes(), getCategories()]);
-  isLoading.value = false; // データが読み込み完了後にisLoadingをfalseに設定
+  // ユーザー名の選択を設定
+  selectedUsername.value = '<?= auth()->user()->name ?>'; // ログインユーザーのユーザー名をセット
+
+  await Promise.all([getQuizzes(), getCategories(), getUsernames()]);
+  isLoading.value = false;
 });
+
+onMounted(async () => {
+  // ログインユーザーのユーザー名を取得するAPIリクエストなどを実行
+  try {
+    const response = await axios.get('/api/getLoggedInUsername');
+    console.log('response', response);
+    selectedUsername.value = response.data.username; // レスポンスからユーザー名を取得し、selectedUsernameに設定
+    console.log('selectedUsername.value', selectedUsername.value);
+  } catch (error) {
+    console.error('ユーザー名の取得に失敗しました', error);
+  }
+});
+
+async function getUsernames() {
+  try {
+    const response = await axios.get('/api/usernames'); // ユーザー名を取得するAPIエンドポイントを作成する必要があります
+    usernames.value = response.data.usernames;
+  } catch (error) {
+    console.error('ユーザー名の取得に失敗しました', error);
+  }
+}
 
 // ページネーション用の関数：指定したページに移動
 const goToPage = (page) => {
@@ -87,10 +114,16 @@ async function getCategories() {
 
 // カテゴリー別のクイズ一覧を計算する算出プロパティ
 const filteredQuizzes = computed(() => {
-  if (selectedCategory.value === 'all') { // .value を追加
-    return quizzes.value;
+  if (selectedCategory.value === 'all') {
+    // カテゴリーが「全て」の場合、ユーザー名によるフィルタリングを適用
+    if (selectedUsername === 'all') {
+      return quizzes.value; // ユーザー名が「全て」の場合、フィルタリングをかけずに全てのクイズを表示
+    } else {
+      return quizzes.value.filter(quiz => quiz.user_name === selectedUsername);
+    }
   } else {
-    return quizzes.value.filter(quiz => quiz.category_id === selectedCategory.value); // .value を追加
+    // カテゴリーが特定の場合、カテゴリーとユーザー名の両方でフィルタリングを適用
+    return quizzes.value.filter(quiz => quiz.category_id === selectedCategory.value && quiz.user_name === selectedUsername);
   }
 });
 
@@ -158,20 +191,15 @@ function confirmDelete() {
 // 選択されたクイズが少なくとも1つ以上あるかどうかを確認
 const hasSelectedQuizzes = computed(() => quizzes.value.some(quiz => quiz.selected));
 
-const isAdmin = ref(false); // 管理者かどうかを管理するフラグ
+const isAdmin = ref(null); // 管理者かどうかを管理するフラグ。初期値は false としておく
 
 async function getQuizzes() {
   try {
-    let apiUrl = '/api/getQuizzes'; // クイズ一覧を取得するAPIのデフォルトのエンドポイント
-
-    if (isAdmin.value) {
-      // 管理者の場合はすべてのクイズを取得するAPIを呼び出す
-      apiUrl = '/api/getAllQuizzes'; // すべてのクイズを取得するAPIエンドポイントに合わせて変更
-    }
+    const apiUrl = isAdmin.value ? '/api/getAllQuizzes' : '/api/getQuizzes';
 
     const response = await axios.get(apiUrl);
     quizzes.value = response.data.quizzes;
-    console.log('response.data', response.data.quizzes);
+    console.log('quizzes.value', quizzes.value);
   } catch (error) {
     console.error('クイズ一覧の取得に失敗しました', error);
   }
@@ -180,15 +208,15 @@ async function getQuizzes() {
 onMounted(async () => {
   // 現在のユーザーの役割を取得するAPIを呼び出す
   try {
-    const response = await axios.get('/api/userRole'); // ユーザーの役割を取得するAPIエンドポイントに合わせて変更
+    const response = await axios.get('/api/userRole');
     isAdmin.value = response.data.role === 'admin';
+
+    await Promise.all([getQuizzes(), getCategories()]);
+    isLoading.value = false;
   } catch (error) {
     console.error('ユーザーの役割の取得に失敗しました', error);
   }
-  await Promise.all([getQuizzes(), getCategories()]);
-  isLoading.value = false;
 });
-
 </script>
 
 <template>
@@ -212,6 +240,10 @@ onMounted(async () => {
             <select v-model="selectedCategory" class="block w-40 bg-white border border-gray-300 p-2 rounded shadow-sm ml-6">
               <option value="all">全て</option>
               <option v-for="category in categories" :key="category.id" :value="category.id">{{ category.name }}</option>
+            </select>
+            <select v-model="selectedUsername" class="block w-40 bg-white border border-gray-300 p-2 rounded shadow-sm ml-6">
+              <option value="all">全て</option>
+              <option v-for="username in usernames" :key="username" :value="username">{{ username }}</option>
             </select>
           </div>
 

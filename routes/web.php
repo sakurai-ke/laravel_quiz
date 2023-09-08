@@ -32,7 +32,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/list/{id}', [CreateController::class, 'show'])->name('show');
     Route::get('/list/{id}/edit', [CreateController::class, 'edit'])->name('edit');
 });
-
 // クイズ作成ページの表示
 Route::get('/create', [CreateController::class, 'create'])->name('create');
 // クイズ作成フォームの送信処理
@@ -49,10 +48,8 @@ Route::get('/result', [QuizController::class, 'show'])
     ->name('quiz.result');
     // ->middleware(['auth', 'verified']);
 
-
 Route::get('/top', [CategoryController::class, 'index'])->name('top');
 // ->middleware(['auth', 'verified']);
-
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [

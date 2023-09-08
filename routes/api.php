@@ -42,6 +42,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // adminロールを持つユーザーのためにすべてのクイズ情報を取得
     Route::get('/getAllQuizzes', [CreateController::class, 'getAllQuizzes']);
     Route::get('/userRole', [CreateController::class, 'getUserRole']);
+    Route::get('/usernames', [CreateController::class, 'getUsernames']);
+    Route::get('/getLoggedInUsername', [CreateController::class, 'getLoggedInUsername']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {

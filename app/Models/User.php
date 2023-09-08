@@ -52,8 +52,9 @@ class User extends Authenticatable
 
     public function records() {
         return $this->hasMany(Record::class);
-            }            
-    // public function roles() {
-    //     return $this->belongsToMany(Role::class);
-    // }
+            }       
+
+    public function roles() {
+        return $this->belongsToMany(Role::class);
+    }
 }
