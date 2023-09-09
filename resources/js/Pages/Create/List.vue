@@ -16,42 +16,42 @@ const selectedCategory = ref('all'); // 初期選択は「全て」
 
 const isLoading = ref(true); // データが読み込まれるまでを示すフラグ
 
-const usernames = ref([]); // ユーザー名の選択肢を格納するデータプロパティ
-const selectedUsername = ref(''); // デフォルトの選択肢は空文字列
+const users = ref([]);
+const currentUser = ref({ id: null }); // ログインユーザーの情報を格納する変数
+
+// ログインユーザー情報の取得が完了した後に selectedUser の初期値を設定
+onMounted(async () => {
+  try {
+    const response = await axios.get('/api/currentUser'); // ログインユーザー情報を取得するAPIのエンドポイントを設定してください
+    currentUser.value = response.data.user;
+    selectedUser.value = currentUser.value ? currentUser.value.id : 'all';
+    isLoading.value = false;
+  } catch (error) {
+    console.error('ログインユーザー情報の取得に失敗しました', error);
+  }
+});
 
 onMounted(() => {
   getQuizzes();
   getCategories();
 });
 
-onMounted(async () => {
-  // ユーザー名の選択を設定
-  selectedUsername.value = '<?= auth()->user()->name ?>'; // ログインユーザーのユーザー名をセット
-
-  await Promise.all([getQuizzes(), getCategories(), getUsernames()]);
-  isLoading.value = false;
-});
-
-onMounted(async () => {
-  // ログインユーザーのユーザー名を取得するAPIリクエストなどを実行
+async function getUsers() {
   try {
-    const response = await axios.get('/api/getLoggedInUsername');
-    console.log('response', response);
-    selectedUsername.value = response.data.username; // レスポンスからユーザー名を取得し、selectedUsernameに設定
-    console.log('selectedUsername.value', selectedUsername.value);
-  } catch (error) {
-    console.error('ユーザー名の取得に失敗しました', error);
-  }
-});
-
-async function getUsernames() {
-  try {
-    const response = await axios.get('/api/usernames'); // ユーザー名を取得するAPIエンドポイントを作成する必要があります
-    usernames.value = response.data.usernames;
+    const response = await axios.get('/api/getUsers'); // ユーザー名を取得するAPIのエンドポイントを設定してください
+    users.value = response.data.users;
+    console.log('response.data.users', response.data.users);
   } catch (error) {
     console.error('ユーザー名の取得に失敗しました', error);
   }
 }
+
+// 既存のonMountedブロック内でgetUsersを呼び出す
+onMounted(async () => {
+  await Promise.all([getQuizzes(), getCategories(), getUsers()]);
+  isLoading.value = false;
+});
+
 
 // ページネーション用の関数：指定したページに移動
 const goToPage = (page) => {
@@ -112,18 +112,18 @@ async function getCategories() {
   }
 }
 
-// カテゴリー別のクイズ一覧を計算する算出プロパティ
+// ユーザー名の選択肢を追加する部分
+const selectedUser = ref('all'); // デフォルトで「全てのユーザー」が選択されている
+
+// クイズ情報をユーザー名でフィルタリングするcomputedプロパティを追加
 const filteredQuizzes = computed(() => {
-  if (selectedCategory.value === 'all') {
-    // カテゴリーが「全て」の場合、ユーザー名によるフィルタリングを適用
-    if (selectedUsername === 'all') {
-      return quizzes.value; // ユーザー名が「全て」の場合、フィルタリングをかけずに全てのクイズを表示
-    } else {
-      return quizzes.value.filter(quiz => quiz.user_name === selectedUsername);
-    }
+  if (selectedCategory.value === 'all' && selectedUser.value === 'all') {
+    return quizzes.value;
   } else {
-    // カテゴリーが特定の場合、カテゴリーとユーザー名の両方でフィルタリングを適用
-    return quizzes.value.filter(quiz => quiz.category_id === selectedCategory.value && quiz.user_name === selectedUsername);
+    return quizzes.value.filter(quiz => {
+      return (selectedCategory.value === 'all' || quiz.category_id === selectedCategory.value) &&
+              (selectedUser.value === 'all' || quiz.user_id === selectedUser.value);
+    });
   }
 });
 
@@ -205,6 +205,11 @@ async function getQuizzes() {
   }
 }
 
+function getUserName(userId) {
+  const user = users.value.find(user => user.id === userId);
+  return user ? user.name : 'Unknown User'; // ユーザーが見つからない場合のデフォルト値
+}
+
 onMounted(async () => {
   // 現在のユーザーの役割を取得するAPIを呼び出す
   try {
@@ -241,12 +246,18 @@ onMounted(async () => {
               <option value="all">全て</option>
               <option v-for="category in categories" :key="category.id" :value="category.id">{{ category.name }}</option>
             </select>
-            <select v-model="selectedUsername" class="block w-40 bg-white border border-gray-300 p-2 rounded shadow-sm ml-6">
-              <option value="all">全て</option>
-              <option v-for="username in usernames" :key="username" :value="username">{{ username }}</option>
-            </select>
           </div>
 
+          <!-- // List.vueのtemplate内で、selectedUserをログインユーザーのユーザー名でデフォルト選択する -->
+          <!-- <select v-model="selectedUser" class="block w-40 bg-white border border-gray-300 p-2 rounded shadow-sm ml-6">
+            <option value="all">全てのユーザー</option>
+            <option v-for="user in users" :key="user.id" :value="user.id" :selected="currentUser.value && user.id === currentUser.value.id">{{ user.name }}</option>
+          </select> -->
+
+          <select v-if="isAdmin" v-model="selectedUser" class="block w-40 bg-white border border-gray-300 p-2 rounded shadow-sm ml-6">
+            <option value="all">全てのユーザー</option>
+            <option v-for="user in users" :key="user.id" :value="user.id" :selected="currentUser.value && user.id === currentUser.value.id">{{ user.name }}</option>
+          </select>
 
           <ul class="mt-4 space-y-4">
             <li v-for="quiz in paginatedRecords" :key="quiz.id" class="bg-white rounded shadow-md p-4 flex items-center justify-between">
@@ -257,6 +268,7 @@ onMounted(async () => {
               <div class="text-right">
                 <p class="text-gray-600">作成日時: {{ formatDate(quiz.created_at) }}</p>
                 <p class="text-gray-600">カテゴリー名: {{ quiz.category.name }}</p>
+                <p class="text-gray-600" v-if="isAdmin">ユーザー名: {{ getUserName(quiz.user_id) }}</p>
               </div>
             </li>
           </ul>

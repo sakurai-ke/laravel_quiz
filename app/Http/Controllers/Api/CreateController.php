@@ -306,15 +306,19 @@ public function deleteImage(string $id)
         }
     }
 
-    public function getUsernames()
+    public function getUsers(Request $request)
     {
-        $usernames = User::pluck('name')->toArray(); // ユーザー名を取得
-        return response()->json(['usernames' => $usernames]);
+        // ユーザー情報をデータベースから取得
+        $users = User::all();
+
+        // JSON形式でレスポンスを返す
+        return response()->json(['users' => $users]);
     }
 
-    public function getLoggedInUsername()
+    public function currentUser(Request $request)
     {
-        return response()->json(['username' => auth()->user()->username]);
+        // ログインユーザーの情報を返す
+        return response()->json(['user' => Auth::user()]);
     }
 
 }

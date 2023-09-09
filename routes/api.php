@@ -40,10 +40,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/quizzes/{id}', [CreateController::class, 'quizDestroy']); // 編集画面のクイズ情報削除用
     Route::delete('/deleteQuizzes', [CreateController::class, 'quizzesDestroy']); // 編集画面のクイズ情報削除用
     // adminロールを持つユーザーのためにすべてのクイズ情報を取得
-    Route::get('/getAllQuizzes', [CreateController::class, 'getAllQuizzes']);
-    Route::get('/userRole', [CreateController::class, 'getUserRole']);
-    Route::get('/usernames', [CreateController::class, 'getUsernames']);
-    Route::get('/getLoggedInUsername', [CreateController::class, 'getLoggedInUsername']);
+    Route::get('/getAllQuizzes', [CreateController::class, 'getAllQuizzes']); //全てのクイズ情報を取得
+    Route::get('/userRole', [CreateController::class, 'getUserRole']); //Role情報を取得
+    Route::get('/getUsers', [CreateController::class, 'getUsers']); //すべてのユーザー情報を取得
+    Route::get('/currentUser', [CreateController::class, 'currentUser']); //ログインユーザー情報の取得
 });
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -52,10 +52,6 @@ Route::post('/result', [RecordController::class, 'storeResult']); // POSTリク�
 Route::post('/save-quiz-result', [RecordController::class, 'store']);
 });
 Route::post('/record', [RecordController::class, 'storeRecord']); // POSTリクエストを受けてデータを保存
-
-// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-//     return $request->user();
-// });
 
 // トップ画面でのカテゴリー情報を取得
 // Route::middleware('auth:sanctum')->group(function () {
