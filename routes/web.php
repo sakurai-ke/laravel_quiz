@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\QuizController;
 use App\Http\Controllers\Api\RecordController;
 use App\Http\Controllers\Api\CreateController; 
 use App\Http\Controllers\Api\RankController; 
+use App\Http\Controllers\Api\UserProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,6 +21,11 @@ use App\Http\Controllers\Api\RankController;
 | contains the "web" middleware group. Now create something great!
 |
 */
+
+Route::middleware(['auth'])->group(function () {
+    // ユーザープロファイル一覧を表示するルート
+    Route::get('/users', [UserProfileController::class, 'index'])->name('users');
+});
 
 // ランキング表示用
 Route::get('/rank', [RankController::class, 'index'])

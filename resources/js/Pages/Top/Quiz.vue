@@ -173,7 +173,7 @@ async function fetchAndShuffleQuizzes() {
   }
 }
 
-const loggedIn = ref(true); // ログインしている場合はtrueにセット
+const loggedIn = ref(false); // ログインしている場合はtrueにセット
 
 // 「回答」ボタンがクリックされたときの処理
 async function submitAnswer() {

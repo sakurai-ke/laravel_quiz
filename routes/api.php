@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\RecordController;
 use App\Http\Controllers\Api\CreateController;
 use App\Http\Controllers\Api\RankController;
 use App\Http\Controllers\Api\ChatGptController;
+use App\Http\Controllers\Api\UserProfileController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -18,6 +19,9 @@ use App\Http\Controllers\Api\ChatGptController;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
+
+Route::post('/user/{user}/save-role', [UserProfileController::class, 'saveUserRole']);
+Route::get('/api/user/{user}', [UserProfileController::class, 'getUser'])->name('user.get');
 
 // ヒント取得のための記述
 // Route::middleware('auth:sanctum')->group(function () {
