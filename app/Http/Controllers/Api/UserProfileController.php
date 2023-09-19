@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Inertia\Inertia;
+use App\Models\Role;
 
 class UserProfileController extends Controller
 {
@@ -23,12 +24,21 @@ class UserProfileController extends Controller
     public function saveUserRole(User $user, Request $request)
     {
         // リクエストから選択されたロールを取得
-        $role = $request->input('role');
-
+        $roleName = $request->input('role');
+        
         try {
-            // ユーザーに新しいロールを割り当てる
-            $user->update(['role' => $role]);
-
+            // ユーザーの現在のロールを取得
+            $currentRole = $user->roles->first(); // ユーザーの現在のロールを取得（仮定）
+            
+            // リクエストから取得したロール名と現在のロールが異なる場合にのみ更新
+            if ($currentRole->name !== $roleName) {
+                // 新しいロールを取得
+                $newRole = Role::where('name', $roleName)->firstOrFail();
+                
+                // 中間テーブルの role_id を更新
+                $user->roles()->updateExistingPivot($currentRole->id, ['role_id' => $newRole->id]);
+            }
+    
             // 成功レスポンスを返す
             return response()->json(['message' => '権限が保存されました']);
         } catch (\Exception $e) {
@@ -36,10 +46,9 @@ class UserProfileController extends Controller
             return response()->json(['message' => '権限の保存中にエラーが発生しました'], 500);
         }
     }
-
+    
     public function getUser(User $user)
     {
         return response()->json($user);
     }
-
 }

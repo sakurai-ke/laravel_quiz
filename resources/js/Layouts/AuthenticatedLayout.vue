@@ -41,17 +41,18 @@ const showingNavigationDropdown = ref(false);
                                     <NavLink :href="route('list')" :active="route().current('list')">
                                         クイズ詳細・編集
                                     </NavLink>
-                                    <NavLink :href="route('users')" :active="route().current('users')">
+                                    <!-- <NavLink :href="route('users')" :active="route().current('users')">
                                             ユーザー一覧
-                                    </NavLink>
+                                    </NavLink> -->
                                 </template>
                                 <NavLink :href="route('rank')" :active="route().current('rank')">
                                     ランキング
                                 </NavLink>
 
-                                <template v-if="$page.props.auth.user">
+                                    <!-- ユーザー一覧へのリンクを、role_id が 1 の場合にのみ表示 -->
+                                <template v-if="$page.props.auth.user && $page.props.auth.user.role_id === 1">
                                     <NavLink :href="route('users')" :active="route().current('users')">
-                                            ユーザー一覧
+                                        ユーザー一覧
                                     </NavLink>
                                 </template>
 
