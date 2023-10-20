@@ -17,9 +17,10 @@ class QuizController extends Controller
         $numQuestions = $request->input('num_questions');
 
 
-        $quizzes = Quiz::select('id', 'category_id', 'user_id', 'title', 'image_src', 'delete_flag', 'correct_answer',
-        'wrong_answer_1','wrong_answer_2','wrong_answer_3','hint','explain')
+        $quizzes = Quiz::select('id', 'category_id', 'user_id', 'title', 'image_src', 'correct_answer',
+        'wrong_answer_1','wrong_answer_2','wrong_answer_3','explain')
         ->where('category_id', $categoryId)
+        ->inRandomOrder() // ランダムに並べ替え
         ->limit($numQuestions)
         ->get();
 

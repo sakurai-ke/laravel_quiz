@@ -49,6 +49,12 @@ class UserProfileController extends Controller
     
     public function getUser(User $user)
     {
-        return response()->json($user);
+        // ユーザーがadmin権限を持つ場合のみユーザーデータを返す
+        if ($user->roles->contains('name', 'admin')) {
+            return response()->json($user);
+        } else {
+            return response()->json(['message' => '権限がありません'], 403);
+        }
     }
+    
 }

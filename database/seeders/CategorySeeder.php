@@ -15,11 +15,11 @@ class CategorySeeder extends Seeder
     {
         {
             DB::table('categories')->insert([
-                ['name' => 'スポーツ'],
                 ['name' => '雑学'],
-                ['name' => '自然'],
-                ['name' => 'IT'],
-                ['name' => 'アニメ'],
+                ['name' => 'スポーツ'],
+                ['name' => '歴史'],
+                ['name' => '生き物'],
+                ['name' => 'なぞなぞ'],
             ]);
         }
     

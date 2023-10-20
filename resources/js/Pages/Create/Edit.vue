@@ -18,7 +18,6 @@ const quiz = ref({
   wrong_answer_1: '',
   wrong_answer_2: '',
   wrong_answer_3: '',
-  // hint: '',
   explain: '',
   image_src: '',
 });

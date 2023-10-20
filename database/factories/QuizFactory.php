@@ -29,11 +29,9 @@ class QuizFactory extends Factory
             'wrong_answer_1' => $this->faker->word,
             'wrong_answer_2' => $this->faker->word,
             'wrong_answer_3' => $this->faker->word,
-            'hint' => $this->faker->sentence,
             'explain' => $this->faker->sentence,
             'category_id' => $categoryId,
             'image_src' => $this->faker->imageUrl(400, 300),
-            'delete_flag' => $this->faker->numberBetween(0, 1),
         ];
     }
 }

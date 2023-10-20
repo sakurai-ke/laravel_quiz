@@ -24,7 +24,6 @@ class Quiz extends Model
         'explain',
         'hint',
         'image_src',
-        'delete_flag',
     ];
 
         

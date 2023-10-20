@@ -8,6 +8,24 @@ import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link } from '@inertiajs/vue3';
 
 const showingNavigationDropdown = ref(false);
+
+// ユーザーのロール情報をバックエンドから取得するためのAPIエンドポイント
+const userRoleAPIEndpoint = '/api/userRole';
+// 初期値は未ログイン状態として設定
+const userRole = ref(null);
+
+// ユーザーのロール情報を非同期で取得
+(async () => {
+  try {
+    const response = await fetch(userRoleAPIEndpoint);
+    const data = await response.json();
+    if (data.role) {
+      userRole.value = data.role;
+    }
+  } catch (error) {
+    console.error('ユーザーのロール情報を取得できませんでした:', error);
+  }
+})();
 </script>
 
 <template>
@@ -41,20 +59,20 @@ const showingNavigationDropdown = ref(false);
                                     <NavLink :href="route('list')" :active="route().current('list')">
                                         クイズ詳細・編集
                                     </NavLink>
+
                                     <!-- <NavLink :href="route('users')" :active="route().current('users')">
                                             ユーザー一覧
                                     </NavLink> -->
+
                                 </template>
                                 <NavLink :href="route('rank')" :active="route().current('rank')">
                                     ランキング
                                 </NavLink>
 
-                                    <!-- ユーザー一覧へのリンクを、role_id が 1 の場合にのみ表示 -->
-                                <template v-if="$page.props.auth.user && $page.props.auth.user.role_id === 1">
-                                    <NavLink :href="route('users')" :active="route().current('users')">
-                                        ユーザー一覧
-                                    </NavLink>
-                                </template>
+    <!-- ユーザーがAdmin（idが1）の場合のみ表示 -->
+    <template v-if="userRole === 'admin'">
+      <NavLink :href="route('users')" :active="route().current('users')">ユーザー一覧</NavLink>
+    </template>
 
                             </div>
                         </div>

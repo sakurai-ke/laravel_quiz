@@ -1,7 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Link, Head } from '@inertiajs/vue3';
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed ,watch} from 'vue';
 import axios from 'axios';
 
 const currentPage = ref(1); // 現在のページ
@@ -24,6 +24,7 @@ onMounted(async () => {
   try {
     const response = await axios.get('/api/currentUser'); // ログインユーザー情報を取得するAPIのエンドポイントを設定してください
     currentUser.value = response.data.user;
+    // ログインユーザーが存在する場合、そのユーザーのIDが選択されたユーザーとして設定され、存在しない場合には全てのユーザーを表すallが選択される
     selectedUser.value = currentUser.value ? currentUser.value.id : 'all';
     isLoading.value = false;
   } catch (error) {
@@ -38,7 +39,7 @@ onMounted(() => {
 
 async function getUsers() {
   try {
-    const response = await axios.get('/api/getUsers'); // ユーザー名を取得するAPIのエンドポイントを設定してください
+    const response = await axios.get('/api/getUsers'); // 全ユーザー情報を取得するAPI
     users.value = response.data.users;
     console.log('response.data.users', response.data.users);
   } catch (error) {
@@ -222,6 +223,12 @@ onMounted(async () => {
     console.error('ユーザーの役割の取得に失敗しました', error);
   }
 });
+
+// selectedUserの値が変更されたときにcurrentPageを常に最初のページが表示されるようする
+watch(selectedUser, () => {
+  currentPage.value = 1;
+});
+
 </script>
 
 <template>

@@ -274,7 +274,7 @@ public function deleteImage(string $id)
         }
     
         // ユーザーの役割情報を取得
-        $role = $user->roles->first();
+        $role = $user->roles->first(); //ユーザーのロールを確認
     
         if ($role && $role->name === 'admin') {
             // 管理者の場合、すべてのクイズ情報を取得
@@ -284,7 +284,7 @@ public function deleteImage(string $id)
         } else {
             // 一般ユーザーの場合はログインユーザーごとのクイズ情報を取得
             $quizzes = Quiz::with('category')
-                ->where('user_id', $user->id)
+                ->where('user_id', $user->id) //ログインユーザーの id と一致するクイズを選択
                 ->orderBy('created_at', 'desc')
                 ->get();
         }
@@ -308,7 +308,7 @@ public function deleteImage(string $id)
 
     public function getUsers(Request $request)
     {
-        // ユーザー情報をデータベースから取得
+        // 全ユーザー情報をデータベースから取得
         $users = User::all();
 
         // JSON形式でレスポンスを返す

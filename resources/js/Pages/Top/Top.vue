@@ -12,7 +12,7 @@ import MicroModal from '@/MicroModal/TopModal.vue'
 // カテゴリー名の選択肢
 const selectedCategory = ref(null);
 const selectedNumQuestions = ref(5); // 問題数の選択肢（初期値を10に設定）
-const categories = ref([]);
+const categories = ref([]); //　取得したカテゴリーのデータを格納する
 const isQuizStarted = ref(false); // クイズ開始する際にtrueに切り替える
 
 const currentQuiz = ref({
@@ -22,12 +22,10 @@ const currentQuiz = ref({
     image_src: '',
     user_id: null,
     category_id: null,
-    delete_flag: false,
     correct_answer: '', // 正解の選択肢を格納
     wrong_answer_1: '', // 正解以外の選択肢1を格納
     wrong_answer_2: '', // 正解以外の選択肢2を格納
     wrong_answer_3: '', // 正解以外の選択肢3を格納
-    hint: '', // ヒント
     explain: '', // 解説
 });
 
@@ -48,8 +46,9 @@ onMounted(() => {
 });
 
 // 選択したカテゴリーと出題数をもとにクイズデータを一括で取得する関数
-async function fetchQuizzes(categoryId, numQuestions) {
+async function fetchQuizzes(categoryId) {
     try {
+        // GET リクエストのクエリパラメータとしてcategory_id（カテゴリーID）と num_questions（出題数）を指定
         const response = await axios.get('/api/quizzes', {
             params: { category_id: categoryId, num_questions: selectedNumQuestions.value }
         });
