@@ -19,10 +19,8 @@ const props = defineProps({
     <div class="mt-8">
         <div class="w-full max-w-md mx-auto p-6 bg-white rounded-md shadow-md">
         <h2 class="text-xl font-semibold mb-4">クイズ結果</h2>
-        <!-- <p>{{ props.resultMessage }}</p> -->
         <!-- 正答率の表示を追加 -->
         <p>正答率: {{ correctPercentage.toFixed(2) }}%</p>
-        <!-- <p>{{ correctPercentage }}%</p> -->
         <p>お疲れ様です！クイズが終了しました！</p>
         
         <div class="mt-4">

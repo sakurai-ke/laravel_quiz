@@ -19,6 +19,7 @@ console.log('record_idの値:', props.record_id);
 console.log('selectedCategoryの値:', props.selectedCategory);
 
 // ユーザが選択した回答を保持するためのリアクティブな変数
+// ラジオボタンなどのフォームコントロールの v-model ディレクティブにバインドされ、ユーザが選択した回答が保持
 const selectedChoice = ref(null);
 // シャッフルされたクイズの選択肢を保持する
 const shuffledChoices = ref([]);
@@ -27,13 +28,16 @@ const shuffledChoices = ref([]);
 const quizEndMessage = ref('');
 // const showQuiz = ref(true); // 新しい変数を追加
 
+// const quizList = ref([]);
+// この変数の初期値を -1 に設定しているのは、クイズが開始された直後に最初のクイズが表示されるようにするため。インデックスは通常 0 
+// から始まるが、初回のクイズ表示時に onMounted フックで fetchNextQuiz 関数が呼ばれると、まず最初にインデックスが 0 に増加してからクイズを表示する。
 let currentQuizIndex = 0;
 
 // シャッフルされたクイズリストを保持する変数
 let shuffledQuizList = [];
 
-const quizData = ref(props.quizData);
-console.log('quizDataの値:', quizData);
+const quizData = ref(props.quizData); // Create a reactive variable
+
     // レコードIDのプロパティ
 // const record_id = ref(props.record_id);
 const selectedCategory = ref(props.selectedCategory);
@@ -74,6 +78,7 @@ function shuffleChoices(choices) {
         const j = Math.floor(Math.random() * (i + 1));
         [choices[i], choices[j]] = [choices[j], choices[i]];
     }
+    console.log('choices', choices);
     return choices;
 }
 
@@ -87,6 +92,7 @@ function shuffleQuizList(quizList) {
 }
 
 
+// ランダムなクイズを出題
 // ランダムなクイズを出題
 function presentRandomQuiz() {
     // shuffledQuizList配列のcurrentQuizIndex番目の要素をnewQuizData変数に格納
@@ -110,15 +116,14 @@ async function fetchAndShuffleQuizzes() {
       },
     });
     const nextQuizzes = response.data;
-    console.log('nextQuizzes', nextQuizzes);
 
     if (nextQuizzes.length > 0) {
       //shuffledQuizListの各要素に対してquiz.idを抽出し、それを新しい配列excludedQuizIdsに格納の処理により、
       //すでに選ばれたクイズIDが含まれる配列が作成される
       const excludedQuizIds = shuffledQuizList.map(quiz => quiz.id);
 
-      //nextQuizzesから取得されたクイズデータを処理し、新しい配列shuffledQuizListを生成
-      shuffledQuizList = nextQuizzes
+    //nextQuizzesから取得されたクイズデータを処理し、新しい配列shuffledQuizListを生成
+    shuffledQuizList = nextQuizzes
       // クイズIDがexcludedQuizIds配列に含まれていないクイズデータのみを抽出
         .filter(quiz => !excludedQuizIds.includes(quiz.id)) // 除外対象のクイズを除外
         .map(quiz => ({
@@ -155,7 +160,7 @@ async function fetchAndShuffleQuizzes() {
   }
 }
 
-const loggedIn = ref(false); // ログインしている場合はtrueにセット
+const loggedIn = ref(true); // ログインしている場合はtrueにセット
 
 // 「回答」ボタンがクリックされたときの処理
 async function submitAnswer() {
@@ -334,7 +339,7 @@ function goToQuiz(index) {
 
   presentRandomQuiz();
   showAnswerButton.value = true;
-  updateButtonVisibility(); //// クイズ画面ごとの前後のクイズへの遷移ボタン制御を行う
+  updateButtonVisibility();
 }
 
 const hint = ref(''); // ヒントの初期値は空

@@ -17,11 +17,11 @@ class DatabaseSeeder extends Seeder
             // RoleSeeder::class,
             // RoleUserSeeder::class,
             // CategorySeeder::class,
-            // RecordSeeder::class,
-            // ResultSeeder::class,
+            RecordSeeder::class,
+            ResultSeeder::class,
             ]);
 
-        \App\Models\Quiz::factory(1000)->create();
+        // \App\Models\Quiz::factory(100)->create();
         // \App\Models\User::factory(10)->create();
 
         // \App\Models\User::factory()->create([

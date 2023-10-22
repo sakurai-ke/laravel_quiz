@@ -17,7 +17,7 @@ class ResultSeeder extends Seeder
             $totalQuestions = DB::table('records')->where('id', $recordId)->value('total_questions');
 
             foreach (range(1, $totalQuestions) as $index) {
-                $quizId = $faker->numberBetween(1, 1000);
+                $quizId = $faker->numberBetween(1, 100);
                 $selectedChoice = $faker->randomElement(['correct_answer', 'wrong_answer_1', 'wrong_answer_2', 'wrong_answer_3']);
                 $correct = ($selectedChoice === 'correct_answer') ? 1 : 0;
 
