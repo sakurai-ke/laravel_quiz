@@ -36,7 +36,7 @@ let currentQuizIndex = 0;
 // シャッフルされたクイズリストを保持する変数
 let shuffledQuizList = [];
 
-const quizData = ref(props.quizData); // Create a reactive variable
+const quizData = ref(props.quizData);
 
     // レコードIDのプロパティ
 // const record_id = ref(props.record_id);
@@ -104,6 +104,7 @@ function presentRandomQuiz() {
     shuffledChoices.value = newQuizData.choices;
     //ユーザが選択した選択肢を保持するためにselectedChoice.value変数に保持
     selectedChoice.value = newQuizData.user_choice;
+    hint.value = null; // クイズが切り替わるとヒント情報をリセット
 }
 
 // クイズデータの取得とシャッフル
@@ -346,6 +347,8 @@ const hint = ref(''); // ヒントの初期値は空
 
 // ヒントを取得する関数
 async function getHint() {
+    hint.value = null; // ヒント情報をリセット
+
     try {
         // クイズの問題文（title）と正解をコントローラに送信
         const response = await axios.post('/api/get-hint', {
@@ -370,6 +373,7 @@ async function getHint() {
         // エラー処理を追加
     }
 }
+
 </script>
 
 <template>
@@ -407,27 +411,28 @@ async function getHint() {
 
     <h2 class="text-xl font-semibold mb-4">{{ quizData.title }}</h2>
     <ul class="choice-list grid grid-cols-2 gap-4">
-      <li v-for="(choice, index) in shuffledChoices" :key="index">
-        <label class="choice-label block">
-          <input
-            type="radio"
-            :disabled="quizData.answered"
-            v-model="selectedChoice"
-            :value="choice"
-            class="hidden"
-          />
-          <button
-            :class="[
-              'choice-button w-full py-2 px-4 rounded-md focus:outline-none transition duration-300',
-              selectedChoice === choice ? 'bg-blue-500 text-white' : 'bg-gray-300 cursor-not-allowed',
-            ]"
-            @click="selectChoice(choice)"
-          >
-            {{ choice }}
-          </button>
-        </label>
-      </li>
-    </ul>
+  <li v-for="(choice, index) in shuffledChoices" :key="index">
+    <label class="choice-label block">
+      <input
+        type="radio"
+        :disabled="quizData.answered"
+        v-model="selectedChoice"
+        :value="choice"
+        class="hidden"
+      />
+      <button
+        :class="[
+          'choice-button w-full py-2 px-4 rounded-md focus:outline-none transition duration-300',
+          selectedChoice === choice ? 'bg-blue-500 text-white' : 'bg-gray-300 cursor-not-allowed',
+        ]"
+        @click="selectChoice(choice)"
+      >
+        {{ choice }}
+      </button>
+    </label>
+  </li>
+</ul>
+
 
     <!-- 「次へ」をクリックすると回答ボタンを表示 -->
     <button
@@ -507,6 +512,20 @@ async function getHint() {
 </template>
 
 <style scoped>
+
+.choice-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr); /* 2列のグリッドを作成 */
+      gap: 1rem; /* グリッドのセル間の間隔を調整 */
+    }
+
+    .choice-label {
+      display: flex;
+      flex-direction: column; /* 選択肢内のテキストを垂直に配置 */
+      align-items: center; /* テキストを中央に配置 */
+      height: 100%; /* 選択肢の高さを親要素に合わせる */
+    }
+
   /* クイズ番号のデフォルトスタイル */
   .quiz-number {
     width: 30px;
@@ -593,6 +612,10 @@ async function getHint() {
     transition: background-color 0.3s, color 0.3s;
     text-align: center;
     cursor: pointer;
+    min-height: 4.26rem; /* 例: ボタンの最小の高さを設定 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
   }
 
   /* 選択された回答のスタイル */
