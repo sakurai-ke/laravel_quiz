@@ -60,10 +60,6 @@ const userRole = ref(null);
                                         クイズ詳細・編集
                                     </NavLink>
 
-                                    <!-- <NavLink :href="route('users')" :active="route().current('users')">
-                                            ユーザー一覧
-                                    </NavLink> -->
-
                                 </template>
                                 <NavLink :href="route('rank')" :active="route().current('rank')">
                                     ランキング
@@ -184,11 +180,12 @@ const userRole = ref(null);
                         <ResponsiveNavLink :href="route('rank')" :active="route().current('rank')">
                             ランキング
                         </ResponsiveNavLink>
-                        <!-- <template v-if="$page.props.auth.user">
-                            <ResponsiveNavLink :href="route('profile')" :active="route().current('profile')">
-                                ユーザー一覧
-                            </ResponsiveNavLink>
-                        </template> -->
+
+    <!-- ユーザーがAdmin（idが1）の場合のみ表示 -->
+    <template v-if="userRole === 'admin'">
+      <ResponsiveNavLink :href="route('users')" :active="route().current('users')">ユーザー一覧</ResponsiveNavLink>
+    </template>
+
                     </div>
 
                     <!-- Responsive Settings Options -->

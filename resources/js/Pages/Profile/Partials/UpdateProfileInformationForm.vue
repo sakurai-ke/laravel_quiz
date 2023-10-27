@@ -14,12 +14,18 @@ defineProps({
     },
 });
 
-const user = usePage().props.auth.user;
+// auth プロパティを設定し、存在しない場合はデフォルト値を設定
+const auth = usePage().props.auth || { user: null };
 
+// ユーザー情報を取得
+const user = auth.user;
+
+// ユーザー情報が存在するか確認してフォームを初期化
 const form = useForm({
-    name: user.name,
-    email: user.email,
+    name: user ? user.name : '', // ユーザーが存在しない場合は空文字列
+    email: user ? user.email : '', // ユーザーが存在しない場合は空文字列
 });
+
 </script>
 
 <template>

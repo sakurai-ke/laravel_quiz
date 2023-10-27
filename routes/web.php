@@ -22,6 +22,13 @@ use App\Http\Controllers\Api\UserProfileController;
 |
 */
 
+Route::get('/profile/edit', 'ProfileEditController@edit')
+    ->middleware(['auth'])
+    ->name('profile.edit');
+Route::put('/profile', 'ProfileEditController@update')
+    ->middleware(['auth'])
+    ->name('profile.update');
+
 Route::middleware(['auth'])->group(function () {
     // ユーザープロファイル一覧を表示するルート
     Route::get('/users', [UserProfileController::class, 'index'])->name('users');
