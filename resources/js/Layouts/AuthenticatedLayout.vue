@@ -17,8 +17,14 @@ const userRole = ref(null);
 // ユーザーのロール情報を非同期で取得
 (async () => {
   try {
-    const response = await fetch(userRoleAPIEndpoint);
+    const response = await fetch(userRoleAPIEndpoint, {
+      headers: {
+        'Content-Type': 'application/json', // JSONを期待する場合、ヘッダーを設定
+      },
+    });
+    
     const data = await response.json();
+    
     if (data.role) {
       userRole.value = data.role;
     }
