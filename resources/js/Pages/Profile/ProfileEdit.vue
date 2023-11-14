@@ -1,47 +1,46 @@
+<!-- resources/js/Pages/ProfileEdit.vue -->
+
 <template>
   <div>
-    <h1>プロファイル編集</h1>
-    <form @submit="updateProfile">
-      <div>
-        <label for="name">ユーザ名</label>
-        <input v-model="form.name" type="text" id="name" name="name" />
-      </div>
-      <div>
-        <label for="email">メールアドレス</label>
-        <input v-model="form.email" type="email" id="email" name="email" />
-      </div>
-      <!-- 他のプロファイル情報の編集フォームをここに追加 -->
+    <h1>プロフィール編集</h1>
+    
+    <!-- 成功メッセージの表示 -->
+    <div v-if="successMessage" class="text-green-500">{{ successMessage }}</div>
 
-      <button type="submit">更新</button>
+    <!-- プロフィール編集フォーム -->
+    <form @submit.prevent="updateProfile">
+      <label for="name">ユーザー名</label>
+      <input v-model="formData.name" type="text" id="name" name="name">
+
+      <label for="email">メールアドレス</label>
+      <input v-model="formData.email" type="email" id="email" name="email">
+
+      <!-- 他のプロフィール情報についても同様に追加 -->
+
+      <button type="submit">保存</button>
     </form>
   </div>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      form: {
-        name: '', // ユーザ名
-        email: '', // メールアドレス
-        // 他のプロファイル情報のフォームデータをここに追加
-      }
-    };
-  },
-  methods: {
-    async updateProfile() {
-      try {
-        const response = await this.$inertia.put('/profile', this.form);
-        // プロファイルが更新されたら、適切な処理を追加
-      } catch (error) {
-        // エラーハンドリングを行う場合の処理を追加
-      }
-    }
-  },
-  mounted() {
-    // ユーザー情報をフォームにプリロード
-    this.form.name = this.$page.props.user.name;
-    this.form.email = this.$page.props.user.email;
+<script setup>
+import { ref } from 'vue';
+import { useInertia } from '@inertiajs/inertia';
+
+const formData = ref({
+  name: $page.props.user.name,
+  email: $page.props.user.email,
+  // 他のプロフィール情報についても同様に追加
+});
+
+const { put } = useInertia();
+const successMessage = ref('');
+
+const updateProfile = async () => {
+  // APIを使用してバックエンドにユーザー情報を送信するロジックを追加
+  const response = await put(route('profile.update'), formData);
+  
+  if (response.ok) {
+    successMessage.value = 'プロフィールが更新されました。';
   }
 };
 </script>

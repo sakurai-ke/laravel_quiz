@@ -14,11 +14,17 @@ defineProps({
     },
 });
 
-// auth プロパティを設定し、存在しない場合はデフォルト値を設定
-const auth = usePage().props.auth || { user: null };
+// usePage()を直接呼び出す
+const page = usePage();
 
-// ユーザー情報を取得
-const user = auth.user;
+// page.props が undefined の場合は空のオブジェクトを代入
+const props = page.props || {};
+
+// auth プロパティを設定し、存在しない場合はデフォルト値を設定
+const auth = props.auth || { user: null };
+
+// authが存在し、userが存在する場合のみユーザー情報を取得
+const user = auth && auth.user ? auth.user : null;
 
 // ユーザー情報が存在するか確認してフォームを初期化
 const form = useForm({
@@ -31,16 +37,16 @@ const form = useForm({
 <template>
     <section>
         <header>
-            <h2 class="text-lg font-medium text-gray-900">Profile Information</h2>
+            <h2 class="text-lg font-medium text-gray-900">アカウント編集</h2>
 
             <p class="mt-1 text-sm text-gray-600">
-                Update your account's profile information and email address.
+                アカウントのネームとメールアドレスを更新します。
             </p>
         </header>
 
         <form @submit.prevent="form.patch(route('profile.update'))" class="mt-6 space-y-6">
             <div>
-                <InputLabel for="name" value="Name" />
+                <InputLabel for="name" value="ネーム" />
 
                 <TextInput
                     id="name"
@@ -56,7 +62,7 @@ const form = useForm({
             </div>
 
             <div>
-                <InputLabel for="email" value="Email" />
+                <InputLabel for="email" value="メールアドレス" />
 
                 <TextInput
                     id="email"
@@ -92,7 +98,7 @@ const form = useForm({
             </div>
 
             <div class="flex items-center gap-4">
-                <PrimaryButton :disabled="form.processing">Save</PrimaryButton>
+                <PrimaryButton :disabled="form.processing">保存</PrimaryButton>
 
                 <Transition
                     enter-active-class="transition ease-in-out"

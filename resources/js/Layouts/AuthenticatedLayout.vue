@@ -65,11 +65,16 @@ const userRole = ref(null);
                                     ランキング
                                 </NavLink>
 
-    <!-- ユーザーがAdmin（idが1）の場合のみ表示 -->
-    <template v-if="userRole === 'admin'">
-      <NavLink :href="route('users')" :active="route().current('users')">ユーザー一覧</NavLink>
-    </template>
+                            <!-- ユーザーがAdmin（idが1）の場合のみ表示 -->
+                            <template v-if="userRole === 'admin'">
+                            <NavLink :href="route('users')" :active="route().current('users')">ユーザー権限編集</NavLink>
+                            </template>
 
+                            <template v-if="$page.props.auth.user">
+                                <NavLink :href="route('profile.edit')" :active="route().current('profile.edit')">
+                                    アカウント編集
+                                </NavLink>
+                            </template>
                             </div>
                         </div>
 
@@ -105,9 +110,9 @@ const userRole = ref(null);
                                         </template>
 
                                         <template #content>
-                                                <DropdownLink :href="route('profile.edit')"> Profile </DropdownLink>
+                                                <!-- <DropdownLink :href="route('profile.edit')"> Profile </DropdownLink> -->
                                                 <DropdownLink :href="route('logout')" method="post" as="button">
-                                                    Log Out
+                                                    ログアウト
                                                 </DropdownLink>
                                         </template>
                                     </Dropdown>
@@ -116,7 +121,7 @@ const userRole = ref(null);
                             <!-- ログインしていない場合に表示 -->
                             <template v-else>
                                 <div class="ml-3 relative">
-                                <NavLink href="/">Log Out</NavLink>
+                                <NavLink href="/">ログアウト</NavLink>
                                 </div>
                             </template>
                         </div>
@@ -183,9 +188,14 @@ const userRole = ref(null);
 
     <!-- ユーザーがAdmin（idが1）の場合のみ表示 -->
     <template v-if="userRole === 'admin'">
-      <ResponsiveNavLink :href="route('users')" :active="route().current('users')">ユーザー一覧</ResponsiveNavLink>
+      <ResponsiveNavLink :href="route('users')" :active="route().current('users')">ユーザー権限編集</ResponsiveNavLink>
     </template>
 
+    <template v-if="$page.props.auth.user">
+        <ResponsiveNavLink :href="route('profile.edit')" :active="route().current('profile.edit')">
+                                アカウント編集
+                            </ResponsiveNavLink>
+    </template>
                     </div>
 
                     <!-- Responsive Settings Options -->
@@ -203,9 +213,9 @@ const userRole = ref(null);
                             </div>
 
                             <div class="mt-3 space-y-1">
-                                    <ResponsiveNavLink :href="route('profile.edit')"> Profile </ResponsiveNavLink>
+                                    <!-- <ResponsiveNavLink :href="route('profile.edit')"> Profile </ResponsiveNavLink> -->
                                     <ResponsiveNavLink :href="route('logout')" method="post" as="button">
-                                        Log Out
+                                        ログアウト
                                     </ResponsiveNavLink>
                                 
                             </div>

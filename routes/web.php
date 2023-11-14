@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProfileEditController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -21,13 +22,10 @@ use App\Http\Controllers\Api\UserProfileController;
 | contains the "web" middleware group. Now create something great!
 |
 */
-
-Route::get('/profile/edit', 'ProfileEditController@edit')
-    ->middleware(['auth'])
-    ->name('profile.edit');
-Route::put('/profile', 'ProfileEditController@update')
-    ->middleware(['auth'])
-    ->name('profile.update');
+// Route::middleware(['auth'])->group(function () {
+//     Route::get('/profile/edit', [ProfileEditController::class, 'edit'])->name('profile.edit');
+//     Route::put('/profile', [ProfileEditController::class, 'update'])->name('profile.update');
+// });
 
 Route::middleware(['auth'])->group(function () {
     // ユーザープロファイル一覧を表示するルート
