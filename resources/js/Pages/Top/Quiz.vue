@@ -455,17 +455,18 @@ async function getHint() {
         v-if="currentQuizIndex < shuffledQuizList.length - 1"
         @click="goToNextQuestion"
         @quizCompleted="quizCompleted"
-        class="w-1/2 mx-auto py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300"
-      >
+        class="block mx-auto mt-8 w-full max-w-xs py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300"
+>
         次へ
       </button>
-      <Link
-        v-if="showResultButton"
-        :href="route('quiz.result', { correctPercentage: correctPercentage })"
-        class="mt-4 w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300"
-      >
-        結果を見る
-      </Link>
+    <Link
+      v-if="showResultButton"
+      :href="route('quiz.result', { correctPercentage: correctPercentage })"
+      class="block mx-auto mt-8 w-28 py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300"
+>
+      結果を見る
+    </Link>
+
     </div>
 
     <!-- ボタン表示部分 -->

@@ -15,17 +15,26 @@ const editUser = (userId) => {
 };
 
 const saveUserRole = async (user) => {
-    try {
+  try {
+    // ユーザーが保存を確認するかどうかを確認
+    const confirmed = window.confirm('本当に権限を変更しますか？');
+
+    if (confirmed) {
       // ユーザーの権限を保存
       await axios.post(`/api/user/${user.id}/save-role`, { role: user.role });
       // 成功した場合の処理を追加
       // 例: 成功メッセージの表示など
-    } catch (error) {
-      // エラーハンドリングを追加
-      // 例: エラーメッセージの表示など
-      console.error(error);
+    } else {
+      // 変更をキャンセルした場合の処理を追加
+      // 例: キャンセルメッセージの表示など
     }
-  };
+  } catch (error) {
+    // エラーハンドリングを追加
+    // 例: エラーメッセージの表示など
+    console.error(error);
+  }
+};
+
 
 onMounted(async () => {
   await nextTick();
@@ -43,68 +52,55 @@ onMounted(async () => {
 </script>
 
 <template>
-  <Head title="ユーザー一覧" />
+  <Head title="ユーザー権限編集" />
 
-<AuthenticatedLayout>
-<template #header>
-    <h2 class="font-semibold text-2xl text-gray-800 leading-tight">ユーザー一覧</h2>
-</template>
-  <div class="container mx-auto py-6">
-    <h1 class="text-2xl font-semibold text-gray-800 mb-4">User Profiles</h1>
-    <div class="bg-white shadow-md rounded-lg overflow-hidden">
-      <table class="min-w-full">
-        <thead>
-          <tr>
-            <th class="px-6 py-3 bg-gray-200 text-left text-xs leading-4 font-medium text-gray-600 uppercase tracking-wider">
-              #
-            </th>
-            <th class="px-6 py-3 bg-gray-200 text-left text-xs leading-4 font-medium text-gray-600 uppercase tracking-wider">
-              Name
-            </th>
-            <th class="px-6 py-3 bg-gray-200 text-left text-xs leading-4 font-medium text-gray-600 uppercase tracking-wider">
-              Email
-            </th>
-            <th class="px-6 py-3 bg-gray-200 text-left text-xs leading-4 font-medium text-gray-600 uppercase tracking-wider">
-              権限
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(user, index) in users" :key="user.id">
-            <td class="px-6 py-4 whitespace-no-wrap">{{ index + 1 }}</td>
-            <td class="px-6 py-4 whitespace-no-wrap">{{ user.name }}</td>
-            <td class="px-6 py-4 whitespace-no-wrap">{{ user.email }}</td>
-            <td class="px-6 py-4 whitespace-no-wrap text-right">
-      <div>
-        <label class="inline-flex items-center">
-          <input
-            type="radio"
-            class="form-radio text-indigo-600 border-2 border-indigo-600"
-            :name="'role_' + user.id"
-            value="admin"
-            v-model="user.role"
-          />
-          <span class="ml-2">Admin</span>
-        </label>
+  <AuthenticatedLayout>
+    <template #header>
+      <h2 class="font-semibold text-3xl text-gray-800 leading-tight">ユーザー権限編集</h2>
+    </template>
+    <div class="container mx-auto mt-6">
+      <div class="bg-white shadow-md rounded-lg overflow-hidden">
+        <table class="w-full min-w-max border-collapse">
+          <thead>
+            <tr>
+              <th class="px-6 py-3 bg-gray-200 text-left text-xs font-semibold text-gray-600 border-b">
+                NO
+              </th>
+              <th class="px-6 py-3 bg-gray-200 text-left text-xs font-semibold text-gray-600 border-b">
+                Name
+              </th>
+              <th class="px-6 py-3 bg-gray-200 text-left text-xs font-semibold text-gray-600 border-b">
+                Email
+              </th>
+              <th class="px-12 py-3 bg-gray-200 text-left text-xs font-semibold text-gray-600 border-b">
+                権限
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(user, index) in users" :key="user.id" :class="{ 'border-t': index !== 0 }">
+              <td class="px-6 py-4 whitespace-no-wrap border-b">{{ index + 1 }}</td>
+              <td class="px-6 py-4 whitespace-no-wrap border-b">{{ user.name }}</td>
+              <td class="px-6 py-4 whitespace-no-wrap border-b">{{ user.email }}</td>
+              <td class="px-6 py-4 whitespace-no-wrap text-right space-x-8 border-b">
+                <label v-for="(role, roleIndex) in ['admin', 'user']" :key="roleIndex" class="inline-flex items-center">
+                  <input
+                    type="radio"
+                    class="form-radio text-indigo-600 border-2 border-indigo-600 focus:ring-0"
+                    :name="'role_' + user.id"
+                    :value="role"
+                    v-model="user.role"
+                  />
+                  <span class="ml-2 text-sm font-semibold text-gray-700">{{ role }}</span>
+                </label>
+                <button @click="saveUserRole(user)" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+                  保存
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-      <div>
-        <label class="inline-flex items-center">
-          <input
-            type="radio"
-            class="form-radio text-green-600 border-2 border-green-600"
-            :name="'role_' + user.id"
-            value="user"
-            v-model="user.role"
-          />
-          <span class="ml-2">User</span>
-        </label>
-      </div>
-      <button @click="saveUserRole(user)">保存</button> <!-- 保存ボタンを追加 -->
-    </td>
-          </tr>
-        </tbody>
-      </table>
     </div>
-  </div>
-</AuthenticatedLayout>
+  </AuthenticatedLayout>
 </template>
