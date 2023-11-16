@@ -26,9 +26,7 @@ const shuffledChoices = ref([]);
 
 // クイズが終了した際のメッセージ
 const quizEndMessage = ref('');
-// const showQuiz = ref(true); // 新しい変数を追加
 
-// const quizList = ref([]);
 // この変数の初期値を -1 に設定しているのは、クイズが開始された直後に最初のクイズが表示されるようにするため。インデックスは通常 0 
 // から始まるが、初回のクイズ表示時に onMounted フックで fetchNextQuiz 関数が呼ばれると、まず最初にインデックスが 0 に増加してからクイズを表示する。
 let currentQuizIndex = 0;
@@ -56,8 +54,12 @@ const showNextButton = ref(true);
 const showPrevButton = ref(false);
 const showResultButton = ref(false);
 
-// 新しい変数を追加
 const usedQuizIds = new Set();
+
+const isQuizAnswered = ref(false);
+
+// 回答情報を管理する変数
+const quizResults = [];
 
 // 初回にクイズデータを取得してシャッフル
 onMounted(() => {
@@ -91,8 +93,6 @@ function shuffleQuizList(quizList) {
   return quizList;
 }
 
-
-// ランダムなクイズを出題
 // ランダムなクイズを出題
 function presentRandomQuiz() {
     // shuffledQuizList配列のcurrentQuizIndex番目の要素をnewQuizData変数に格納
@@ -171,6 +171,14 @@ async function submitAnswer() {
   // 選択した回答が正解かどうかの判定処理を行う
   const isCorrect = selectedChoice.value === newQuizData.correct_answer;
 
+    // クイズ結果を保存
+    const result = {
+    quizIndex: currentQuizIndex,
+    isCorrect: isCorrect,
+    explanation: newQuizData.explain,
+  };
+  quizResults.push(result);
+
   // 回答結果に基づいてメッセージを更新
   if (isCorrect) {
     quizEndMessage.value = `正解！\n${newQuizData.explain}`;
@@ -229,11 +237,10 @@ async function submitAnswer() {
           };
           await axios.post('/api/result', result);
         }
-      }
 
       // すべてのクイズが終了したことを判定し、結果を見るボタンを表示
-      if (answeredQuestions.value === shuffledQuizList.length) {
         showResultButton.value = true;
+        console.log('showResultButton.', showResultButton.value);
       }
 
     } catch (error) {
@@ -265,7 +272,10 @@ async function goToNextQuestion() {
   } else {
     // もしクイズが最後まで行った場合、新しいクイズデータを取得する
     fetchAndShuffleQuizzes();
-  }
+      }
+
+        console.log('showResultButton.', showResultButton.value);
+      
 }
 
 // 「前のクイズへ」ボタンがクリックされた際の処理
@@ -274,11 +284,24 @@ function goToPrevQuestion() {
   quizEndMessage.value = ''; // クイズ終了メッセージをリセット
   selectedChoice.value = ''; // 選択した回答をリセット
 
+    // 回答済みクイズであれば、回答結果を表示する
+    if (shuffledQuizList[currentQuizIndex].answered) {
+    const result = quizResults.find(r => r.quizIndex === currentQuizIndex);
+    if (result) {
+      quizEndMessage.value = result.isCorrect
+        ? `正解！\n${result.explanation}`
+        : `不正解！正解は「${shuffledQuizList[currentQuizIndex].correct_answer}」です。\n${result.explanation}`;
+    }
+  }
+
   if (currentQuizIndex > 0) {
     currentQuizIndex--; // インデックスを前のクイズに更新
     presentRandomQuiz(); // 前のクイズを出題する
     updateButtonVisibility(); // ボタンの表示を更新
   }
+
+        console.log('showResultButton.', showResultButton.value);
+
 }
 
 // クイズ画面ごとの前後のクイズへの遷移ボタン制御を行う関数
@@ -300,6 +323,16 @@ function updateButtonVisibility() {
     showPrevButton.value = true;
     showNextButton.value = true;
   }
+
+    // 回答済みのクイズであれば、回答結果を表示する
+    if (shuffledQuizList[currentQuizIndex].answered) {
+    const result = quizResults.find(r => r.quizIndex === currentQuizIndex);
+    if (result) {
+      quizEndMessage.value = result.isCorrect
+        ? `正解！\n${result.explanation}`
+        : `不正解！正解は「${shuffledQuizList[currentQuizIndex].correct_answer}」です。\n${result.explanation}`;
+    }
+  }
 }
 
 // 選択肢を選択する関数
@@ -317,21 +350,28 @@ function selectChoice(choice) {
   shuffledQuizList[currentQuizIndex].user_choice = choice;
 }
 
-
 // 画像のパスを生成する関数
 function getImageUrl(imageName) {
   // Laravelのassetヘルパーを使って画像のパスを生成
-  return "{{ asset('storage/images') }}/" + imageName;
+  return '/storage/images/' + imageName;
 }
+
 
 const selectedChoiceColor = ref(null);
 
 // クイズ画面を表示する関数
+// quizEndMessageをリセットする関数
+function resetQuizEndMessage() {
+  quizEndMessage.value = '';
+}
+
+// 以下の関数を修正
 function goToQuiz(index) {
-  // クイズ番号をクリックしたときに、そのクイズの index を受け取り、該当するクイズを表示
   currentQuizIndex = index;
 
-  // 回答済みクイズの場合、選択肢のクリックを無効にする
+  // ページを切り替える前にquizEndMessageをリセット
+  resetQuizEndMessage();
+
   if (shuffledQuizList[currentQuizIndex].answered) {
     selectedChoiceColor.value = shuffledQuizList[currentQuizIndex].user_choice;
   } else {
@@ -342,6 +382,7 @@ function goToQuiz(index) {
   showAnswerButton.value = true;
   updateButtonVisibility();
 }
+
 
 const hint = ref(''); // ヒントの初期値は空
 
@@ -383,11 +424,12 @@ async function getHint() {
   <p class="text-blue-500 font-semibold">正答率{{ correctPercentage }}</p>
   <p class="text-blue-500 font-semibold">何問目か{{ currentQuizIndex + 1 }}</p>
   <p class="text-blue-500 font-semibold">回答済みはいくつあるか{{ answeredQuestions }}</p>
+  <p class="text-blue-500 font-semibold">showresultbutton{{ showResultButton }}</p>
+  <p class="text-blue-500 font-semibold">answeredQuestions{{ answeredQuestions }}</p>
+  <p class="text-blue-500 font-semibold">shuffledQuizList.length{{ shuffledQuizList.length }}</p>
+
 
   <div class="w-full max-w-4xl mx-auto p-6 bg-white rounded-md shadow-md h-auto">
-
-    <!-- 画像を表示 -->
-    <img :src="getImageUrl(quizData.image_src)" alt="Quiz Image" class="mb-4" />
 
     <div class="quiz-progress flex justify-center items-center flex-wrap mb-4">
       <!-- クイズ番号のリストをループ -->
@@ -410,6 +452,10 @@ async function getHint() {
     </p>
 
     <h2 class="text-xl font-semibold mb-4">{{ quizData.title }}</h2>
+
+  <!-- 画像を表示 -->
+  <img v-if="quizData.image_src" :src="getImageUrl(quizData.image_src)" alt="Quiz Image" class="mb-4 mx-auto"  />
+
     <ul class="choice-list grid grid-cols-2 gap-4">
   <li v-for="(choice, index) in shuffledChoices" :key="index">
     <label class="choice-label block">
@@ -454,18 +500,18 @@ async function getHint() {
       <button
         v-if="currentQuizIndex < shuffledQuizList.length - 1"
         @click="goToNextQuestion"
-        @quizCompleted="quizCompleted"
         class="block mx-auto mt-8 w-full max-w-xs py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300"
 >
         次へ
       </button>
-    <Link
+      <Link
       v-if="showResultButton"
-      :href="route('quiz.result', { correctPercentage: correctPercentage })"
-      class="block mx-auto mt-8 w-28 py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300"
+
+  :href="route('quiz.result', { correctPercentage: correctPercentage })"
+  class="block mx-auto mt-8 w-28 py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none transition duration-300"
 >
-      結果を見る
-    </Link>
+  結果を見る
+</Link>
 
     </div>
 
@@ -473,7 +519,7 @@ async function getHint() {
     <div class="button-group flex justify-between items-center mt-4">
       <!-- 「前のクイズへ」ボタン -->
       <button
-        v-if="showPrevButton"
+      v-if="showPrevButton"
         @click="goToPrevQuestion"
         :class="[
           'prev-button',
@@ -485,7 +531,7 @@ async function getHint() {
 
       <!-- 「次のクイズへ」ボタン -->
       <button
-        v-if="showNextButton"
+      v-if="showNextButton"
         @click="goToNextQuestion"
         :class="[
           'next-button',
