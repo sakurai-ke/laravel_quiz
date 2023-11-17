@@ -472,7 +472,7 @@ watch(selectedCategory, () => {
         <MicroModal />
     </div>
 
-    <div class="bg-gray-100 py-8 px-4">
+    <div class="bg-gray-100 py-8 px-4 mt-8">
       <div class="max-w-3xl mx-auto">
         <!-- 結果が存在しない場合のメッセージ -->
         <div v-if="quizRecords.length === 0 && !isLoading">

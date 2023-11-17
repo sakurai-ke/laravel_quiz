@@ -64,7 +64,7 @@ onMounted(async () => {
         <MicroModal />
     </div>
     
-    <div class="container mx-auto mt-6">
+    <div class="container mx-auto mt-16 max-w-screen-md">
       <div class="bg-white shadow-md rounded-lg overflow-hidden">
         <table class="w-full min-w-max border-collapse">
           <thead>

@@ -244,7 +244,7 @@ watch(selectedUser, () => {
             <MicroModal />
     </div>
 
-    <div class="bg-gray-100 py-8">
+    <div class="bg-gray-100 py-16">
       <div class="max-w-3xl mx-auto px-4">
         
         <!-- クイズが一つもない場合のメッセージ -->

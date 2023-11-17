@@ -246,6 +246,11 @@ return [
         'updated_at' => '更新日',
         'username' => 'ユーザー名',
         'year' => '年',
+        'correct_answer' => '正解の選択肢',
+        'wrong_answer_1' => '不正解の選択肢1',
+        'wrong_answer_2' => '不正解の選択肢2',
+        'wrong_answer_3' => '不正解の選択肢3',
+        'explain' => '解説',    
     ],
 
 ];

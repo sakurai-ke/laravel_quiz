@@ -45,7 +45,7 @@ const showAnswerButton = ref(true);
 const correctAnswers = []; // 正解したクイズのデータを格納するための配列
 
 const correctPercentage = ref(0); // 仮に初期値として 0 を設定
-// const accuracy = ref(0); // 初期値として 0 を設定
+
 const record_id = ref(null); // もしくは、適切な値を代入
 const answeredQuestions = ref(0);
 

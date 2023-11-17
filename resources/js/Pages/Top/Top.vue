@@ -10,8 +10,8 @@ import MicroModal from '@/MicroModal/TopModal.vue'
 // import FlashMessage from '@/Components/FlashMessage.vue';
 
 // カテゴリー名の選択肢
-const selectedCategory = ref(null);
-const selectedNumQuestions = ref(5); // 問題数の選択肢（初期値を10に設定）
+const selectedCategory = ref('スポーツ');
+const selectedNumQuestions = ref(5); // 問題数の選択肢（初期値を5に設定）
 const categories = ref([]); //　取得したカテゴリーのデータを格納する
 const isQuizStarted = ref(false); // クイズ開始する際にtrueに切り替える
 

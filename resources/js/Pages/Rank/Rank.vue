@@ -206,7 +206,7 @@ let rankingChartInstance = null;
         <MicroModal />
     </div>
     
-    <div class="p-6">
+    <div class="p-6 mt-10">
       <div class="space-y-2">
         <div class="flex space-x-2 items-center">
           <label for="fromDate" class="text-gray-600">From:</label>

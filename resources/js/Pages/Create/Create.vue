@@ -154,7 +154,7 @@ function handleImageUpload(event) {
             <MicroModal />
         </div>
 
-        <div class="w-full max-w-screen-md mx-auto p-6 bg-white rounded-md shadow-md mt-4">
+        <div class="w-full max-w-screen-md mx-auto p-6 bg-white rounded-md shadow-md mt-16">
             <BreezeValidationErrors :errors="errors" />
             <div v-if="errorMessage" class="mb-4 text-red-600" v-html="errorMessage"></div>
     
