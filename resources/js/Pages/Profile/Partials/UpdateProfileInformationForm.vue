@@ -4,6 +4,7 @@ import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
+import MicroModal from '@/MicroModal/AccountModal.vue'
 
 defineProps({
     mustVerifyEmail: {
@@ -37,6 +38,11 @@ const form = useForm({
 <template>
     <section>
         <header>
+
+            <div class="absolute top-40 right-4 z-50">
+                <MicroModal />
+            </div>
+
             <h2 class="text-lg font-medium text-gray-900">アカウント編集</h2>
 
             <p class="mt-1 text-sm text-gray-600">

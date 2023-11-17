@@ -39,7 +39,7 @@ const updatePassword = () => {
             <h2 class="text-lg font-medium text-gray-900">パスワード編集</h2>
 
             <p class="mt-1 text-sm text-gray-600">
-                アカウントのメールアドレスを更新します。
+                アカウントのパスワードを更新します。
             </p>
         </header>
 

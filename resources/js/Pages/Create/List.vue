@@ -3,6 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Link, Head } from '@inertiajs/vue3';
 import { ref, onMounted, computed ,watch} from 'vue';
 import axios from 'axios';
+import MicroModal from '@/MicroModal/ListModal.vue'
 
 const currentPage = ref(1); // 現在のページ
 let totalPages = computed(() => Math.ceil(filteredQuizzes.value.length / 20)); // 10件ずつのページ数
@@ -238,6 +239,11 @@ watch(selectedUser, () => {
     <template #header>
       <h2 class="font-semibold text-2xl text-gray-800 leading-tight">クイズ一覧</h2>
     </template>
+
+    <div class="absolute top-40 right-4 z-50">
+            <MicroModal />
+    </div>
+
     <div class="bg-gray-100 py-8">
       <div class="max-w-3xl mx-auto px-4">
         

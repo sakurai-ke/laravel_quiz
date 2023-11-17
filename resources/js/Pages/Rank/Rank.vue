@@ -4,6 +4,7 @@ import { Head } from '@inertiajs/vue3';
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import Chart from 'chart.js/auto';
+import MicroModal from '@/MicroModal/RankModal.vue'
 
 const rankingChart = ref(null);
 const selectedCategory = ref('all');
@@ -201,6 +202,10 @@ let rankingChartInstance = null;
         <h2 class="font-semibold text-2xl text-gray-800 leading-tight">ランキング</h2>
     </template>
 
+    <div class="absolute top-40 right-4 z-50">
+        <MicroModal />
+    </div>
+    
     <div class="p-6">
       <div class="space-y-2">
         <div class="flex space-x-2 items-center">

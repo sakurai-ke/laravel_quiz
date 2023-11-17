@@ -4,6 +4,7 @@ import { ref, onMounted, nextTick } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import axios from 'axios'; // axiosをインポート
 import { computed } from 'vue';
+import MicroModal from '@/MicroModal/UsersModal.vue'
 
 const props = defineProps({
   users: Array,
@@ -58,6 +59,11 @@ onMounted(async () => {
     <template #header>
       <h2 class="font-semibold text-3xl text-gray-800 leading-tight">ユーザー権限編集</h2>
     </template>
+
+    <div class="absolute top-40 right-4 z-50">
+        <MicroModal />
+    </div>
+    
     <div class="container mx-auto mt-6">
       <div class="bg-white shadow-md rounded-lg overflow-hidden">
         <table class="w-full min-w-max border-collapse">

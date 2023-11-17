@@ -21,7 +21,7 @@
   
         <!-- 画像 -->
         <div class="flex justify-center items-center min-h-screen">
-          <img src="/logo/logo.png" class="max-w-full" style="transform: translateY(-10%);" />
+          <img src="/logo/logo.png" class="max-w-full" style="transform: translateY(-20%);" />
         </div>
   
         <!-- ログインと登録リンク -->

@@ -21,32 +21,21 @@ const closeOnOverlayClick = (event) => {
                 </button>
                 <header class="modal__header flex justify-between items-center px-4 py-2 bg-gray-100 rounded-t-lg mt-4">
                     <h2 class="modal__title text-lg font-semibold text-gray-800">
-                        <span class="font-bold text-blue-700">クイズ詳細画面ヘルプ</span><br>
+                        <span class="font-bold text-blue-700">ユーザー権限編集画面ヘルプ</span><br>
                     </h2>
                 </header>
                 <main class="modal__content p-4 text-gray-700">
                     <!-- ヘルプの文章 -->
                     <p class="mb-4">
-                        <span class="font-bold text-blue-700">問題文の表示:</span><br>
-                        この画面では、クイズの詳細情報が表示されます。問題文や選択肢、解説など、クイズに関する詳細な情報を確認できます。
+                        <span class="font-bold text-blue-700">権限の選択:</span><br>
+                        各ユーザーについて、権限を選択するためのラジオボタンと「保存」ボタンが表示されています。
+                        ユーザーの権限は「admin」または「user」から選択できます。
                     </p>
                     <p class="mb-4">
-                        <span class="font-bold text-blue-700">選択肢の確認:</span><br>
-                        問題文の下には、クイズの選択肢が表示されます。正解や誤答の選択肢を確認できます。
+                        <span class="font-bold text-blue-700">保存ボタン:</span><br>
+                        ユーザーごとに表示される「保存」ボタンをクリックすると、選択された権限が保存されます。
+                        保存前に変更確認のための確認ダイアログが表示されます。
                     </p>
-                    <p class="mb-4">
-                        <span class="font-bold text-blue-700">カテゴリー情報:</span><br>
-                        クイズのカテゴリー情報も表示されます。
-                    </p>
-                    <p class="mb-4">
-                        <span class="font-bold text-blue-700">画像の確認:</span><br>
-                        クイズに関連する画像がある場合、画像が表示されます。
-                    </p>
-                    <p class="mb-4">
-                        <span class="font-bold text-blue-700">編集:</span><br>
-                        クイズ情報の編集が必要な場合、「編集」リンクをクリックして情報を更新できます
-                    </p>
-
                     <!-- ヘルプの文章ここまで -->
                 </main>
                 <footer class="modal__footer px-4 py-2">

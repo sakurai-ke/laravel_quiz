@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 const isShow = ref(false)
 const toggleStatus = () => { isShow.value = !isShow.value}
+
 const closeOnOverlayClick = (event) => {
     if (event.target.classList.contains('modal__overlay')) {
         toggleStatus()
@@ -21,33 +22,26 @@ const closeOnOverlayClick = (event) => {
                 </button>
                 <header class="modal__header flex justify-between items-center px-4 py-2 bg-gray-100 rounded-t-lg mt-4">
                     <h2 class="modal__title text-lg font-semibold text-gray-800">
-                        <span class="font-bold text-blue-700">クイズ詳細画面ヘルプ</span><br>
+                        <span class="font-bold text-blue-700">ランキング画面ヘルプ</span><br>
                     </h2>
                 </header>
                 <main class="modal__content p-4 text-gray-700">
-                    <!-- ヘルプの文章 -->
                     <p class="mb-4">
-                        <span class="font-bold text-blue-700">問題文の表示:</span><br>
-                        この画面では、クイズの詳細情報が表示されます。問題文や選択肢、解説など、クイズに関する詳細な情報を確認できます。
+                        <span class="font-bold text-blue-700">ランキングデータの表示:</span><br>
+                        選択した期間およびカテゴリーに基づいてユーザーのランキングデータが表示されます。
+                        ユーザー名と正答率のバーグラフがランク順に表示され、各ユーザーのクイズ成績が一覧できます。
                     </p>
                     <p class="mb-4">
-                        <span class="font-bold text-blue-700">選択肢の確認:</span><br>
-                        問題文の下には、クイズの選択肢が表示されます。正解や誤答の選択肢を確認できます。
+                        <span class="font-bold text-blue-700">期間の指定:</span><br>
+                        ランキング画面では、特定の期間内のユーザーランキングを表示できます。
+                        画面上部の「From」および「To」欄に開始日と終了日を入力し、検索ボタンをクリックすることで指定期間のランキングを表示します。
+                        期間を指定せずに検索すると、全期間のランキングが表示されます。
                     </p>
                     <p class="mb-4">
-                        <span class="font-bold text-blue-700">カテゴリー情報:</span><br>
-                        クイズのカテゴリー情報も表示されます。
-                    </p>
-                    <p class="mb-4">
-                        <span class="font-bold text-blue-700">画像の確認:</span><br>
-                        クイズに関連する画像がある場合、画像が表示されます。
-                    </p>
-                    <p class="mb-4">
-                        <span class="font-bold text-blue-700">編集:</span><br>
-                        クイズ情報の編集が必要な場合、「編集」リンクをクリックして情報を更新できます
-                    </p>
-
-                    <!-- ヘルプの文章ここまで -->
+                        <span class="font-bold text-blue-700">カテゴリーの選択:</span><br>
+                        表示するランキングのカテゴリーを選択できます。画面下部の「カテゴリー」ボックスからカテゴリーを選択し、検索ボタンをクリックすることで指定したカテゴリーのランキングが表示されます。
+                        全てのカテゴリーを表示する場合は「全て」を選択してください。
+                    </p>    
                 </main>
                 <footer class="modal__footer px-4 py-2">
                     <button @click="toggleStatus" type="button" class="modal__btn modal__btn-primary bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded focus:outline-none mr-2">

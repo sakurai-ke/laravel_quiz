@@ -21,32 +21,32 @@ const closeOnOverlayClick = (event) => {
                 </button>
                 <header class="modal__header flex justify-between items-center px-4 py-2 bg-gray-100 rounded-t-lg mt-4">
                     <h2 class="modal__title text-lg font-semibold text-gray-800">
-                        <span class="font-bold text-blue-700">クイズ詳細画面ヘルプ</span><br>
+                        <span class="font-bold text-blue-700">アカウント編集画面ヘルプ</span><br>
                     </h2>
                 </header>
                 <main class="modal__content p-4 text-gray-700">
                     <!-- ヘルプの文章 -->
                     <p class="mb-4">
-                        <span class="font-bold text-blue-700">問題文の表示:</span><br>
-                        この画面では、クイズの詳細情報が表示されます。問題文や選択肢、解説など、クイズに関する詳細な情報を確認できます。
+                        <span class="font-bold text-blue-700">ネーム:</span><br>
+                        ネームを変更したい場合に新しいネームを入力します。
                     </p>
                     <p class="mb-4">
-                        <span class="font-bold text-blue-700">選択肢の確認:</span><br>
-                        問題文の下には、クイズの選択肢が表示されます。正解や誤答の選択肢を確認できます。
+                        <span class="font-bold text-blue-700">メールアドレス:</span><br>
+                        メールアドレスを変更したい場合に新しいメールアドレスを入力します。
                     </p>
                     <p class="mb-4">
-                        <span class="font-bold text-blue-700">カテゴリー情報:</span><br>
-                        クイズのカテゴリー情報も表示されます。
+                        <span class="font-bold text-blue-700">現在のパスワード:</span><br>
+                        「現在のパスワード」欄には、ユーザーの現在のパスワードを入力します。
+                        未入力や不正なパスワードの場合、保存が拒否されます。
                     </p>
                     <p class="mb-4">
-                        <span class="font-bold text-blue-700">画像の確認:</span><br>
-                        クイズに関連する画像がある場合、画像が表示されます。
+                        <span class="font-bold text-blue-700">新しいパスワードの設定:</span><br>
+                        「新しいパスワード」欄には、ユーザーが設定したい新しいパスワードを入力します。
                     </p>
                     <p class="mb-4">
-                        <span class="font-bold text-blue-700">編集:</span><br>
-                        クイズ情報の編集が必要な場合、「編集」リンクをクリックして情報を更新できます
+                        <span class="font-bold text-blue-700">画像のアップロード (オプション):</span><br>
+                        「新しいパスワード（確認）」欄には、先ほど入力した新しいパスワードを再度入力して確認します。
                     </p>
-
                     <!-- ヘルプの文章ここまで -->
                 </main>
                 <footer class="modal__footer px-4 py-2">
