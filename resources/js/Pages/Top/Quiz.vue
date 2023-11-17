@@ -421,14 +421,6 @@ async function getHint() {
   <div class="absolute top-40 right-4 z-50">
       <MicroModal />
   </div>
-  <p class="text-blue-500 font-semibold">正答率{{ correctPercentage }}</p>
-  <p class="text-blue-500 font-semibold">何問目か{{ currentQuizIndex + 1 }}</p>
-  <p class="text-blue-500 font-semibold">回答済みはいくつあるか{{ answeredQuestions }}</p>
-  <p class="text-blue-500 font-semibold">showresultbutton{{ showResultButton }}</p>
-  <p class="text-blue-500 font-semibold">answeredQuestions{{ answeredQuestions }}</p>
-  <p class="text-blue-500 font-semibold">shuffledQuizList.length{{ shuffledQuizList.length }}</p>
-
-
   <div class="w-full max-w-4xl mx-auto p-6 bg-white rounded-md shadow-md h-auto">
 
     <div class="quiz-progress flex justify-center items-center flex-wrap mb-4">
